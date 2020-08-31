@@ -41,15 +41,9 @@ typedef struct{
 	t_nombre restaurante;
 }m_seleccionarRestaurante;
 
-typedef bool rta_confirmacion;
-
 typedef struct{
-	t_nombre restaurante;
-}m_obtenerRestaurante;
-
-typedef struct{
-	uint32_t idCocinero; //TODO ver si es nro o que
-	char* afinidad;
+	uint32_t idCocinero;
+	t_nombre afinidad;
 }t_cocineroAfinidad;
 
 typedef struct{
@@ -59,23 +53,10 @@ typedef struct{
 	uint32_t cantidadHornos;
 }rta_obtenerRestaurante;
 
-typedef struct{
-	t_nombre restaurante;
-}m_consultarPlatos;
 
 typedef struct{
 	t_list* platos; //lista de char*
 }rta_consultarPlatos;
-
-typedef struct{
-	t_nombre restaurante;
-	uint32_t idPedido;
-}m_guardarPedido;
-
-typedef struct{
-	t_nombre plato;
-	uint32_t idPedido;
-}m_agregarPlato;
 
 typedef struct{
 	t_nombre restaurante;
@@ -104,9 +85,9 @@ typedef struct{
 }rta_consultarPedido;
 
 typedef struct{    //mensajes obtener pedido, finalizar pedido, terminar pedido
-	t_nombre restaurante;
-	uint32_t idPedido;
-}m_pedido;
+	t_nombre nombre;
+	uint32_t id;
+}t_nombre_y_id;
 
 typedef struct{
 	t_nombre comida;
@@ -123,7 +104,21 @@ void enviar_mensaje(t_mensaje* mensaje, int socket);
 void* serializar_paquete(t_paquete* paquete, int *bytes);
 t_buffer* cargar_buffer(t_mensaje* mensaje);
 
-t_buffer* buffer_seleccionar_restaurantes(m_seleccionarRestaurante* seleccionarRestaurante);
+t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
+m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
+t_buffer* buffer_id_o_confirmacion(uint32_t* confirmacion);
+uint32_t* deserealizar_id_o_confirmacion(void* buffer);
+t_buffer* buffer_nombre_restaurante(t_nombre* nombre_restaurante);
+t_nombre* deserealizar_nombre_restaurante(void* buffer);
+t_buffer* buffer_nombre_y_id(t_nombre* restaurante_id_pedido);
+t_nombre* deserializar_nombre_y_id(void* buffer);
+t_buffer* buffer_guardar_plato(m_guardarPlato* guardar_plato);
+m_guardarPlato* deserializar_guardar_plato(void* buffer);
+t_buffer* buffer_plato_listo(m_platoListo* plato_listo);
+m_platoListo* deserializar_plato_listo(void* buffer);
+t_buffer* buffer_vacio();
+
+
 
 
 
