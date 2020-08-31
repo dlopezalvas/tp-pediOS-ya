@@ -345,3 +345,27 @@ t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_res
 	return buffer;
 }
 
+rta_consultarRestaurantes* deserializar_rta_consultarRestaurantes(void* buffer){
+
+	rta_consultarRestaurantes* lista_restaurantes = malloc(sizeof(rta_consultarRestaurantes));
+
+	lista_restaurantes->restaurantes = list_create();
+
+	memcpy(&lista_restaurantes->cantRestaurantes, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+
+	int size_string;
+	char* string;
+
+	for(int i = 0; i < lista_restaurantes->cantRestaurantes; i++){
+		memcpy(&size_string, buffer, sizeof(uint32_t));
+		buffer += sizeof(uint32_t);
+		string = malloc(size_string);
+		memcpy(string, buffer, size_string);
+		buffer += size_string;
+		list_add(string, lista_restaurantes);
+	}
+
+	return lista_restaurantes;
+}
+
