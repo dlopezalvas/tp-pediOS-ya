@@ -111,6 +111,7 @@ m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer){
 	memcpy(&seleccionarRestaurante->restaurante.largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(seleccionarRestaurante->restaurante.nombre, buffer, seleccionarRestaurante->restaurante.largo_nombre);
+	seleccionarRestaurante->restaurante.nombre[seleccionarRestaurante->restaurante.largo_nombre] = '\0';
 
 	return seleccionarRestaurante;
 }
@@ -147,7 +148,6 @@ t_buffer* buffer_nombre_restaurante(t_nombre* nombre_restaurante){
 
 	nombre_restaurante->largo_nombre = strlen(nombre_restaurante->nombre);
 
-
 	buffer -> size = sizeof(uint32_t) + nombre_restaurante->largo_nombre;
 	int offset = 0;
 	void* stream = malloc(buffer -> size);
@@ -167,15 +167,13 @@ t_nombre* deserealizar_nombre_restaurante(void* buffer){
 	memcpy(&nombre_restaurante->largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(nombre_restaurante->nombre, buffer, nombre_restaurante->largo_nombre);
+	nombre_restaurante->nombre[nombre_restaurante->largo_nombre] = '\0';
 
 	return nombre_restaurante;
 }
 
 
 //id y nombre
-
-
-
 
 t_buffer* buffer_nombre_id_pedido(t_nombre_y_id* nombre_y_id){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -206,6 +204,7 @@ t_nombre_y_id* deserializar_nombre_id_pedido(void* buffer){
 	memcpy(&nombre_y_id->nombre.largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(nombre_y_id->nombre.nombre, buffer, nombre_y_id->nombre.largo_nombre);
+	nombre_y_id->nombre.nombre[nombre_y_id->nombre.largo_nombre] = '\0';
 
 	return nombre_y_id;
 }
@@ -213,14 +212,11 @@ t_nombre_y_id* deserializar_nombre_id_pedido(void* buffer){
 
 //guardar plato
 
-
-
 t_buffer* buffer_guardar_plato(m_guardarPlato* guardar_plato){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 	guardar_plato->comida.largo_nombre = strlen(guardar_plato->comida.nombre);
 	guardar_plato->restaurante.largo_nombre = strlen(guardar_plato->restaurante.nombre);
-
 
 	buffer -> size = sizeof(uint32_t)*4 + guardar_plato->comida.largo_nombre + guardar_plato->restaurante.largo_nombre;
 	int offset = 0;
@@ -253,25 +249,24 @@ m_guardarPlato* deserializar_guardar_plato(void* buffer){
 	buffer += sizeof(uint32_t);
 	memcpy(guardar_plato->comida.nombre, buffer, guardar_plato->comida.largo_nombre);
 	buffer += guardar_plato->comida.largo_nombre;
+	guardar_plato->comida.nombre[guardar_plato->comida.largo_nombre] = '\0';
 	memcpy(&guardar_plato->cantidad, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(&guardar_plato->restaurante.largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(guardar_plato->restaurante.nombre, buffer, guardar_plato->restaurante.largo_nombre);
+	guardar_plato->restaurante.nombre[guardar_plato->restaurante.largo_nombre] = '\0';
 
 	return guardar_plato;
 }
 
 //plato_listo
 
-
-
 t_buffer* buffer_plato_listo(m_platoListo* plato_listo){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 	plato_listo->comida.largo_nombre = strlen(plato_listo->comida.nombre);
 	plato_listo->restaurante.largo_nombre = strlen(plato_listo->restaurante.nombre);
-
 
 	buffer -> size = sizeof(uint32_t)*3 + plato_listo->comida.largo_nombre + plato_listo->restaurante.largo_nombre;
 	int offset = 0;
@@ -302,9 +297,11 @@ m_platoListo* deserializar_plato_listo(void* buffer){
 	buffer += sizeof(uint32_t);
 	memcpy(plato_listo->comida.nombre, buffer, plato_listo->comida.largo_nombre);
 	buffer += plato_listo->comida.largo_nombre;
+	plato_listo->comida.nombre[plato_listo->comida.largo_nombre] = '\0';
 	memcpy(&plato_listo->restaurante.largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(plato_listo->restaurante.nombre, buffer, plato_listo->restaurante.largo_nombre);
+	plato_listo->restaurante.nombre[plato_listo->restaurante.largo_nombre] = '\0';
 
 	return plato_listo;
 }
@@ -317,4 +314,39 @@ t_buffer* buffer_vacio(){
 	return buffer;
 }
 
+//rta consultar restaurantes
+//t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes){
+//	t_buffer* buffer = malloc(sizeof(t_buffer));
+//
+//	lista_restaurantes->cantRestaurantes = lista_restaurantes->restaurantes->elements_count;
+//
+//	int size_strings = tamanio_lista_strings(lista_restaurantes->restaurantes);
+//
+//	buffer -> size = sizeof(uint32_t) + size_strings;
+//
+//	void* stream = malloc(buffer -> size);
+//	int offset = 0;
+//
+//	memcpy(stream + offset, &lista_restaurantes->cantRestaurantes, sizeof(uint32_t));
+//	offset += sizeof(uint32_t);
+//
+//	t_nombre* nombre_restaurante;
+//
+//	for(int i = 0; i < lista_restaurantes->cantRestaurantes; i++){
+//
+//		nombre_restaurante->largo_nombre = strlen(list_get(lista_restaurantes, i));
+//		memcpy(stream + offset, &pos_x, sizeof(uint32_t));
+//		offset += sizeof(uint32_t);
+//		memcpy(stream + offset, &pos_y, sizeof(uint32_t));
+//		offset += sizeof(uint32_t);
+//	}
+//
+//	memcpy(stream + offset, &localized_pokemon.nombre.largo_nombre, sizeof(uint32_t));
+//	offset += sizeof(uint32_t);
+//	memcpy(stream + offset, localized_pokemon.nombre.nombre, localized_pokemon.nombre.largo_nombre);
+//
+//
+//	buffer -> stream = stream;
+//	return buffer;
+//}
 
