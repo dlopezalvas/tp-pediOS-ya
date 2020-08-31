@@ -1,17 +1,20 @@
-/*
- ============================================================================
- Name        : App.c
- Author      : 
- Version     :
- Copyright   : 
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
+#include "App.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+int main(int argc, char* argv[]) {
 
-int main(void) {
-	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
+	// configuracion situacional de loggers
+		logger_obligatorio_consolaActiva = false;
+		
+		logger_configuracion_consolaActiva = true;
+		logger_configuracion_path = "../logs_debug/configuracion.log";
+
+	configuracionInicial();
+	
+	// Al momento de inicializar el proceso se realizarán las siguientes operaciones:
+
+		// Se conectará al módulo Comanda.
+
+		// Abrirá un puerto de escucha para que los distintos Restaurantes se puedan conectar a él.	
+
 	return EXIT_SUCCESS;
 }
