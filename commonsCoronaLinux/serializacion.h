@@ -33,7 +33,7 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
-	t_list* restaurantes; //lista de t_nombre
+	t_list* restaurantes; //lista de char* TODO ver si aca lo guardamos como t_nombre o char* (ultima opcion delega el largo solamente a la serializacion)
 	uint32_t cantRestaurantes; //element count de restaurantes
 }rta_consultarRestaurantes ;
 

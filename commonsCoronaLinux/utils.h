@@ -69,6 +69,7 @@ t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
 void liberar_vector (char** vector);
 op_code codigo_mensaje(char* tipo_mensaje);
+int tamanio_lista_strings(t_list* lista_de_strings);
 
 
 
