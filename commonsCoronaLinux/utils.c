@@ -30,5 +30,18 @@ void liberar_vector (char** vector){
 	free(vector);
 }
 
+int tamanio_lista_strings(t_list* lista_de_strings){
+	int tamanio = 0;
+
+	char* string;
+
+	for(int i = 0; i < lista_de_strings->elements_count; i++){
+		string = list_get(lista_de_strings, i);
+		tamanio += strlen(string);
+	}
+
+	return tamanio;
+}
+
 
 

@@ -315,38 +315,33 @@ t_buffer* buffer_vacio(){
 }
 
 //rta consultar restaurantes
-//t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes){
-//	t_buffer* buffer = malloc(sizeof(t_buffer));
-//
-//	lista_restaurantes->cantRestaurantes = lista_restaurantes->restaurantes->elements_count;
-//
-//	int size_strings = tamanio_lista_strings(lista_restaurantes->restaurantes);
-//
-//	buffer -> size = sizeof(uint32_t) + size_strings;
-//
-//	void* stream = malloc(buffer -> size);
-//	int offset = 0;
-//
-//	memcpy(stream + offset, &lista_restaurantes->cantRestaurantes, sizeof(uint32_t));
-//	offset += sizeof(uint32_t);
-//
-//	t_nombre* nombre_restaurante;
-//
-//	for(int i = 0; i < lista_restaurantes->cantRestaurantes; i++){
-//
-//		nombre_restaurante->largo_nombre = strlen(list_get(lista_restaurantes, i));
-//		memcpy(stream + offset, &pos_x, sizeof(uint32_t));
-//		offset += sizeof(uint32_t);
-//		memcpy(stream + offset, &pos_y, sizeof(uint32_t));
-//		offset += sizeof(uint32_t);
-//	}
-//
-//	memcpy(stream + offset, &localized_pokemon.nombre.largo_nombre, sizeof(uint32_t));
-//	offset += sizeof(uint32_t);
-//	memcpy(stream + offset, localized_pokemon.nombre.nombre, localized_pokemon.nombre.largo_nombre);
-//
-//
-//	buffer -> stream = stream;
-//	return buffer;
-//}
+t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	lista_restaurantes->cantRestaurantes = lista_restaurantes->restaurantes->elements_count;
+
+	int size_strings = tamanio_lista_strings(lista_restaurantes->restaurantes);
+
+	buffer -> size = sizeof(uint32_t) + size_strings;
+
+	void* stream = malloc(buffer -> size);
+	int offset = 0;
+
+	memcpy(stream + offset, &lista_restaurantes->cantRestaurantes, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	t_nombre* nombre_restaurante;
+
+	for(int i = 0; i < lista_restaurantes->cantRestaurantes; i++){
+		nombre_restaurante->nombre = list_get(lista_restaurantes, i);
+		nombre_restaurante->largo_nombre = strlen(nombre_restaurante->nombre);
+		memcpy(stream + offset, &nombre_restaurante->largo_nombre, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		memcpy(stream + offset, nombre_restaurante->nombre, nombre_restaurante->largo_nombre);
+		offset += nombre_restaurante->largo_nombre;
+	}
+
+	buffer -> stream = stream;
+	return buffer;
+}
 
