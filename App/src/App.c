@@ -16,5 +16,7 @@ int main(int argc, char* argv[]) {
 
 		// Abrirá un puerto de escucha para que los distintos Restaurantes se puedan conectar a él.	
 
+	liberar_memoria();
+
 	return EXIT_SUCCESS;
 }
