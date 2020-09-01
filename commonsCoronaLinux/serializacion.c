@@ -44,36 +44,36 @@ t_buffer* cargar_buffer(t_mensaje* mensaje){
 	uint32_t proceso = mensaje -> tipo_mensaje;
 	void* parametros = mensaje -> parametros;
 
-	switch(proceso){
-	case(CONSULTAR_RESTAURANTES): return buffer_vacio();
-	case(RTA_CONSULTAR_RESTAURANTES): return buffer_restaurante_y_plato(parametros);
-	case(SELECCIONAR_RESTAURANTE): return buffer_seleccionar_restaurante(parametros);
-	case(RTA_SELECCIONAR_RESTAURANTE): return buffer_id_o_confirmacion(parametros);
-	case(OBTENER_RESTAURANTE): return buffer_nombre_restaurante(parametros);
-	case(RTA_OBTENER_RESTAURANTE): return buffer_rta_obtener_restaurante(parametros);
-	case(CONSULTAR_PLATOS): return buffer_nombre_restaurante(parametros);
-	case(RTA_CONSULTAR_PLATOS): return buffer_restaurante_y_plato(parametros);
-	case(CREAR_PEDIDO): return buffer_vacio();
-	case(RTA_CREAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(GUARDAR_PEDIDO): return buffer_nombre_y_id(parametros);
-	case(RTA_GUARDAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(AGREGAR_PLATO): return buffer_nombre_y_id(parametros);
-	case(RTA_AGREGAR_PLATO): return buffer_id_o_confirmacion(parametros);
-	case(GUARDAR_PLATO): return buffer_guardar_plato(parametros);
-	case(RTA_GUARDAR_PLATO): return buffer_id_o_confirmacion(parametros);
-	case(CONFIRMAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(RTA_CONFIRMAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(PLATO_LISTO): return buffer_plato_listo(parametros);
-	case(RTA_PLATO_LISTO): return buffer_id_o_confirmacion(parametros);
-	case(CONSULTAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(RTA_CONSULTAR_PEDIDO): return buffer_rta_consultar_pedido(parametros);
-	case(OBTENER_PEDIDO): return buffer_nombre_y_id(parametros);
-	case(RTA_OBTENER_PEDIDO): return buffer_rta_obtener_pedido(parametros); //TODO lista
-	case(FINALIZAR_PEDIDO): return buffer_nombre_y_id(parametros);
-	case(RTA_FINALIZAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	case(TERMINAR_PEDIDO): return buffer_nombre_y_id(parametros);
-	case(RTA_TERMINAR_PEDIDO): return buffer_id_o_confirmacion(parametros);
-	}
+	if(proceso == RTA_SELECCIONAR_RESTAURANTE ||
+			proceso == RTA_CREAR_PEDIDO ||
+			proceso == RTA_GUARDAR_PEDIDO ||
+			proceso == RTA_AGREGAR_PLATO ||
+			proceso == RTA_GUARDAR_PLATO ||
+			proceso == CONFIRMAR_PEDIDO ||
+			proceso == RTA_CONFIRMAR_PEDIDO ||
+			proceso == RTA_PLATO_LISTO ||
+			proceso == CONSULTAR_PEDIDO ||
+			proceso == RTA_FINALIZAR_PEDIDO ||
+			proceso == RTA_TERMINAR_PEDIDO) return buffer_id_o_confirmacion(parametros);
+	else if(proceso == GUARDAR_PEDIDO ||
+			proceso == OBTENER_PEDIDO ||
+			proceso == FINALIZAR_PEDIDO ||
+			proceso == TERMINAR_PEDIDO ||
+			proceso == AGREGAR_PLATO) return buffer_nombre_y_id(parametros);
+	else if(proceso == OBTENER_RESTAURANTE ||
+			proceso == CONSULTAR_PLATOS) return buffer_nombre_restaurante(parametros);
+	else if(proceso == CONSULTAR_RESTAURANTES ||
+		proceso == CREAR_PEDIDO) return buffer_vacio();
+	else if(proceso == RTA_CONSULTAR_RESTAURANTES ||
+			proceso == RTA_CONSULTAR_PLATOS) return buffer_restaurante_y_plato(parametros);
+	else if(proceso == SELECCIONAR_RESTAURANTE) return buffer_seleccionar_restaurante(parametros);
+	else if(proceso == GUARDAR_PLATO) return buffer_guardar_plato(parametros);
+	else if(proceso == PLATO_LISTO) return buffer_plato_listo(parametros);
+	else if(proceso == RTA_CONSULTAR_PEDIDO) return buffer_rta_consultar_pedido(parametros);
+	else if(proceso == RTA_OBTENER_PEDIDO) return buffer_rta_obtener_pedido(parametros);
+	else if(proceso == RTA_OBTENER_RESTAURANTE) return buffer_rta_obtener_restaurante(parametros);
+
+
 	return 0;
 }
 
@@ -163,7 +163,7 @@ t_buffer* buffer_nombre_restaurante(t_nombre* nombre_restaurante){
 	return buffer;
 }
 
-t_nombre* deserealizar_nombre_restaurante(void* buffer){
+t_nombre* deserializar_nombre_restaurante(void* buffer){
 	t_nombre* nombre_restaurante = malloc(sizeof(t_nombre));
 
 	memcpy(&nombre_restaurante->largo_nombre, buffer, sizeof(uint32_t));
@@ -437,7 +437,7 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 	return buffer;
 }
 
-rta_obtenerRestaurante* deserializacion_rta_obtener_restaurante(void* buffer){
+rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 	rta_obtenerRestaurante* obtenerRestaurante = malloc(sizeof(rta_obtenerRestaurante));
 
 	obtenerRestaurante->cocineroAfinidad = list_create();
@@ -526,7 +526,7 @@ t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido){
 	return buffer;
 }
 
-rta_consultarPedido* deserializar_rta_consultarPedido(void* buffer){
+rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer){
 	rta_consultarPedido* consultarPedido = malloc(sizeof(rta_consultarPedido));
 
 	consultarPedido->platos = list_create();
@@ -597,7 +597,7 @@ t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido){
 	return buffer;
 }
 
-rta_obtenerPedido* deserializar_rta_obtenerPedido(void* buffer){
+rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 	rta_obtenerPedido* obtenerPedido = malloc(sizeof(rta_obtenerPedido));
 
 	obtenerPedido->infoPedidos = list_create();
