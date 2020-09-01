@@ -164,4 +164,7 @@ void liberar_memoria(void) {
         // t_log*  logger_obligatorio;
         // t_log*  logger_configuracion;
         // t_list* repartidores;
+        // t_list* cola_NEW;
+        // t_list* cola_READY;
+
 }
