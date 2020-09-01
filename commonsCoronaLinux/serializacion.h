@@ -102,9 +102,10 @@ typedef struct{
 	t_nombre comida;
 	uint32_t cantTotal;
 	uint32_t cantHecha;
-}elemPedido;
+}t_elemPedido;
 
 typedef struct{
+	uint32_t cantPedidos;
 	t_list* infoPedidos; //lista de elemPedido
 }rta_obtenerPedido;
 
@@ -115,6 +116,7 @@ t_buffer* cargar_buffer(t_mensaje* mensaje);
 int tamanio_lista_strings(t_list* lista_de_strings);
 int tamanio_lista_cocineroAfinidad(t_list* lista_de_strings);
 int tamanio_lista_platos_con_estado(t_list* lista_de_platos);
+int tamanio_lista_pedidos(t_list* lista_pedidos);
 
 t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
@@ -135,11 +137,5 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 rta_obtenerRestaurante* deserializacion_rta_obtener_restaurante(void* buffer);
 t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido);
 rta_consultarPedido* deserializar_rta_consultarPedido(void* buffer);
-
-
-
-
-
-
-
-
+t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido);
+rta_obtenerPedido* deserializar_rta_obtenerPedido(void* buffer);
