@@ -104,6 +104,7 @@ typedef struct{
 void enviar_mensaje(t_mensaje* mensaje, int socket);
 void* serializar_paquete(t_paquete* paquete, int *bytes);
 t_buffer* cargar_buffer(t_mensaje* mensaje);
+int tamanio_lista_strings(t_list* lista_de_strings);
 
 t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
@@ -111,13 +112,14 @@ t_buffer* buffer_id_o_confirmacion(uint32_t* confirmacion);
 uint32_t* deserealizar_id_o_confirmacion(void* buffer);
 t_buffer* buffer_nombre_restaurante(t_nombre* nombre_restaurante);
 t_nombre* deserealizar_nombre_restaurante(void* buffer);
-t_buffer* buffer_nombre_y_id(t_nombre* restaurante_id_pedido);
-t_nombre* deserializar_nombre_y_id(void* buffer);
+t_buffer* buffer_nombre_y_id(t_nombre_y_id* nombre_y_id);
+t_nombre_y_id* deserializar_nombre_y_id(void* buffer);
 t_buffer* buffer_guardar_plato(m_guardarPlato* guardar_plato);
 m_guardarPlato* deserializar_guardar_plato(void* buffer);
 t_buffer* buffer_plato_listo(m_platoListo* plato_listo);
 m_platoListo* deserializar_plato_listo(void* buffer);
 t_buffer* buffer_vacio();
+t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes);
 
 
 
