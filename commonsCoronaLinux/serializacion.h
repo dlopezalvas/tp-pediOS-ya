@@ -33,7 +33,7 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
-	t_list* restaurantes; //lista de char* TODO ver si aca lo guardamos como t_nombre o char* (ultima opcion delega el largo solamente a la serializacion)
+	t_list* restaurantes; //lista de char*
 	uint32_t cantRestaurantes; //element count de restaurantes
 }rta_consultarRestaurantes ;
 
@@ -48,12 +48,13 @@ typedef struct{
 }t_cocineroAfinidad;
 
 typedef struct{
+	uint32_t cantCocineroAfinidad;
 	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
 	t_coordenadas posicion;
+	uint32_t cantRecetas;
 	t_list* recetas; //lista de char*
-	uint32_t cantidadHornos;
+	uint32_t cantHornos;
 }rta_obtenerRestaurante;
-
 
 typedef struct{
 	t_list* platos; //lista de char*
@@ -105,6 +106,7 @@ void enviar_mensaje(t_mensaje* mensaje, int socket);
 void* serializar_paquete(t_paquete* paquete, int *bytes);
 t_buffer* cargar_buffer(t_mensaje* mensaje);
 int tamanio_lista_strings(t_list* lista_de_strings);
+int tamanio_lista_cocineroAfinidad(t_list* lista_de_strings);
 
 t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
@@ -120,6 +122,9 @@ t_buffer* buffer_plato_listo(m_platoListo* plato_listo);
 m_platoListo* deserializar_plato_listo(void* buffer);
 t_buffer* buffer_vacio();
 t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes);
+rta_consultarRestaurantes* deserializar_rta_consultarRestaurantes(void* buffer);
+t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante);
+rta_obtenerRestaurante* deserializacion_rta_obtener_restaurante(void* buffer);
 
 
 
