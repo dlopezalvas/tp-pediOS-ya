@@ -33,9 +33,9 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
-	t_list* restaurantes; //lista de char*
-	uint32_t cantRestaurantes; //element count de restaurantes
-}rta_consultarRestaurantes ;
+	t_list* nombres; //lista de t_nombre
+	uint32_t cantElementos; //element count de los nombres
+}t_restaurante_y_plato;
 
 typedef struct{
 	uint32_t cliente;
@@ -52,13 +52,9 @@ typedef struct{
 	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
 	t_coordenadas posicion;
 	uint32_t cantRecetas;
-	t_list* recetas; //lista de char*
+	t_list* recetas; //lista de t_nombre
 	uint32_t cantHornos;
 }rta_obtenerRestaurante;
-
-typedef struct{
-	t_list* platos; //lista de char*
-}rta_consultarPlatos;
 
 typedef struct{
 	t_nombre restaurante;
@@ -74,15 +70,26 @@ typedef struct{
 }m_platoListo;
 
 typedef enum{
-	pendiente = 1,
-	confirmado = 2,
-	terminado = 3,
-}est_pedidos;
+	PENDIENTE = 1,
+	CONFIRMADO = 2,
+	TERMINADO = 3,
+}est_pedido;
+
+typedef enum{
+	LISTO = 1,
+	EN_PROCESO = 2,
+}est_plato;
+
+typedef struct{
+	t_nombre plato;
+	est_plato estadoPlato;
+}t_plato_con_estado;
 
 typedef struct{
 	t_nombre restaurante;
 	uint32_t idRepartidor;
-	est_pedidos estadoPedido;
+	est_pedido estadoPedido;
+	uint32_t cantPlatos;
 	t_list* platos; //ver si va con estado
 }rta_consultarPedido;
 
@@ -107,6 +114,7 @@ void* serializar_paquete(t_paquete* paquete, int *bytes);
 t_buffer* cargar_buffer(t_mensaje* mensaje);
 int tamanio_lista_strings(t_list* lista_de_strings);
 int tamanio_lista_cocineroAfinidad(t_list* lista_de_strings);
+int tamanio_lista_platos_con_estado(t_list* lista_de_platos);
 
 t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
@@ -121,10 +129,12 @@ m_guardarPlato* deserializar_guardar_plato(void* buffer);
 t_buffer* buffer_plato_listo(m_platoListo* plato_listo);
 m_platoListo* deserializar_plato_listo(void* buffer);
 t_buffer* buffer_vacio();
-t_buffer* buffer_rta_consultar_restaurantes(rta_consultarRestaurantes* lista_restaurantes);
-rta_consultarRestaurantes* deserializar_rta_consultarRestaurantes(void* buffer);
+t_buffer* buffer_restaurante_y_plato(t_restaurante_y_plato* lista_restaurantes);
+t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer);
 t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante);
 rta_obtenerRestaurante* deserializacion_rta_obtener_restaurante(void* buffer);
+t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido);
+rta_consultarPedido* deserializar_rta_consultarPedido(void* buffer);
 
 
 
