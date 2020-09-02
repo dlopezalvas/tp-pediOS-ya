@@ -1,17 +1,9 @@
-/*
- ============================================================================
- Name        : Sindicato.c
- Author      : 
- Version     :
- Copyright   : 
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "Sindicato.h"
 
 int main(void) {
+
+	sindicato_initialize();
+
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	return EXIT_SUCCESS;
 }
