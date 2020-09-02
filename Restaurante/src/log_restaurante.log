@@ -1,0 +1,12 @@
+[DEBUG] 00:52:07:249 restaurante/(8230:8230): [CONFIG_INI]: Config path mal pasado, se usara default.config por defecto.
+[INFO] 00:52:07:249 restaurante/(8230:8230): 127.0.0.1
+[INFO] 00:52:07:250 restaurante/(8230:8230): 5002
+[INFO] 00:52:07:250 restaurante/(8230:8230): paso el enviar mje
+[DEBUG] 00:52:58:155 restaurante/(8234:8234): [CONFIG_INI]: Config path mal pasado, se usara default.config por defecto.
+[INFO] 00:52:58:156 restaurante/(8234:8234): 127.0.0.1
+[INFO] 00:52:58:156 restaurante/(8234:8234): 5002
+[INFO] 00:52:58:156 restaurante/(8234:8234): paso el enviar mje
+[DEBUG] 00:54:20:672 restaurante/(8267:8267): [CONFIG_INI]: Config path mal pasado, se usara default.config por defecto.
+[INFO] 00:54:20:673 restaurante/(8267:8267): 127.0.0.1
+[INFO] 00:54:20:673 restaurante/(8267:8267): 5002
+[INFO] 00:54:20:674 restaurante/(8267:8267): paso el enviar mje
