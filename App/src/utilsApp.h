@@ -1,5 +1,5 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef UTILSAPP_H_
+#define UTILSAPP_H_
 
 #include <stdlib.h>
 #include <pthread.h>
@@ -98,4 +98,4 @@
 // liberacion de memoria
     void liberar_memoria(void);
 
-#endif // UTILS_H_
+#endif // UTILSAPP_H_
