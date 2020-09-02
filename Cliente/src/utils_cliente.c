@@ -1,21 +1,22 @@
 #include "utils_cliente.h"
 
-void cargar_configuracion(){
-	s_configuracion_cliente = malloc(sizeof(config_datos));
-	s_configuracion_cliente->ip_app = config_get_string_value(config_cliente, IP_APP);
-	s_configuracion_cliente->puerto_app = config_get_string_value(config_cliente, PUERTO_APP);
+bool validar_proceso(int argc, char** argv){
+	return string_equals_ignore_case(argv[1], APP) ||
+			string_equals_ignore_case(argv[1], COMANDA) ||
+			string_equals_ignore_case(argv[1], RESTAURANTE) ||
+			string_equals_ignore_case(argv[1], SINDICATO);
+}
 
-	s_configuracion_cliente->ip_comanda = config_get_string_value(config_cliente, IP_COMANDA);
-	s_configuracion_cliente->puerto_comanda = config_get_string_value(config_cliente, PUERTO_COMANDA);
-
-	s_configuracion_cliente->ip_restaurante = config_get_string_value(config_cliente, IP_RESTAURANTE);
-	s_configuracion_cliente->puerto_restaurante = config_get_string_value(config_cliente, PUERTO_RESTAURANTE);
-
-	s_configuracion_cliente->ip_sindicato = config_get_string_value(config_cliente, IP_SINDICATO);
-	s_configuracion_cliente->puerto_sindicato = config_get_string_value(config_cliente, PUERTO_SINDICATO);
-
-	s_configuracion_cliente->posicion->x = config_get_int_value(config_cliente, POSICION_X);
-	s_configuracion_cliente->posicion->y = config_get_int_value(config_cliente, POSICION_Y);
+void configurar_ip_puerto(char* proceso){
+	conexion = malloc(sizeof(t_conexion));
+	char* puerto_proceso = string_new();
+	string_append_with_format(&puerto_proceso,"PUERTO_%s",proceso);
+	char* ip_proceso = string_new();
+	string_append_with_format(&ip_proceso,"IP_%s",proceso);
+	conexion->puerto = config_get_int_value(config_cliente, puerto_proceso);
+	conexion->ip = config_get_string_value(config_cliente, ip_proceso);
+	free(puerto_proceso);
+	free(ip_proceso);
 }
 
 void iniciar_consola(){

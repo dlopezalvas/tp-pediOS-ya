@@ -38,28 +38,24 @@
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
 
+typedef struct{
+	int puerto;
+	char* ip;
+}t_conexion;
+
 t_config* config_cliente;
 t_log* log_cliente;
+t_conexion* conexion;
 
-typedef struct{ //TODO ver que tenemos ahora un atoi para el puerto, conviene directamente sacarlo y poner como int
-	char* ip_comanda;
-	char* puerto_comanda;
-	char* ip_restaurante;
-	char* puerto_restaurante;
-	char* ip_app;
-	char* puerto_app;
-	char* ip_sindicato;
-	char* puerto_sindicato;
-	t_coordenadas* posicion;
-}config_datos;
 
-config_datos* s_configuracion_cliente;
 
-void cargar_configuracion();
+
 
 void iniciar_consola();
 bool validar_proceso_mensaje(char* proceso, char* tipo_mensaje);
 bool validar_mensaje(char* linea);
+bool validar_proceso(int argc, char** argv);
+void configurar_ip_puerto(char* proceso);
 
 void process_request(int cod_op, int cliente_fd);
 void recibir_mensajes_de_cola(int* socket);
