@@ -62,6 +62,7 @@ typedef enum{
 	RTA_FINALIZAR_PEDIDO = 26, //Confirmacion Ok/Fail
 	TERMINAR_PEDIDO = 27, //m_pedido,
 	RTA_TERMINAR_PEDIDO = 28, //Confirmacion Ok/Fail
+	POSICION_CLIENTE = 29,
 }op_code;
 
 
