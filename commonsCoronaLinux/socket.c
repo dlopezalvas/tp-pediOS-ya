@@ -1,12 +1,12 @@
 #include "socket.h"
 
 
-int iniciar_servidor (char* ip, char* puerto){
+int iniciar_servidor (char* ip, int puerto){
 	struct sockaddr_in direccion_servidor;
 
 	direccion_servidor.sin_family = AF_INET;
 	direccion_servidor.sin_addr.s_addr = INADDR_ANY;
-	direccion_servidor.sin_port = htons(atoi(puerto));
+	direccion_servidor.sin_port = htons(puerto);
 
 	int servidor = socket(AF_INET, SOCK_STREAM,0);
 
@@ -29,12 +29,12 @@ int iniciar_servidor (char* ip, char* puerto){
 
 
 
-int iniciar_cliente(char* ip, char* puerto){
+int iniciar_cliente(char* ip, int puerto){
 	struct sockaddr_in direccion_servidor;
 
 	direccion_servidor.sin_family = AF_INET;
 	direccion_servidor.sin_addr.s_addr = inet_addr(ip);
-	direccion_servidor.sin_port = htons(atoi(puerto));
+	direccion_servidor.sin_port = htons(puerto);
 
 	int cliente = socket(AF_INET, SOCK_STREAM, 0);
 
