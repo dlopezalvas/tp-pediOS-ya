@@ -72,6 +72,7 @@ t_buffer* cargar_buffer(t_mensaje* mensaje){
 	else if(proceso == RTA_CONSULTAR_PEDIDO) return buffer_rta_consultar_pedido(parametros);
 	else if(proceso == RTA_OBTENER_PEDIDO) return buffer_rta_obtener_pedido(parametros);
 	else if(proceso == RTA_OBTENER_RESTAURANTE) return buffer_rta_obtener_restaurante(parametros);
+	else if(proceso == POSICION_CLIENTE) return buffer_posicion(parametros);
 
 
 	return 0;
@@ -622,6 +623,34 @@ rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 	}
 
 	return obtenerPedido;
+}
+
+//posicion cliente
+
+
+t_buffer* buffer_posicion(t_coordenadas* posicion){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+
+	buffer -> size = sizeof(uint32_t)*2;
+	void* stream = malloc(buffer -> size);
+	uint32_t offset = 0;
+	memcpy(stream + offset, &posicion->x, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &posicion->y, sizeof(uint32_t));
+	buffer -> stream = stream;
+
+	return buffer;
+}
+
+t_coordenadas* deserializar_posicion(void* buffer){
+
+	t_coordenadas* posicion = malloc(sizeof(t_coordenadas));
+	memcpy(&posicion->x, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&posicion->y, buffer, sizeof(uint32_t));
+
+	return posicion;
 }
 
 
