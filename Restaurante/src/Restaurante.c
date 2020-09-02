@@ -9,10 +9,14 @@
  */
 
 #include "Restaurante.h"
-
-
+#include <../commonsCoronaLinux/utils.h>
+#include <../commonsCoronaLinux/socket.h>
 
 int main(int argc, char* argv[]) {
+
+
+
+
 
 
 
@@ -54,7 +58,6 @@ socket=1234;
 //enviar_mensaje(mensaje, socket);
 
 log_info(log_config_ini ,"paso el enviar mje");
-
 
 
 
