@@ -45,6 +45,12 @@
         pthread_mutex_t* mutex_asignarPedido;
     } t_repartidor;
 
+    typedef struct {
+        int pos_x;
+        int pos_y;
+        int id;
+    } t_cliente;
+
 // variables de logging
     t_log*  logger_obligatorio;
     bool    logger_obligatorio_consolaActiva;
