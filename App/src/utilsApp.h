@@ -10,6 +10,8 @@
 #include <commons/log.h>
 #include <commons/collections/list.h>
 
+#include "../../commonsCoronaLinux/socket.h"
+
 // enums
     typedef enum {
         FIFO,
@@ -27,6 +29,16 @@
 
 // structs
     typedef struct {
+        int pos_x;
+        int pos_y;
+        int frecuenciaDescanso;
+        int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
+        int tiempoDescanso;
+        int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
+        pthread_mutex_t* mutex_asignarPedido;
+    } t_repartidor;
+
+    typedef struct {
         char* nombreRestaurant;
         int idPedido;
         t_estado estadoPedido;
@@ -38,18 +50,12 @@
     typedef struct {
         int pos_x;
         int pos_y;
-        int frecuenciaDescanso;
-        int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
-        int tiempoDescanso;
-        int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
-        pthread_mutex_t* mutex_asignarPedido;
-    } t_repartidor;
-
-    typedef struct {
-        int pos_x;
-        int pos_y;
         int id;
     } t_cliente;
+
+// conexiones
+    int socket_cliente_comanda;
+    int socket_escucha;
 
 // variables de logging
     t_log*  logger_obligatorio;
