@@ -41,37 +41,38 @@ void* serializar_paquete(t_paquete* paquete, int *bytes){
 
 t_buffer* cargar_buffer(t_mensaje* mensaje){
 
-	uint32_t proceso = mensaje -> tipo_mensaje;
+	op_code tipo_mensaje = mensaje -> tipo_mensaje;
 	void* parametros = mensaje -> parametros;
 
-	if(proceso == RTA_SELECCIONAR_RESTAURANTE ||
-			proceso == RTA_CREAR_PEDIDO ||
-			proceso == RTA_GUARDAR_PEDIDO ||
-			proceso == RTA_AGREGAR_PLATO ||
-			proceso == RTA_GUARDAR_PLATO ||
-			proceso == CONFIRMAR_PEDIDO ||
-			proceso == RTA_CONFIRMAR_PEDIDO ||
-			proceso == RTA_PLATO_LISTO ||
-			proceso == CONSULTAR_PEDIDO ||
-			proceso == RTA_FINALIZAR_PEDIDO ||
-			proceso == RTA_TERMINAR_PEDIDO) return buffer_id_o_confirmacion(parametros);
-	else if(proceso == GUARDAR_PEDIDO ||
-			proceso == OBTENER_PEDIDO ||
-			proceso == FINALIZAR_PEDIDO ||
-			proceso == TERMINAR_PEDIDO ||
-			proceso == AGREGAR_PLATO) return buffer_nombre_y_id(parametros);
-	else if(proceso == OBTENER_RESTAURANTE ||
-			proceso == CONSULTAR_PLATOS) return buffer_nombre_restaurante(parametros);
-	else if(proceso == CONSULTAR_RESTAURANTES ||
-		proceso == CREAR_PEDIDO) return buffer_vacio();
-	else if(proceso == RTA_CONSULTAR_RESTAURANTES ||
-			proceso == RTA_CONSULTAR_PLATOS) return buffer_restaurante_y_plato(parametros);
-	else if(proceso == SELECCIONAR_RESTAURANTE) return buffer_seleccionar_restaurante(parametros);
-	else if(proceso == GUARDAR_PLATO) return buffer_guardar_plato(parametros);
-	else if(proceso == PLATO_LISTO) return buffer_plato_listo(parametros);
-	else if(proceso == RTA_CONSULTAR_PEDIDO) return buffer_rta_consultar_pedido(parametros);
-	else if(proceso == RTA_OBTENER_PEDIDO) return buffer_rta_obtener_pedido(parametros);
-	else if(proceso == RTA_OBTENER_RESTAURANTE) return buffer_rta_obtener_restaurante(parametros);
+	if(tipo_mensaje == RTA_SELECCIONAR_RESTAURANTE ||
+			tipo_mensaje == RTA_CREAR_PEDIDO ||
+			tipo_mensaje == RTA_GUARDAR_PEDIDO ||
+			tipo_mensaje == RTA_AGREGAR_PLATO ||
+			tipo_mensaje == RTA_GUARDAR_PLATO ||
+			tipo_mensaje == CONFIRMAR_PEDIDO ||
+			tipo_mensaje == RTA_CONFIRMAR_PEDIDO ||
+			tipo_mensaje == RTA_PLATO_LISTO ||
+			tipo_mensaje == CONSULTAR_PEDIDO ||
+			tipo_mensaje == RTA_FINALIZAR_PEDIDO ||
+			tipo_mensaje == RTA_TERMINAR_PEDIDO) return buffer_id_o_confirmacion(parametros);
+	else if(tipo_mensaje == GUARDAR_PEDIDO ||
+			tipo_mensaje == OBTENER_PEDIDO ||
+			tipo_mensaje == FINALIZAR_PEDIDO ||
+			tipo_mensaje == TERMINAR_PEDIDO ||
+			tipo_mensaje == AGREGAR_PLATO) return buffer_nombre_y_id(parametros);
+	else if(tipo_mensaje == OBTENER_RESTAURANTE ||
+			tipo_mensaje == CONSULTAR_PLATOS) return buffer_nombre_restaurante(parametros);
+	else if(tipo_mensaje == CONSULTAR_RESTAURANTES ||
+			tipo_mensaje == CREAR_PEDIDO) return buffer_vacio();
+	else if(tipo_mensaje == RTA_CONSULTAR_RESTAURANTES ||
+			tipo_mensaje == RTA_CONSULTAR_PLATOS) return buffer_restaurante_y_plato(parametros);
+	else if(tipo_mensaje == SELECCIONAR_RESTAURANTE) return buffer_seleccionar_restaurante(parametros);
+	else if(tipo_mensaje == GUARDAR_PLATO) return buffer_guardar_plato(parametros);
+	else if(tipo_mensaje == PLATO_LISTO) return buffer_plato_listo(parametros);
+	else if(tipo_mensaje == RTA_CONSULTAR_PEDIDO) return buffer_rta_consultar_pedido(parametros);
+	else if(tipo_mensaje == RTA_OBTENER_PEDIDO) return buffer_rta_obtener_pedido(parametros);
+	else if(tipo_mensaje == RTA_OBTENER_RESTAURANTE) return buffer_rta_obtener_restaurante(parametros);
+	else if(tipo_mensaje == POSICION_CLIENTE) return buffer_posicion(parametros);
 
 
 	return 0;
@@ -622,6 +623,34 @@ rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 	}
 
 	return obtenerPedido;
+}
+
+//posicion cliente
+
+
+t_buffer* buffer_posicion(t_coordenadas* posicion){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+
+	buffer -> size = sizeof(uint32_t)*2;
+	void* stream = malloc(buffer -> size);
+	uint32_t offset = 0;
+	memcpy(stream + offset, &posicion->x, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &posicion->y, sizeof(uint32_t));
+	buffer -> stream = stream;
+
+	return buffer;
+}
+
+t_coordenadas* deserializar_posicion(void* buffer){
+
+	t_coordenadas* posicion = malloc(sizeof(t_coordenadas));
+	memcpy(&posicion->x, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&posicion->y, buffer, sizeof(uint32_t));
+
+	return posicion;
 }
 
 
