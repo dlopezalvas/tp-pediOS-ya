@@ -87,7 +87,7 @@ bool validar_mensaje(char* linea){
 	char* tipo_mensaje = mensaje_completo[0];
 
 	const bool tiene_argumentos_suficientes = !(mensaje_completo[0] == NULL); //tiene que tener minimo 1 "palabras"
-	const bool mensaje_valido = validar_proceso_mensaje(tipo_mensaje); //&& validar_argumentos(tipo_mensaje,mensaje_completo,proceso);
+	const bool mensaje_valido = validar_proceso_mensaje(tipo_mensaje) && validar_argumentos(tipo_mensaje,mensaje_completo);
 
 	return tiene_argumentos_suficientes && mensaje_valido;
 }
@@ -125,6 +125,22 @@ bool validar_proceso_mensaje(char* tipo_mensaje){
 				string_equals_ignore_case(MENSAJE_CONFIRMAR_PEDIDO, tipo_mensaje);
 	}
 	return false;
+}
+
+//bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo){
+//
+//	int cant_argumentos = cantidad_argumentos(mensaje_completo);
+//
+//
+//}
+
+int cantidad_argumentos (char** mensaje_completo){
+	int cantidad = 0;
+
+	while(mensaje_completo[cantidad]!=NULL){
+		cantidad++;
+	}
+	return cantidad - 1; //resto el proceso y el tipo de mensaje, quedan solo los argumentos
 }
 
 void process_request(int cod_op, int cliente_fd){
@@ -277,56 +293,54 @@ void conexionEnvio(){
 	}
 }
 
-t_mensaje* llenarMensaje(char* mensaje){
+t_mensaje* llenarMensaje(char* mensaje){ //TODO enum de tipos de mensaje segun serializacion para no hacer esta cosa fea con ifs (?
 
 //	char** parametros = string_new(); //revisar
 	char** parametros = string_split(mensaje, " ");
 
-	if(string_to_cod_op(parametros[0]) == RTA_SELECCIONAR_RESTAURANTE ||
-			string_to_cod_op(parametros[0]) == RTA_CREAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_GUARDAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_AGREGAR_PLATO ||
-			string_to_cod_op(parametros[0]) == RTA_GUARDAR_PLATO ||
-			string_to_cod_op(parametros[0]) == CONFIRMAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_CONFIRMAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_PLATO_LISTO ||
-			string_to_cod_op(parametros[0]) == CONSULTAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_FINALIZAR_PEDIDO ||
-			string_to_cod_op(parametros[0]) == RTA_TERMINAR_PEDIDO) return llenar_id_o_confirmacion(parametros);
-		else if(string_to_cod_op(parametros[0]) == GUARDAR_PEDIDO ||
-				string_to_cod_op(parametros[0]) == OBTENER_PEDIDO ||
-				string_to_cod_op(parametros[0]) == FINALIZAR_PEDIDO ||
-				string_to_cod_op(parametros[0]) == TERMINAR_PEDIDO ||
-				string_to_cod_op(parametros[0]) == AGREGAR_PLATO) return llenar_nombre_y_id(parametros);
-		else if(string_to_cod_op(parametros[0]) == OBTENER_RESTAURANTE ||
-				string_to_cod_op(parametros[0]) == CONSULTAR_PLATOS) return llenar_nombre_restaurante(parametros);
-		else if(string_to_cod_op(parametros[0]) == CONSULTAR_RESTAURANTES ||
-				string_to_cod_op(parametros[0]) == CREAR_PEDIDO) return llenar_vacio(parametros);
-		else if(string_to_cod_op(parametros[0]) == RTA_CONSULTAR_RESTAURANTES ||
-				string_to_cod_op(parametros[0]) == RTA_CONSULTAR_PLATOS) return llenar_restaurante_y_plato(parametros);
-		else if(string_to_cod_op(parametros[0]) == SELECCIONAR_RESTAURANTE) return llenar_seleccionar_restaurante(parametros);
-		else if(string_to_cod_op(parametros[0]) == GUARDAR_PLATO) return llenar_guardar_plato(parametros);
-		else if(string_to_cod_op(parametros[0]) == PLATO_LISTO) return llenar_plato_listo(parametros);
+	if(string_to_op_code(parametros[0]) == RTA_SELECCIONAR_RESTAURANTE ||
+			string_to_op_code(parametros[0]) == RTA_CREAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_GUARDAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_AGREGAR_PLATO ||
+			string_to_op_code(parametros[0]) == RTA_GUARDAR_PLATO ||
+			string_to_op_code(parametros[0]) == CONFIRMAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_CONFIRMAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_PLATO_LISTO ||
+			string_to_op_code(parametros[0]) == CONSULTAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_FINALIZAR_PEDIDO ||
+			string_to_op_code(parametros[0]) == RTA_TERMINAR_PEDIDO) return llenar_id_o_confirmacion(parametros);
+		else if(string_to_op_code(parametros[0]) == GUARDAR_PEDIDO ||
+				string_to_op_code(parametros[0]) == OBTENER_PEDIDO ||
+				string_to_op_code(parametros[0]) == FINALIZAR_PEDIDO ||
+				string_to_op_code(parametros[0]) == TERMINAR_PEDIDO ||
+				string_to_op_code(parametros[0]) == AGREGAR_PLATO) return llenar_nombre_y_id(parametros);
+		else if(string_to_op_code(parametros[0]) == OBTENER_RESTAURANTE ||
+				string_to_op_code(parametros[0]) == CONSULTAR_PLATOS) return llenar_nombre_restaurante(parametros);
+		else if(string_to_op_code(parametros[0]) == CONSULTAR_RESTAURANTES ||
+				string_to_op_code(parametros[0]) == CREAR_PEDIDO) return llenar_vacio(parametros);
+		else if(string_to_op_code(parametros[0]) == RTA_CONSULTAR_RESTAURANTES ||
+				string_to_op_code(parametros[0]) == RTA_CONSULTAR_PLATOS) return llenar_restaurante_y_plato(parametros);
+		else if(string_to_op_code(parametros[0]) == SELECCIONAR_RESTAURANTE) return llenar_seleccionar_restaurante(parametros);
+		else if(string_to_op_code(parametros[0]) == GUARDAR_PLATO) return llenar_guardar_plato(parametros);
+		else if(string_to_op_code(parametros[0]) == PLATO_LISTO) return llenar_plato_listo(parametros);
 //		else if(atoi(parametros[0]) == RTA_CONSULTAR_PEDIDO) return llenar_rta_consultar_pedido(parametros);
 //		else if(atoi(parametros[0]) == RTA_OBTENER_PEDIDO) return llenar_rta_obtener_pedido(parametros);
-		else if(string_to_cod_op(parametros[0]) == RTA_OBTENER_RESTAURANTE) return llenar_rta_obtener_restaurante(parametros);
+		else if(string_to_op_code(parametros[0]) == RTA_OBTENER_RESTAURANTE) return llenar_rta_obtener_restaurante(parametros);
 	return NULL;
 }
 
-
 t_mensaje* llenar_id_o_confirmacion(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	uint32_t numero = atoi(parametros[1]);
 	mensaje->parametros = &numero;
 	//liberar_vector(parametros); creo que va aca
 	return mensaje;
 }
 
-
 t_mensaje* llenar_nombre_y_id(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	t_nombre_y_id* nombre_id = malloc(sizeof(t_nombre_y_id));
 	nombre_id->nombre.nombre = string_duplicate(parametros[1]);
 	nombre_id->id = atoi(parametros[2]);
@@ -335,10 +349,9 @@ t_mensaje* llenar_nombre_y_id(char** parametros){
 	return mensaje;
 }
 
-
 t_mensaje* llenar_nombre_restaurante(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	t_nombre* nombre = malloc(sizeof(t_nombre));
 	nombre->nombre = string_duplicate(parametros[1]);
 	mensaje->parametros = nombre;
@@ -348,7 +361,7 @@ t_mensaje* llenar_nombre_restaurante(char** parametros){
 
 t_mensaje* llenar_guardar_plato(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	m_guardarPlato* guardarPlato = malloc(sizeof(m_guardarPlato));
 	guardarPlato->restaurante.nombre = string_duplicate(parametros[1]);
 	guardarPlato->idPedido = atoi(parametros[2]);
@@ -361,7 +374,7 @@ t_mensaje* llenar_guardar_plato(char** parametros){
 
 t_mensaje* llenar_plato_listo(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	m_platoListo* guardarPlato = malloc(sizeof(m_platoListo));
 	guardarPlato->restaurante.nombre = string_duplicate(parametros[1]);
 	guardarPlato->idPedido = atoi(parametros[2]);
@@ -373,7 +386,7 @@ t_mensaje* llenar_plato_listo(char** parametros){
 
 t_mensaje* llenar_restaurante_y_plato(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	t_restaurante_y_plato* restaurante_plato = malloc(sizeof(t_restaurante_y_plato));
 	restaurante_plato->cantElementos = atoi(parametros[1]);
 	restaurante_plato->nombres = list_create();
@@ -388,7 +401,7 @@ t_mensaje* llenar_restaurante_y_plato(char** parametros){
 
 t_mensaje* llenar_seleccionar_restaurante(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	m_seleccionarRestaurante* seleccionarRestaurante = malloc(sizeof(m_seleccionarRestaurante));
 	seleccionarRestaurante->restaurante.nombre = string_duplicate(parametros[1]);
 	seleccionarRestaurante->cliente = atoi(parametros[2]);
@@ -399,7 +412,7 @@ t_mensaje* llenar_seleccionar_restaurante(char** parametros){
 
 t_mensaje* llenar_rta_obtener_restaurante(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	rta_obtenerRestaurante* obtenerRestaurante = malloc(sizeof(rta_obtenerRestaurante));
 	obtenerRestaurante->posicion.x = atoi(parametros[1]);
 	obtenerRestaurante->posicion.y = atoi(parametros[3]);
@@ -423,10 +436,9 @@ t_mensaje* llenar_rta_obtener_restaurante(char** parametros){
 }
 
 
-
 t_mensaje* llenar_vacio(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_cod_op(parametros[0]);
+	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 //	liberar_vector(parametros);
 	return mensaje;
 }
