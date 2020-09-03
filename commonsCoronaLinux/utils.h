@@ -100,8 +100,8 @@ typedef enum{
 t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
 void liberar_vector (char** vector);
-op_code codigo_mensaje(char* tipo_mensaje);
-
+char* cod_op_to_string(op_code tipo_mensaje);
+op_code string_to_cod_op(char* tipo_mensaje);
 
 
 
