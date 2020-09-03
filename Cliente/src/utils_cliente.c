@@ -30,7 +30,7 @@ void iniciar_consola(){
 			add_history(linea);
 		}
 
-		if(linea[0] == COMANDO_HELP){
+		if(string_equals_ignore_case(linea, COMANDO_HELP)){
 			imprimir_mensajes_disponibles();
 		}else if(validar_mensaje(linea)){ //TODO ver si poner comando ayuda
 			t_mensaje* mensaje = llenarMensaje(linea);
@@ -137,20 +137,34 @@ bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo){
 
 	struct_code tipo_estructura = op_code_to_struct_code(string_to_op_code(tipo_mensaje));
 
+	char** formato;
+
 	switch(tipo_estructura){
 	case STRC_MENSAJE_VACIO: return cant_argumentos_mensaje == 0;
 
-	case STRC_SELECCIONAR_RESTAURANTE: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_SELECCIONAR_RESTAURANTE);
+	case STRC_SELECCIONAR_RESTAURANTE:
+		formato = string_split(FORMATO_SELECCIONAR_RESTAURANTE, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato);
 
-	case STRC_ID_CONFIRMACION: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_CONFIRMAR_PEDIDO); //como cuenta la cantidad de arg no importa cual mensaje sea
+	case STRC_ID_CONFIRMACION:
+		formato = string_split(FORMATO_CONFIRMAR_PEDIDO, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato); //como cuenta la cantidad de arg no importa cual mensaje sea
 
-	case STRC_NOMBRE: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_CONSULTAR_PLATOS);
+	case STRC_NOMBRE:
+		formato = string_split(FORMATO_CONSULTAR_PLATOS, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato);
 
-	case STRC_NOMBRE_ID: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_GUARDAR_PEDIDO);
+	case STRC_NOMBRE_ID:
+		formato = string_split(FORMATO_GUARDAR_PEDIDO, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato);
 
-	case STRC_PLATO_LISTO: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_PLATO_LISTO);
+	case STRC_PLATO_LISTO:
+		formato = string_split(FORMATO_PLATO_LISTO, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato);
 
-	case STRC_GUARDAR_PLATO: return cant_argumentos_mensaje == cantidad_argumentos(FORMATO_GUARDAR_PLATO);
+	case STRC_GUARDAR_PLATO:
+		formato = string_split(FORMATO_GUARDAR_PLATO, " ");
+		return cant_argumentos_mensaje == cantidad_argumentos(formato);
 
 	}
 
@@ -458,7 +472,3 @@ t_mensaje* llenar_vacio(char** parametros){
 	//	liberar_vector(parametros);
 	return mensaje;
 }
-
-
-
-

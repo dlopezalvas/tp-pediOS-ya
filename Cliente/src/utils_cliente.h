@@ -60,6 +60,7 @@ sem_t sem_mensajes_a_enviar;
 void iniciar_consola();
 bool validar_proceso_mensaje(char* tipo_mensaje);
 bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo);
+int cantidad_argumentos (char** mensaje_completo);
 bool validar_mensaje(char* linea);
 bool validar_proceso(int argc, char** argv);
 void configurar_ip_puerto();
