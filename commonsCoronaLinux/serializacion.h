@@ -122,8 +122,8 @@ t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRe
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
 t_buffer* buffer_id_o_confirmacion(uint32_t* confirmacion);
 uint32_t* deserializar_id_o_confirmacion(void* buffer);
-t_buffer* buffer_nombre_restaurante(t_nombre* nombre_restaurante);
-t_nombre* deserializar_nombre_restaurante(void* buffer);
+t_buffer* buffer_nombre(t_nombre* nombre);
+t_nombre* deserializar_nombre(void* buffer);
 t_buffer* buffer_nombre_y_id(t_nombre_y_id* nombre_y_id);
 t_nombre_y_id* deserializar_nombre_y_id(void* buffer);
 t_buffer* buffer_guardar_plato(m_guardarPlato* guardar_plato);
