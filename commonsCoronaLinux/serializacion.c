@@ -1,27 +1,6 @@
 #include "serializacion.h"
 
-void enviar_mensaje(t_mensaje* mensaje, int socket){
 
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	t_buffer* buffer_cargado = cargar_buffer(mensaje);
-
-	paquete -> buffer = buffer_cargado;
-
-	paquete -> codigo_operacion = mensaje -> tipo_mensaje;
-
-	int bytes = 0;
-
-	void* a_enviar = serializar_paquete(paquete, &bytes);
-
-	send(socket,a_enviar,bytes,0);
-
-	free(a_enviar);
-	free(paquete -> buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-
-}
 
 void* serializar_paquete(t_paquete* paquete, int *bytes){
 
