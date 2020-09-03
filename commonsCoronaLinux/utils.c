@@ -155,7 +155,7 @@ op_code string_to_op_code(char* tipo_mensaje){
 	}
 }
 
-struct_code code_op_to_struct_code(op_code tipo_mensaje){
+struct_code op_code_to_struct_code(op_code tipo_mensaje){
 	if(tipo_mensaje == RTA_SELECCIONAR_RESTAURANTE ||
 			tipo_mensaje == RTA_CREAR_PEDIDO ||
 			tipo_mensaje == RTA_GUARDAR_PEDIDO ||
