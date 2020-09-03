@@ -41,6 +41,8 @@
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
 
+#define COMANDO_HELP "HELP"
+
 typedef struct{
 	int puerto;
 	char* ip;
@@ -57,6 +59,7 @@ sem_t sem_mensajes_a_enviar;
 
 void iniciar_consola();
 bool validar_proceso_mensaje(char* tipo_mensaje);
+bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo);
 bool validar_mensaje(char* linea);
 bool validar_proceso(int argc, char** argv);
 void configurar_ip_puerto();
@@ -67,7 +70,7 @@ void imprimir_mensajes_disponibles();
 t_mensaje* llenarMensaje(char* mensaje);
 t_mensaje* llenar_seleccionar_restaurante(char** parametros);
 t_mensaje* llenar_id_o_confirmacion(char** parametros);
-t_mensaje* llenar_nombre_restaurante(char** parametros);
+t_mensaje* llenar_nombre(char** parametros);
 t_mensaje* llenar_nombre_y_id(char** parametros);
 t_mensaje* llenar_guardar_plato(char** parametros);
 t_mensaje* llenar_plato_listo(char** parametros);
