@@ -22,17 +22,18 @@ int main(int argc, char* argv[]) {
 	string_to_upper(proceso);
 	configurar_ip_puerto();
 
+	mensajes_a_enviar = queue_create();
+	sem_init(&sem_mensajes_a_enviar, 0, 0);
 
 
-
-	pthread_t conexion1;
-	pthread_create(&conexion1, NULL, (void*)conexionEnvio, NULL);
-	pthread_join(conexion1, NULL);
-
-	pthread_t conexion2;
-	pthread_create(&conexion2, NULL, (void*)conexionEnvio, NULL);
-	pthread_join(conexion2, NULL);
-
+//	pthread_t conexion1;
+//	pthread_create(&conexion1, NULL, (void*)conexionEnvio, NULL);
+//	pthread_join(conexion1, NULL);
+//
+//	pthread_t conexion2;
+//	pthread_create(&conexion2, NULL, (void*)conexionEnvio, NULL);
+//	pthread_join(conexion2, NULL);
+//
 
 	iniciar_consola();
 
