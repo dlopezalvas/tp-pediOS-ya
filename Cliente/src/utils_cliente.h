@@ -19,22 +19,6 @@
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
 
-
-#define MENSAJE_CONSULTAR_RESTAURANTES "CONSULTAR_RESTAURANTES"
-#define MENSAJE_SELECCIONAR_RESTAURANTE "SELECCIONAR_RESTAURANTE"
-#define MENSAJE_OBTENER_RESTAURANTE "OBTENER_RESTAURANTE"
-#define MENSAJE_CONSULTAR_PLATOS "CONSULTAR_PLATOS"
-#define MENSAJE_CREAR_PEDIDO "CREAR_PEDIDO"
-#define MENSAJE_GUARDAR_PEDIDO "GUARDAR_PEDIDO"
-#define MENSAJE_AGREGAR_PLATO "AGREGAR_PLATO"
-#define MENSAJE_CONFIRMAR_PEDIDO "CONFIRMAR_PEDIDO"
-#define MENSAJE_PLATO_LISTO "PLATO_LISTO"
-#define MENSAJE_CONSULTAR_PEDIDO "CONSULTAR_PEDIDO"
-#define MENSAJE_OBTENER_PEDIDO "OBTENER_PEDIDO"
-#define MENSAJE_FINALIZAR_PEDIDO "FINALIZAR_PEDIDO"
-#define MENSAJE_TERMINAR_PEDIDO "TERMINAR_PEDIDO"
-#define MENSAJE_GUARDAR_PLATO "GUARDAR_PLATO"
-
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
 
@@ -46,16 +30,28 @@ typedef struct{
 t_config* config_cliente;
 t_log* log_cliente;
 t_conexion* conexion;
-
-
-
-
+char* proceso;
 
 void iniciar_consola();
-bool validar_proceso_mensaje(char* proceso, char* tipo_mensaje);
+bool validar_proceso_mensaje(char* tipo_mensaje);
 bool validar_mensaje(char* linea);
 bool validar_proceso(int argc, char** argv);
-void configurar_ip_puerto(char* proceso);
+void configurar_ip_puerto();
+void conexionEnvio();
+
+
+t_mensaje* llenar_seleccionar_restaurante(char** parametros);
+t_mensaje* llenar_id_o_confirmacion(char** parametros);
+t_mensaje* llenar_nombre_restaurante(char** parametros);
+t_mensaje* llenar_nombre_y_id(char** parametros);
+t_mensaje* llenar_guardar_plato(char** parametros);
+t_mensaje* llenar_plato_listo(char** parametros);
+t_mensaje* llenar_restaurante_y_plato(char** parametros);
+t_mensaje* llenar_rta_obtener_restaurante(char** parametros);
+t_mensaje* llenar_rta_consultar_pedido(char** parametros);
+t_mensaje* llenar_rta_obtener_pedido(char** parametros);
+t_mensaje* llenar_vacio(char** parametros);
+
 
 void process_request(int cod_op, int cliente_fd);
 void recibir_mensajes_de_cola(int* socket);
