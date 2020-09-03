@@ -30,7 +30,7 @@ void liberar_vector (char** vector){
 	free(vector);
 }
 
-char* cod_op_to_string(op_code tipo_mensaje){
+char* op_code_to_string(op_code tipo_mensaje){
 	switch (tipo_mensaje) {
 		case CONSULTAR_RESTAURANTES:
 			return MENSAJE_CONSULTAR_RESTAURANTES;
@@ -121,7 +121,7 @@ char* cod_op_to_string(op_code tipo_mensaje){
 }
 
 
-op_code string_to_cod_op(char* tipo_mensaje){
+op_code string_to_op_code(char* tipo_mensaje){
 	if(string_equals_ignore_case(MENSAJE_CONSULTAR_RESTAURANTES, tipo_mensaje)){
 		return CONSULTAR_RESTAURANTES;
 	}else if(string_equals_ignore_case(MENSAJE_SELECCIONAR_RESTAURANTE, tipo_mensaje)){
@@ -155,4 +155,35 @@ op_code string_to_cod_op(char* tipo_mensaje){
 	}
 }
 
-
+struct_code code_op_to_struct_code(op_code tipo_mensaje){
+	if(tipo_mensaje == RTA_SELECCIONAR_RESTAURANTE ||
+			tipo_mensaje == RTA_CREAR_PEDIDO ||
+			tipo_mensaje == RTA_GUARDAR_PEDIDO ||
+			tipo_mensaje == RTA_AGREGAR_PLATO ||
+			tipo_mensaje == RTA_GUARDAR_PLATO ||
+			tipo_mensaje == CONFIRMAR_PEDIDO ||
+			tipo_mensaje == RTA_CONFIRMAR_PEDIDO ||
+			tipo_mensaje == RTA_PLATO_LISTO ||
+			tipo_mensaje == CONSULTAR_PEDIDO ||
+			tipo_mensaje == RTA_FINALIZAR_PEDIDO ||
+			tipo_mensaje == RTA_TERMINAR_PEDIDO) return STRC_ID_CONFIRMACION;
+	else if(tipo_mensaje == GUARDAR_PEDIDO ||
+			tipo_mensaje == OBTENER_PEDIDO ||
+			tipo_mensaje == FINALIZAR_PEDIDO ||
+			tipo_mensaje == TERMINAR_PEDIDO ||
+			tipo_mensaje == AGREGAR_PLATO) return STRC_NOMBRE_ID;
+	else if(tipo_mensaje == OBTENER_RESTAURANTE ||
+			tipo_mensaje == CONSULTAR_PLATOS) return STRC_NOMBRE;
+	else if(tipo_mensaje == CONSULTAR_RESTAURANTES ||
+			tipo_mensaje == CREAR_PEDIDO) return STRC_MENSAJE_VACIO;
+	else if(tipo_mensaje == RTA_CONSULTAR_RESTAURANTES ||
+			tipo_mensaje == RTA_CONSULTAR_PLATOS) return STRC_RESTAURANTE_Y_PLATO;
+	else if(tipo_mensaje == SELECCIONAR_RESTAURANTE) return STRC_SELECCIONAR_RESTAURANTE;
+	else if(tipo_mensaje == GUARDAR_PLATO) return STRC_GUARDAR_PLATO;
+	else if(tipo_mensaje == PLATO_LISTO) return STRC_PLATO_LISTO;
+	else if(tipo_mensaje == RTA_CONSULTAR_PEDIDO) return STRC_RTA_CONSULTAR_PEDIDO;
+	else if(tipo_mensaje == RTA_OBTENER_PEDIDO) return STRC_RTA_OBTENER_PEDIDO;
+	else if(tipo_mensaje == RTA_OBTENER_RESTAURANTE) return STRC_RTA_OBTENER_RESTAURANTE;
+	else if(tipo_mensaje == POSICION_CLIENTE) return STRC_POSICION;
+	return -1;
+}

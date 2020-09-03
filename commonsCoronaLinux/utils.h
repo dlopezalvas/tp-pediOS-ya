@@ -96,12 +96,28 @@ typedef enum{
 	POSICION_CLIENTE = 29,
 }op_code;
 
+typedef enum{ //son para saber el tipo de struct que usa cada mensaje
+	STRC_MENSAJE_VACIO = 0,
+	STRC_RESTAURANTE_Y_PLATO = 1,
+	STRC_SELECCIONAR_RESTAURANTE = 2,
+	STRC_ID_CONFIRMACION = 3,
+	STRC_NOMBRE = 4,
+	STRC_RTA_OBTENER_RESTAURANTE = 5,
+	STRC_NOMBRE_ID = 6,
+	STRC_PLATO_LISTO = 7,
+	STRC_RTA_CONSULTAR_PEDIDO =8,
+	STRC_RTA_OBTENER_PEDIDO =9,
+	STRC_GUARDAR_PLATO = 10,
+	STRC_POSICION = 11,
+}struct_code;
+
 
 t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
 void liberar_vector (char** vector);
-char* cod_op_to_string(op_code tipo_mensaje);
-op_code string_to_cod_op(char* tipo_mensaje);
+char* op_code_to_string(op_code tipo_mensaje);
+op_code string_to_op_code(char* tipo_mensaje);
+struct_code op_code_to_struct_code(op_code tipo_mensaje);
 
 
 
