@@ -121,5 +121,8 @@ struct_code op_code_to_struct_code(op_code tipo_mensaje);
 
 
 
+
+
+
 #endif /* UTILS_H_ */
 
