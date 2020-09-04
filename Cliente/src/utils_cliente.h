@@ -20,6 +20,7 @@
 #include <semaphore.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
+#include <../commonsCoronaLinux/logs.h>
 
 //Formatos
 
