@@ -724,8 +724,7 @@ void loggear_mensaje_enviado(void* mensaje, op_code tipo_mensaje, t_log* logger)
 
 void loggear_mensaje_recibido(void* mensaje, op_code tipo_mensaje, t_log* logger){
 	char* mensaje_string = t_mensaje_to_string(mensaje, tipo_mensaje);
-	puts(mensaje_string);
-	//	log_info(logger, "Se recibio el mensaje %s", mensaje_string);
+		log_info(logger, "Se recibio el mensaje %s", mensaje_string);
 	free(mensaje_string);
 }
 
