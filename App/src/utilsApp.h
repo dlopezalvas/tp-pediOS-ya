@@ -12,51 +12,6 @@
 
 #include "../../commonsCoronaLinux/socket.h"
 
-// enums
-    typedef enum {
-        FIFO,
-        HRRN,
-        SJF_SD
-    } t_algoritmoPlanificacion;
-
-    typedef enum {
-        NEW,
-        READY,
-        EXEC,
-        BLOCK,
-        EXIT
-    } t_estado;
-
-// structs
-    typedef struct {
-        int pos_x;
-        int pos_y;
-        int frecuenciaDescanso;
-        int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
-        int tiempoDescanso;
-        int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
-        pthread_mutex_t* mutex_asignarPedido;
-    } t_repartidor;
-
-    typedef struct {
-        char* nombreRestaurant;
-        int idPedido;
-        t_estado estadoPedido;
-        t_repartidor* repartidor;
-        pthread_mutex_t* mutex_EXEC;
-        pthread_t* hilo;
-    } t_pedido;
-
-    typedef struct {
-        int pos_x;
-        int pos_y;
-        int id;
-    } t_cliente;
-
-// conexiones
-    int socket_cliente_comanda;
-    int socket_escucha;
-
 // variables de logging
     t_log*  logger_obligatorio;
     bool    logger_obligatorio_consolaActiva;
@@ -66,6 +21,12 @@
     char*   logger_configuracion_path;
 
 // configuracion
+    typedef enum {
+        FIFO,
+        HRRN,
+        SJF_SD
+    } t_algoritmoPlanificacion;
+
     void configuracionInicial(void);
     char* cfval_ipComanda;
     int cfval_puertoComanda;
@@ -79,14 +40,64 @@
     int cfval_posicionRestDefaultX;
     int cfval_posicionRestDefaultY;
 
+// restaurantes
+    typedef struct {
+        int pos_x;
+        int pos_y;
+        char* nombre;
+    } t_restaurante;
+
+    t_list* restaurantes; // TODO: init
+
+// clientes
+    typedef struct {
+        int pos_x;
+        int pos_y;
+        int id;
+    } t_cliente;
+
+    t_list* clientes; // TODO: init
+
 // repartidores
+    typedef struct {
+        int pos_x;
+        int pos_y;
+        int frecuenciaDescanso;
+        int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
+        int tiempoDescanso;
+        int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
+        pthread_mutex_t* mutex_asignarPedido;
+    } t_repartidor;
+
     t_list* repartidores;
     pthread_mutex_t mutex_lista_repartidores;
     sem_t semaforo_repartidoresSinPedido;
     sem_t semaforo_vacantesEXEC;
+    bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino_y);
+    void consumir_ciclo(t_repartidor* repartidor);
 
 // pedidos
-    void* fhilo_pedido(void* pedido); // toma t_pedido* por param
+    typedef enum {
+        NEW,
+        READY,
+        EXEC,
+        BLOCK,
+        EXIT
+    } t_estado;
+
+    typedef struct {
+        t_cliente* cliente;
+        t_restaurante* restaurante;
+        t_repartidor* repartidor;
+        int pedido_id;
+        t_estado pedido_estado;
+        pthread_mutex_t* mutex_EXEC; // ???
+        pthread_t* hilo;
+    } t_pedido;
+
+    void* fhilo_pedido(void* pedido_sin_castear); // toma t_pedido* por param
+    void pedido_repartidorLlegoARestaurante(t_pedido* pedido);
+    void pedido_repartidorLlegoACliente(t_pedido* pedido);
 
 // colas
     t_list* cola_NEW;
@@ -100,6 +111,7 @@
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
+    void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante);
 
 // liberacion de memoria
     void liberar_memoria(void);

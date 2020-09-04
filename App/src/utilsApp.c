@@ -155,8 +155,69 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
     // TODO
 }
 
-void* fhilo_pedido(void* pedido) { // toma t_pedido* por param
+void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante) {
     // TODO
+}
+
+void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
+    t_pedido* pedido = (t_pedido*) pedido_sin_castear;
+    pthread_mutex_lock(pedido->mutex_EXEC); // ???
+    while (
+        repartidor_mover_hacia(
+            pedido->repartidor,
+            pedido->restaurante->pos_x,
+            pedido->restaurante->pos_y
+        )
+    ) {
+        consumir_ciclo(pedido->repartidor);
+    }
+    pedido_repartidorLlegoARestaurante(pedido); // TODO: los ciclos solo se consumen en movimiento?
+    while (
+        repartidor_mover_hacia(
+            pedido->repartidor,
+            pedido->cliente->pos_x,
+            pedido->cliente->pos_y
+        )
+    ) {
+        consumir_ciclo(pedido->repartidor);
+    }
+    pedido_repartidorLlegoACliente(pedido); // TODO: los ciclos solo se consumen en movimiento?
+    // TODO: que pasa con el pedido luego de finalizar?
+}
+
+// mover_hacia() mueve el repartidor un casillero hacia el destino
+//      > si se realiza un movimiento, devuelve true
+//      > si no se realiza un movimiento (porque llego a destino), devuelve false 
+bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino_y) {
+    if (repartidor->pos_x > destino_x) {
+        repartidor->pos_x--;
+        return true;
+    }
+    if (repartidor->pos_x < destino_x) {
+        repartidor->pos_x++;
+        return true;
+    }
+    if (repartidor->pos_y > destino_y) {
+        repartidor->pos_y--;
+        return true;
+    }
+    if (repartidor->pos_y < destino_y) {
+        repartidor->pos_y++;
+        return true;
+    }
+    return false;
+}
+
+void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
+    // TODO
+}
+
+void pedido_repartidorLlegoACliente(t_pedido* pedido) {
+    // TODO
+}
+
+void consumir_ciclo(t_repartidor* repartidor) {
+    // TODO   
 }
 
 void liberar_memoria(void) {
@@ -166,5 +227,4 @@ void liberar_memoria(void) {
         // t_list* repartidores;
         // t_list* cola_NEW;
         // t_list* cola_READY;
-
 }
