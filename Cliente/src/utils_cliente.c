@@ -442,7 +442,7 @@ t_mensaje* llenar_id_o_confirmacion(char** parametros){
 
 	mensaje->parametros = numero;
 
-	liberar_vector(parametros); //creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -453,7 +453,7 @@ t_mensaje* llenar_nombre_y_id(char** parametros){
 	nombre_id->nombre.nombre = string_duplicate(parametros[1]);
 	nombre_id->id = atoi(parametros[2]);
 	mensaje->parametros = nombre_id;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -463,7 +463,7 @@ t_mensaje* llenar_nombre(char** parametros){
 	t_nombre* nombre = malloc(sizeof(t_nombre));
 	nombre->nombre = string_duplicate(parametros[1]);
 	mensaje->parametros = nombre;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -476,7 +476,7 @@ t_mensaje* llenar_guardar_plato(char** parametros){
 	guardarPlato->comida.nombre = string_duplicate(parametros[3]);
 	guardarPlato->cantidad = atoi(parametros[4]);
 	mensaje->parametros = guardarPlato;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -488,7 +488,7 @@ t_mensaje* llenar_plato_listo(char** parametros){
 	guardarPlato->idPedido = atoi(parametros[2]);
 	guardarPlato->comida.nombre = string_duplicate(parametros[3]);
 	mensaje->parametros = guardarPlato;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -503,7 +503,7 @@ t_mensaje* llenar_restaurante_y_plato(char** parametros){
 		list_add(restaurante_plato->nombres, string_duplicate(parametros[i+2])); //ver si esto funciona
 	}
 	mensaje->parametros = restaurante_plato;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -514,7 +514,7 @@ t_mensaje* llenar_seleccionar_restaurante(char** parametros){
 	seleccionarRestaurante->restaurante.nombre = string_duplicate(parametros[1]);
 	seleccionarRestaurante->cliente = atoi(parametros[2]);
 	mensaje->parametros = seleccionarRestaurante;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -539,7 +539,7 @@ t_mensaje* llenar_rta_obtener_restaurante(char** parametros){
 		list_add(obtenerRestaurante->cocineroAfinidad, string_duplicate(parametros[j+offset])); //ver si esto funciona
 	}
 	mensaje->parametros = obtenerRestaurante;
-	//liberar_vector(parametros); creo que va aca
+	liberar_vector(parametros);
 	return mensaje;
 }
 
@@ -547,6 +547,6 @@ t_mensaje* llenar_rta_obtener_restaurante(char** parametros){
 t_mensaje* llenar_vacio(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
 	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
-	//	liberar_vector(parametros);
+	liberar_vector(parametros);
 	return mensaje;
 }
