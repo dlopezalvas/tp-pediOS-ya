@@ -323,7 +323,7 @@ void recibir_mensajes_de_cola(int* socket){
 }
 
 void conexionEnvio(){
-	int socket = iniciar_cliente(conexion->ip, 5001);
+	int socket = iniciar_cliente("127.0.0.1", 5001);
 	while(1){ //buscar condicion de que siga ejecutando
 		sem_wait(&sem_mensajes_a_enviar);
 		t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
