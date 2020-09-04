@@ -32,7 +32,7 @@ void iniciar_consola(){
 
 		if(string_equals_ignore_case(linea, COMANDO_HELP)){
 			imprimir_mensajes_disponibles();
-		}else if(validar_mensaje(linea)){ //TODO ver si poner comando ayuda
+		}else if(validar_mensaje(linea)){
 			t_mensaje* mensaje = llenarMensaje(linea);
 			queue_push(mensajes_a_enviar, mensaje);
 			sem_post(&sem_mensajes_a_enviar);
@@ -323,11 +323,12 @@ void recibir_mensajes_de_cola(int* socket){
 }
 
 void conexionEnvio(){
-	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
+	int socket = iniciar_cliente(conexion->ip, 5001);
 	while(1){ //buscar condicion de que siga ejecutando
 		sem_wait(&sem_mensajes_a_enviar);
 		t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
 		enviar_mensaje(mensaje, socket);
+		puts("envie el mensaje");
 	}
 }
 
@@ -362,8 +363,12 @@ t_mensaje* llenarMensaje(char* mensaje){
 t_mensaje* llenar_id_o_confirmacion(char** parametros){
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
 	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
-	uint32_t numero = atoi(parametros[1]);
-	mensaje->parametros = &numero;
+
+	uint32_t* numero = malloc(sizeof(uint32_t));
+	*numero = atoi(parametros[1]);;
+
+	mensaje->parametros = numero;
+
 	//liberar_vector(parametros); creo que va aca
 	return mensaje;
 }

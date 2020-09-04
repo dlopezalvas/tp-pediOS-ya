@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	proceso = string_duplicate(argv[1]);
+//	proceso = COMANDA;
 	string_to_upper(proceso);
 	configurar_ip_puerto();
 
@@ -26,16 +27,17 @@ int main(int argc, char* argv[]) {
 	sem_init(&sem_mensajes_a_enviar, 0, 0);
 
 
-//	pthread_t conexion1;
-//	pthread_create(&conexion1, NULL, (void*)conexionEnvio, NULL);
-//	pthread_join(conexion1, NULL);
-//
+	pthread_t conexion1;
+	pthread_create(&conexion1, NULL, (void*)conexionEnvio, NULL);
+
+
 //	pthread_t conexion2;
 //	pthread_create(&conexion2, NULL, (void*)conexionEnvio, NULL);
 //	pthread_join(conexion2, NULL);
-//
+
 
 	iniciar_consola();
+	pthread_join(conexion1, NULL);
 
 
 
