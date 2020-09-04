@@ -123,7 +123,6 @@ char* nombre_y_id_to_string(t_nombre_y_id * nombre_id, op_code tipo_mensaje){
 	return string_mensaje;
 }
 
-
 char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s %d %s", op_code_to_string(tipo_mensaje),
@@ -135,12 +134,22 @@ char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_c
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s %d %s", op_code_to_string(tipo_mensaje),
 			consultar_pedido->restaurante, consultar_pedido->idRepartidor, consultar_pedido->estadoPedido);
-	char* plato;
+	t_plato_con_estado* plato;
 	for(int i = 0; i<consultar_pedido->cantPlatos; i++){
 		plato = list_get(consultar_pedido->platos, i);
-		string_append_with_format(&string_mensaje, "%s ", i,plato);
+		string_append_with_format(&string_mensaje, "%s - estado %s", plato, est_plato_to_string(plato->estadoPlato));
 	}
 	return string_mensaje;
+}
+
+char* est_plato_to_string(est_plato estado){
+	switch(estado){
+	case LISTO:
+		return "LISTO";
+	case EN_PROCESO:
+		return "EN_PROCESO";
+	}
+	return NULL;
 }
 
 

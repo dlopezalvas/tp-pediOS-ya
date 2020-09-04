@@ -23,6 +23,7 @@ char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaura
 char* nombre_y_id_to_string(t_nombre_y_id * nombre_id, op_code tipo_mensaje);
 char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje);
 char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_code tipo_mensaje);
+char* est_plato_to_string(est_plato estado);
 char* rta_obtener_pedido_to_string(rta_obtenerPedido* obtener_pedido, op_code tipo_mensaje);
 char* guardar_plato_to_string(m_guardarPlato* guardar_plato, op_code tipo_mensaje);
 
