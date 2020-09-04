@@ -21,28 +21,35 @@ void configurar_ip_puerto(){
 
 void iniciar_consola(){
 
-	imprimir_mensajes_disponibles();
+	pthread_mutex_lock(&iniciar_consola_mtx);
 
-	char* linea = readline(">");
+	if(conexion_ok){
 
-	while(strncmp(linea, "", 1) != 0){
-		if(linea){
-			add_history(linea);
+		imprimir_mensajes_disponibles();
+
+		char* linea = readline(">");
+
+		while(strncmp(linea, "", 1) != 0){
+			if(linea){
+				add_history(linea);
+			}
+
+			if(string_equals_ignore_case(linea, COMANDO_HELP)){
+				imprimir_mensajes_disponibles();
+			}else if(validar_mensaje(linea)){
+				t_mensaje* mensaje = llenarMensaje(linea);
+				queue_push(mensajes_a_enviar, mensaje);
+				sem_post(&sem_mensajes_a_enviar);
+			}else{
+				puts("Por favor ingrese un mensaje valido");
+			}
+
+			free(linea);
+			linea = readline(">");
 		}
-
-		if(string_equals_ignore_case(linea, COMANDO_HELP)){
-			imprimir_mensajes_disponibles();
-		}else if(validar_mensaje(linea)){
-			t_mensaje* mensaje = llenarMensaje(linea);
-			queue_push(mensajes_a_enviar, mensaje);
-			sem_post(&sem_mensajes_a_enviar);
-		}else{
-			puts("Por favor ingrese un mensaje valido");
-		}
-
-		free(linea);
-		linea = readline(">");
 	}
+
+	return;
 }
 
 void imprimir_mensajes_disponibles(){
@@ -323,13 +330,38 @@ void recibir_mensajes_de_cola(int* socket){
 }
 
 void conexionEnvio(){
-	int socket = iniciar_cliente("127.0.0.1", 5001);
-	while(1){ //buscar condicion de que siga ejecutando
-		sem_wait(&sem_mensajes_a_enviar);
-		t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
-		enviar_mensaje(mensaje, socket);
-		puts("envie el mensaje");
+	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
+
+	if(socket != -1){
+
+		conexion_ok = true;
+		pthread_mutex_unlock(&iniciar_consola_mtx);
+
+		if(string_equals_ignore_case(proceso, APP)){
+			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
+			handshake_app->tipo_mensaje = POSICION_CLIENTE;
+			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+
+			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
+			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+
+			handshake_app->parametros = posicion_cliente;
+
+			enviar_mensaje(handshake_app, socket);
+		}
+
+		while(1){ //buscar condicion de que siga ejecutando
+			sem_wait(&sem_mensajes_a_enviar);
+			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
+			enviar_mensaje(mensaje, socket);
+			puts("envie el mensaje");
+		}
+	}else{
+		conexion_ok = false;
+		pthread_mutex_unlock(&iniciar_consola_mtx);
 	}
+
+
 }
 
 t_mensaje* llenarMensaje(char* mensaje){
