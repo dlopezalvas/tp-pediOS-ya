@@ -1,3 +1,6 @@
+#ifndef serializacion_h
+#define serializacion_h
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +11,7 @@
 
 typedef struct{
 	op_code tipo_mensaje;
-	void* parametros; //ejemplo: ["PARAM1","PARAM2","PARAM3"]
+	void* parametros; //struct del tipo de mensaje
 }t_mensaje;
 
 
@@ -141,3 +144,29 @@ t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido);
 rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer);
 t_buffer* buffer_posicion(t_coordenadas* posicion);
 t_coordenadas* deserializar_posicion(void* buffer);
+
+
+
+t_log* iniciar_logger(t_config*);
+char* t_mensaje_to_string(t_mensaje* mensaje);
+void loggear_mensaje_enviado(t_mensaje* mensaje, t_log* logger);
+void loggear_mensaje_recibido(t_mensaje* mensaje, t_log* logger);
+char* vacio_to_string(t_mensaje* mensaje);
+char* restaurante_y_plato_to_string(t_mensaje* mensaje);
+char* seleccionar_restaurante_to_string(t_mensaje* mensaje);
+char* id_o_confirmacion_to_string(t_mensaje* mensaje);
+bool es_id(op_code tipo_mensaje);
+char* bool_to_string(bool confirmacion);
+char* nombre_to_string(t_mensaje* mensaje);
+char* rta_obtener_restaurante_to_string(t_mensaje* mensaje);
+char* nombre_y_id_to_string(t_mensaje* mensaje);
+char* plato_listo_to_string(t_mensaje* mensaje);
+char* rta_consultar_pedido_to_string(t_mensaje* mensaje);
+char* rta_obtener_pedido_to_string(t_mensaje* mensaje);
+char* guardar_plato_to_string(t_mensaje* mensaje);
+
+
+#endif /* serializacion_h */
+
+
+

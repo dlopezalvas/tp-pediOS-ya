@@ -347,11 +347,11 @@ t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer){
 	for(int i = 0; i < lista_nombres->cantElementos; i++){
 		memcpy(&nombre->largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
-		nombre->nombre = malloc(nombre->largo_nombre);
+		nombre->nombre = malloc(nombre->largo_nombre +1);
 		memcpy(nombre->nombre, buffer, nombre->largo_nombre);
 		nombre->nombre[nombre->largo_nombre] = '\0';
 		buffer += nombre->largo_nombre;
-		list_add(lista_nombres->nombres, nombre);
+		list_add(lista_nombres->nombres, nombre->nombre);
 	}
 
 	return lista_nombres;
@@ -428,7 +428,7 @@ rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 		buffer += sizeof(uint32_t);
 		memcpy(&cocineroAfinidad->afinidad.largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
-		cocineroAfinidad->afinidad.nombre = malloc(cocineroAfinidad->afinidad.largo_nombre);
+		cocineroAfinidad->afinidad.nombre = malloc(cocineroAfinidad->afinidad.largo_nombre +1);
 		memcpy(cocineroAfinidad->afinidad.nombre, buffer, cocineroAfinidad->afinidad.largo_nombre);
 		cocineroAfinidad->afinidad.nombre[cocineroAfinidad->afinidad.largo_nombre] = '\0';
 		buffer += cocineroAfinidad->afinidad.largo_nombre;
@@ -442,7 +442,7 @@ rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 	for(int i = 0; i < obtenerRestaurante->cantRecetas; i++){
 		memcpy(&nombre_receta->largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
-		nombre_receta = malloc(nombre_receta->largo_nombre);
+		nombre_receta = malloc(nombre_receta->largo_nombre +1);
 		memcpy(nombre_receta->nombre, buffer, nombre_receta->largo_nombre);
 		nombre_receta->nombre[nombre_receta->largo_nombre] = '\0';
 		buffer += nombre_receta->largo_nombre;
@@ -516,7 +516,7 @@ rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer){
 		buffer += sizeof(consultarPedido);
 		memcpy(&plato_con_estado->plato.largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
-		plato_con_estado->plato.nombre = malloc(plato_con_estado->plato.largo_nombre);
+		plato_con_estado->plato.nombre = malloc(plato_con_estado->plato.largo_nombre +1);
 		memcpy(plato_con_estado->plato.nombre, buffer, plato_con_estado->plato.largo_nombre);
 		plato_con_estado->plato.nombre[plato_con_estado->plato.largo_nombre] = '\0';
 		buffer += plato_con_estado->plato.largo_nombre;
@@ -682,3 +682,181 @@ int tamanio_lista_pedidos(t_list* lista_pedidos){
 
 	return tamanio;
 }
+
+
+void loggear_mensaje_enviado(t_mensaje* mensaje, t_log* logger){
+	char* mensaje_string = t_mensaje_to_string(mensaje);
+	log_info(logger, "Se envio el mensaje %s", mensaje_string);
+	free(mensaje);
+}
+
+void loggear_mensaje_recibido(t_mensaje* mensaje, t_log* logger){
+	char* mensaje_string = t_mensaje_to_string(mensaje);
+	log_info(logger, "Se recibio el mensaje %s", mensaje_string);
+	free(mensaje);
+}
+
+char* t_mensaje_to_string(t_mensaje* mensaje){
+
+	struct_code tipo_struct = op_code_to_struct_code(mensaje -> tipo_mensaje);
+
+	switch(tipo_struct){
+		case STRC_MENSAJE_VACIO: return vacio_to_string(mensaje);
+
+		case STRC_RESTAURANTE_Y_PLATO:return restaurante_y_plato_to_string(mensaje);
+
+		case STRC_SELECCIONAR_RESTAURANTE:return seleccionar_restaurante_to_string(mensaje);
+
+		case STRC_ID_CONFIRMACION: return id_o_confirmacion_to_string(mensaje);
+
+		case STRC_NOMBRE: return nombre_to_string(mensaje);
+
+		case STRC_RTA_OBTENER_RESTAURANTE:return rta_obtener_restaurante_to_string(mensaje);
+
+		case STRC_NOMBRE_ID: return nombre_y_id_to_string(mensaje);
+
+		case STRC_PLATO_LISTO:return plato_listo_to_string(mensaje);
+
+		case STRC_RTA_CONSULTAR_PEDIDO:return rta_consultar_pedido_to_string(mensaje);
+
+		case STRC_RTA_OBTENER_PEDIDO:return rta_obtener_pedido_to_string(mensaje);
+
+		case STRC_GUARDAR_PLATO:return guardar_plato_to_string(mensaje);
+	}
+	return NULL;
+
+}
+
+char* vacio_to_string(t_mensaje* mensaje){
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s", op_code_to_string(mensaje->tipo_mensaje));
+	return string_mensaje;
+}
+
+char* restaurante_y_plato_to_string(t_mensaje* mensaje){
+	t_restaurante_y_plato* restaurante_plato = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s", op_code_to_string(mensaje->tipo_mensaje));
+
+	char* nombre;
+	for(int i = 0; i<restaurante_plato->cantElementos; i++){
+		nombre = list_get(restaurante_plato->nombres, i);
+		string_append_with_format(&string_mensaje, " %s", nombre);
+	}
+
+	return string_mensaje;
+}
+
+char* seleccionar_restaurante_to_string(t_mensaje* mensaje){
+	m_seleccionarRestaurante * seleccionar_restaurante = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(mensaje->tipo_mensaje),
+			seleccionar_restaurante->restaurante.nombre, seleccionar_restaurante->cliente);
+	return string_mensaje;
+}
+
+char* id_o_confirmacion_to_string(t_mensaje* mensaje){
+	uint32_t * id_confirmacion = mensaje->parametros;
+	char* string_mensaje = string_new();
+	if(es_id(mensaje->tipo_mensaje)){
+		string_append_with_format(&string_mensaje, "%s %d", op_code_to_string(mensaje->tipo_mensaje), (*id_confirmacion));
+	}
+	string_append_with_format(&string_mensaje, "%s %s", op_code_to_string(mensaje->tipo_mensaje),bool_to_string(*id_confirmacion));
+	return string_mensaje;
+}
+
+
+bool es_id(op_code tipo_mensaje){
+	return (tipo_mensaje == RTA_CREAR_PEDIDO ||	tipo_mensaje == CONFIRMAR_PEDIDO ||	tipo_mensaje == CONSULTAR_PEDIDO);
+}
+
+char* bool_to_string(bool confirmacion){
+	if(confirmacion) return "OK";
+	else return "FAIL";
+}
+
+char* nombre_to_string(t_mensaje* mensaje){
+	t_nombre * nombre = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s", op_code_to_string(mensaje->tipo_mensaje), nombre->nombre);
+	return string_mensaje;
+}
+
+char* rta_obtener_restaurante_to_string(t_mensaje* mensaje){
+	rta_obtenerRestaurante* obtener_restaurante = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d ", op_code_to_string(mensaje->tipo_mensaje),
+			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x, obtener_restaurante->posicion.y);
+	char* afinidad;
+	for(int i = 0; i<obtener_restaurante->cantCocineroAfinidad; i++){
+		afinidad = list_get(obtener_restaurante->cocineroAfinidad, i);
+		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad);
+	}
+	string_append(&string_mensaje, "recetas: ");
+	char* receta;
+	for(int j = 0; j<obtener_restaurante->cantCocineroAfinidad; j++){
+			receta = list_get(obtener_restaurante->cocineroAfinidad, j);
+			string_append_with_format(&string_mensaje, "%s ", receta);
+		}
+	return string_mensaje;
+}
+
+char* nombre_y_id_to_string(t_mensaje* mensaje){
+	t_nombre_y_id * nombre_id = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(mensaje->tipo_mensaje),
+			nombre_id->nombre.nombre, nombre_id->id);
+	return string_mensaje;
+}
+
+
+char* plato_listo_to_string(t_mensaje* mensaje){
+	m_platoListo * plato_listo = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s %d %s", op_code_to_string(mensaje->tipo_mensaje),
+			plato_listo->restaurante.nombre, plato_listo->idPedido, plato_listo->comida.nombre);
+	return string_mensaje;
+}
+
+char* rta_consultar_pedido_to_string(t_mensaje* mensaje){
+	rta_consultarPedido* consultar_pedido = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s %d %s", op_code_to_string(mensaje->tipo_mensaje),
+			consultar_pedido->restaurante, consultar_pedido->idRepartidor, consultar_pedido->estadoPedido);
+	char* plato;
+	for(int i = 0; i<consultar_pedido->cantPlatos; i++){
+		plato = list_get(consultar_pedido->platos, i);
+		string_append_with_format(&string_mensaje, "%s ", i,plato);
+	}
+	return string_mensaje;
+}
+
+
+char* rta_obtener_pedido_to_string(t_mensaje* mensaje){
+	rta_obtenerPedido* obtener_pedido = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s ", op_code_to_string(mensaje->tipo_mensaje));
+	t_elemPedido* elem_pedido;
+	for(int i = 0; i<obtener_pedido->cantPedidos; i++){
+		elem_pedido = list_get(obtener_pedido->infoPedidos, i);
+		string_append_with_format(&string_mensaje, "%s listo:%d pedido:%d ", elem_pedido->comida.nombre,
+				elem_pedido->cantHecha,elem_pedido->cantTotal);
+	}
+	return string_mensaje;
+}
+
+
+char* guardar_plato_to_string(t_mensaje* mensaje){
+	m_guardarPlato* guardar_plato = mensaje->parametros;
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s %s id: %d %s cantidad: %d", op_code_to_string(mensaje->tipo_mensaje), guardar_plato->restaurante,
+			guardar_plato->comida.nombre, guardar_plato->idPedido, guardar_plato->cantidad);
+	return string_mensaje;
+}
+
+
+
+
+
+
+

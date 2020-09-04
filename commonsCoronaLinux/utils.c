@@ -187,3 +187,5 @@ struct_code op_code_to_struct_code(op_code tipo_mensaje){
 	else if(tipo_mensaje == POSICION_CLIENTE) return STRC_POSICION;
 	return -1;
 }
+
+
