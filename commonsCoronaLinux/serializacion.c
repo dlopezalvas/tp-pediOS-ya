@@ -1,7 +1,5 @@
 #include "serializacion.h"
 
-
-
 void* serializar_paquete(t_paquete* paquete, int *bytes){
 
 	int size = sizeof(uint32_t) + paquete->buffer->size + sizeof(op_code);

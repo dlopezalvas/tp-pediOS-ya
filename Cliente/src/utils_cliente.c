@@ -348,20 +348,45 @@ void conexionEnvio(){
 			handshake_app->parametros = posicion_cliente;
 
 			enviar_mensaje(handshake_app, socket);
+//			loggear_mensaje_enviado(handshake_app->parametros, handshake_app->tipo_mensaje, log_cliente);
 		}
 
 		while(1){ //buscar condicion de que siga ejecutando
 			sem_wait(&sem_mensajes_a_enviar);
 			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
 			enviar_mensaje(mensaje, socket);
-			puts("envie el mensaje");
+			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
+		//TODO funcion que libere c/mensaje
+
 		}
 	}else{
 		conexion_ok = false;
 		pthread_mutex_unlock(&iniciar_consola_mtx);
 	}
+}
 
+void conexionRecepcion(){
 
+	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
+
+	int size = 0;
+	op_code cod_op;
+	int _recv;
+	while(1){
+		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
+
+		if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+			void* buffer = recibir_mensaje(socket_servidor, &size);
+			void* mensaje = deserializar_mensaje(buffer, cod_op);
+			loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
+			free_struct_mensaje(mensaje, cod_op);
+			free(buffer);
+		}else{
+			loggear_mensaje_recibido(NULL, cod_op, log_cliente);
+		}
+	}
+
+	liberar_conexion(socket_servidor);
 }
 
 t_mensaje* llenarMensaje(char* mensaje){

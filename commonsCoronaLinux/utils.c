@@ -188,4 +188,120 @@ struct_code op_code_to_struct_code(op_code tipo_mensaje){
 	return -1;
 }
 
+//Free mensajes
 
+
+void free_struct_mensaje(void* mensaje, op_code tipo_mensaje){
+
+	struct_code tipo_struct = op_code_to_struct_code(tipo_mensaje);
+
+	switch(tipo_struct){
+	case STRC_MENSAJE_VACIO:
+		break;
+	case STRC_RESTAURANTE_Y_PLATO:
+		free_restaurante_y_plato(mensaje);
+		break;
+	case STRC_SELECCIONAR_RESTAURANTE:
+		free_seleccionar_restaurante(mensaje);
+		break;
+	case STRC_ID_CONFIRMACION:
+		free_id_o_confirmacion(mensaje);
+		break;
+	case STRC_NOMBRE:
+		free_nombre(mensaje);
+		break;
+	case STRC_RTA_OBTENER_RESTAURANTE:
+		free_rta_obtener_restaurante(mensaje);
+		break;
+	case STRC_NOMBRE_ID:
+		free_nombre_y_id(mensaje);
+		break;
+	case STRC_PLATO_LISTO:
+		free_plato_listo(mensaje);
+		break;
+	case STRC_RTA_CONSULTAR_PEDIDO:
+		free_rta_consultar_pedido(mensaje);
+		break;
+	case STRC_RTA_OBTENER_PEDIDO:
+		free_rta_obtener_pedido(mensaje);
+		break;
+	case STRC_GUARDAR_PLATO:
+		free_guardar_plato(mensaje);
+		break;
+	case STRC_POSICION:
+		free_posicion(mensaje);
+		break;
+	}
+}
+
+void free_restaurante_y_plato(t_restaurante_y_plato* mensaje){
+	list_destroy(mensaje->nombres);
+	free(mensaje);
+}
+
+void free_seleccionar_restaurante(m_seleccionarRestaurante* mensaje){
+	free(mensaje->restaurante.nombre);
+	free(mensaje);
+}
+
+void free_id_o_confirmacion(uint32_t* mensaje){
+	free(mensaje);
+}
+
+void free_nombre(t_nombre* mensaje){
+	free(mensaje->nombre);
+	free(mensaje);
+}
+
+void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje){
+	list_destroy_and_destroy_elements(mensaje->cocineroAfinidad, (void*) free_cocineroAfinidad);
+	list_destroy(mensaje->recetas);
+	free(mensaje);
+
+}
+
+void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad){
+	free(cocineroAfinidad->afinidad.nombre);
+	free(cocineroAfinidad);
+}
+
+void free_nombre_y_id(t_nombre_y_id* mensaje){
+	free(mensaje->nombre.nombre);
+	free(mensaje);
+}
+
+void free_plato_listo(m_platoListo* mensaje){
+	free(mensaje->comida.nombre);
+	free(mensaje->restaurante.nombre);
+	free(mensaje);
+}
+
+void free_rta_consultar_pedido(rta_consultarPedido* mensaje){
+	list_destroy_and_destroy_elements(mensaje->platos, (void*) free_platos);
+	free(mensaje);
+}
+
+void free_platos(t_plato_con_estado* plato){
+	free(plato->plato.nombre);
+	free(plato);
+}
+
+void free_rta_obtener_pedido(rta_obtenerPedido* mensaje){
+	list_destroy_and_destroy_elements(mensaje->infoPedidos, (void*) free_infoPedidos);
+	free(mensaje);
+}
+
+void free_infoPedidos(t_elemPedido* info_pedido){
+	free(info_pedido->comida.nombre);
+	free(info_pedido);
+}
+
+void free_guardar_plato(m_guardarPlato* mensaje){
+	free(mensaje->comida.nombre);
+	free(mensaje->restaurante.nombre);
+	free(mensaje);
+}
+
+void free_posicion(t_coordenadas* mensaje){
+	free(mensaje);
+}

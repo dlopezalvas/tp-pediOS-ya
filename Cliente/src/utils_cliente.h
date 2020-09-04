@@ -69,6 +69,7 @@ bool validar_mensaje(char* linea);
 bool validar_proceso(int argc, char** argv);
 void configurar_ip_puerto();
 void conexionEnvio();
+void conexionRecepcion();
 
 void imprimir_mensajes_disponibles();
 
