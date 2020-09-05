@@ -156,7 +156,27 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
 }
 
 void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante) {
-    // TODO
+    t_restaurante* restaurante;
+    t_cliente* cliente;
+    t_pedido* pedidoNuevo;
+
+    cliente = get_cliente(id_cliente); // TODO
+    restaurante = get_restaurante(nombre_restaurante); // TODO
+
+    pedidoNuevo = malloc(sizeof(t_pedido));
+    pedidoNuevo->cliente = cliente;
+    pedidoNuevo->restaurante = restaurante;
+    pedidoNuevo->pedido_id = id_pedido;
+
+    pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
+
+    pedidoNuevo->hilo = malloc(sizeof(pthread_t));
+    pthread_create(pedidoNuevo->hilo, NULL, fhilo_pedido, pedidoNuevo);
+    
+
+    // encontrar repartidor
+
+    encolar_NEW(pedidoNuevo);
 }
 
 void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
