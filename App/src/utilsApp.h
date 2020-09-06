@@ -48,6 +48,7 @@
     } t_restaurante;
 
     t_list* restaurantes; // TODO: init
+    t_restaurante* get_restaurante(char* nombre_restaurante);
 
 // clientes
     typedef struct {
@@ -57,6 +58,7 @@
     } t_cliente;
 
     t_list* clientes; // TODO: init
+    t_cliente* get_cliente(int id_cliente);
 
 // repartidores
     typedef struct {
@@ -66,7 +68,7 @@
         int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
         int tiempoDescanso;
         int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
-        pthread_mutex_t* mutex_asignarPedido;
+        bool tiene_pedido_asignado;
     } t_repartidor;
 
     t_list* repartidores;
@@ -102,16 +104,17 @@
 // colas
     t_list* cola_NEW;
     pthread_mutex_t mutex_cola_NEW;
-    void encolar_NEW(t_pedido* pedido);
+    void planif_encolar_NEW(t_pedido* pedido);
 
     t_list* cola_READY;
     pthread_mutex_t mutex_cola_READY;
-    void encolar_READY(t_pedido* pedido);
+    void planif_encolar_READY(t_pedido* pedido);
 
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
-    void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante);
+    void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante);
+    void planif_asignarRepartidor(t_pedido* pedido);
 
 // liberacion de memoria
     void liberar_memoria(void);

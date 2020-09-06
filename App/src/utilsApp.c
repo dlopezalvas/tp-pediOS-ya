@@ -99,9 +99,7 @@ void configuracionInicial(void) {
             log_debug(logger_configuracion, "[CONFIG] |\t|\tFrecuencia de descanso: %i", atoi(frecuenciasDescanso[index_repartidores]));
             repartidor->frecuenciaDescanso = atoi(frecuenciasDescanso[index_repartidores]);
 
-            repartidor->mutex_asignarPedido = malloc(sizeof(pthread_mutex_t));
-            pthread_mutex_init(repartidor->mutex_asignarPedido, NULL);
-            pthread_mutex_lock(repartidor->mutex_asignarPedido);
+            repartidor->tiene_pedido_asignado = false;
 
             list_add(repartidores, repartidor);
         }
@@ -135,13 +133,13 @@ void configuracionInicial(void) {
         pthread_mutex_init(&mutex_cola_READY, NULL);
 }
 
-void encolar_NEW(t_pedido* pedido) {
+void planif_encolar_NEW(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_NEW);
     list_add(cola_NEW, pedido);
     pthread_mutex_unlock(&mutex_cola_NEW);
 }
 
-void encolar_READY(t_pedido* pedido) {
+void planif_encolar_READY(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_READY);
     list_add(cola_READY, pedido);
     pthread_mutex_unlock(&mutex_cola_READY);
@@ -155,7 +153,7 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
     // TODO
 }
 
-void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante) {
+void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante) {
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
@@ -169,14 +167,27 @@ void planificarPedidoNuevo(int id_pedido, int id_cliente, char* nombre_restauran
     pedidoNuevo->pedido_id = id_pedido;
 
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(pedidoNuevo->mutex_EXEC, NULL);
+    pthread_mutex_lock(pedidoNuevo->mutex_EXEC);
 
     pedidoNuevo->hilo = malloc(sizeof(pthread_t));
     pthread_create(pedidoNuevo->hilo, NULL, fhilo_pedido, pedidoNuevo);
-    
 
-    // encontrar repartidor
+    planif_asignarRepartidor(pedidoNuevo);
 
-    encolar_NEW(pedidoNuevo);
+    planif_encolar_NEW(pedidoNuevo);
+}
+
+t_cliente* get_cliente(int id_cliente) {
+    // TODO
+}
+
+t_restaurante* get_restaurante(char* nombre_restaurante) {
+    // TODO
+}
+
+void planif_asignarRepartidor(t_pedido* pedido) {
+    // TODO
 }
 
 void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
