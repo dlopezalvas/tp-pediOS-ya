@@ -260,15 +260,142 @@ void liberar_memoria(void) {
         // t_list* cola_READY;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* CONEXIONES */
 
+void configuracionConexiones(void) {
+	logger_mensajes = log_create(logger_mensajes_path, "App", logger_mensajes_consolaActiva, LOG_LEVEL_DEBUG);
+    hilos = list_create();
+}
+
+
+// para enviar un mensaje
+    // queue_push(mensajes_a_enviar, mensaje);
+    // sem_post(&sem_mensajes_a_enviar);
 void* fhilo_conectarConComanda(void* arg) {
-    int conexion_comanda;
-    conexion_comanda = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
+    int socket = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
+
+	if(socket != -1){
+
+		while(1){ //buscar condicion de que siga ejecutando
+			sem_wait(&sem_mensajes_a_enviar);
+			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
+			enviar_mensaje(mensaje, socket);
+			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, logger_mensajes);
+//			free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+		}
+    }
 }
 
 void* fhilo_servidor(void* arg) {
     int conexion_servidor;
-    conexion_servidor = iniciar_servidor("se re aprueba", cfval_puertoEscucha);
+    conexion_servidor = iniciar_servidor(cfval_puertoEscucha);
     
+    while(1) {
+        esperar_cliente(conexion_servidor);
+    }
+}
+
+void esperar_cliente(int servidor){
+
+	struct sockaddr_in direccion_cliente;
+
+	unsigned int tam_direccion = sizeof(struct sockaddr_in);
+
+	int cliente = accept (servidor, (void*) &direccion_cliente, &tam_direccion);
+	pthread_t hilo;
+
+	pthread_mutex_lock(&mutex_hilos);
+	list_add(hilos, &hilo);
+	pthread_mutex_unlock(&mutex_hilos);
+
+	pthread_create(&hilo,NULL,(void*)serve_client,cliente);
+	pthread_detach(hilo);
+
+}
+
+void serve_client(int socket){
+	int rec;
+	int cod_op;
+	while(1){
+		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+		if(rec == -1 || rec == 0 ){
+			cod_op = -1;
+			//			pthread_mutex_lock(&logger_mutex);
+			//			log_info(logger,"Se desconecto el proceso con id: %d",socket);
+			//			pthread_mutex_unlock(&logger_mutex);
+			pthread_exit(NULL);
+		}
+		puts("recibi un mensaje");
+		printf("codigo: %d\n", cod_op);
+		process_request(cod_op, socket);
+	}
+}
+
+void process_request(int cod_op, int cliente_fd) {
+	int size = 0;
+	void* buffer = recibir_mensaje(cliente_fd, &size);
+	
+    void* mensaje_deserializado = deserializar_mensaje(buffer, cod_op);
+    loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
+
+    // TODO: switch con tipos de mensaje
+}
+
+
+void conexionRecepcion(){
+
+	int socket_servidor = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
+
+	int size = 0;
+	op_code cod_op;
+	int _recv;
+	while (1) {
+		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
+
+		if (_recv != -1 && _recv != 0) {
+			void* buffer = recibir_mensaje(socket_servidor, &size);
+			void* mensaje = deserializar_mensaje(buffer, cod_op);
+            // TODO: switch para mensajes comanda
+			loggear_mensaje_recibido(mensaje, cod_op, logger_mensajes);
+			free(buffer);
+		}
+        // else {
+		// 	loggear_mensaje_recibido(NULL, cod_op, logger_mensajes);
+		// }
+	}
+
+	liberar_conexion(socket_servidor);
 }

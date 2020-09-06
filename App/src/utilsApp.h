@@ -9,8 +9,10 @@
 #include <commons/config.h>
 #include <commons/log.h>
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 
 #include "../../commonsCoronaLinux/socket.h"
+#include "../../commonsCoronaLinux/logs.h"
 
 // variables de logging
     t_log*  logger_obligatorio;
@@ -19,6 +21,10 @@
     t_log*  logger_configuracion;
     bool    logger_configuracion_consolaActiva;
     char*   logger_configuracion_path;
+
+    t_log*	logger_mensajes;
+    bool    logger_mensajes_consolaActiva;
+	char*   logger_mensajes_path;
 
 // configuracion
     typedef enum {
@@ -118,5 +124,24 @@
 
 // liberacion de memoria
     void liberar_memoria(void);
+
+/* CONEXIONES */
+
+void configuracionConexiones(void);
+t_list* hilos;
+pthread_mutex_t mutex_hilos;
+void* fhilo_conectarConComanda(void* arg);
+void* fhilo_servidor(void* arg);
+void esperar_cliente(int servidor);
+void serve_client(int socket);
+void process_request(int cod_op, int cliente_fd);
+void conexionRecepcion(void);
+
+sem_t sem_mensajes_a_enviar;
+t_queue* mensajes_a_enviar;
+
+pthread_t hilo_conectarConComanda;
+pthread_t hilo_servidor;
+
 
 #endif // UTILSAPP_H_
