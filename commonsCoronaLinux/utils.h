@@ -11,7 +11,7 @@
 #include<commons/log.h>
 #include<commons/string.h>
 #include<commons/config.h>
-
+#include<commons/collections/list.h>
 
 //Config
 #define IP_APP "IP_APP"
@@ -112,6 +112,111 @@ typedef enum{ //son para saber el tipo de struct que usa cada mensaje
 }struct_code;
 
 
+typedef struct{
+	op_code tipo_mensaje;
+	void* parametros; //struct del tipo de mensaje
+}t_mensaje;
+
+
+typedef struct{
+	uint32_t size;
+	void* stream;
+} t_buffer;
+
+typedef struct{
+	char* nombre;
+	uint32_t largo_nombre;
+}t_nombre;
+
+typedef struct{
+	op_code codigo_operacion;
+	t_buffer* buffer;
+} t_paquete;
+
+typedef struct{
+	uint32_t x;
+	uint32_t y;
+}t_coordenadas;
+
+typedef struct{
+	t_list* nombres; //lista de t_nombre
+	uint32_t cantElementos; //element count de los nombres
+}t_restaurante_y_plato;
+
+typedef struct{
+	uint32_t cliente;
+	t_nombre restaurante;
+}m_seleccionarRestaurante;
+
+typedef struct{
+	uint32_t idCocinero;
+	t_nombre afinidad;
+}t_cocineroAfinidad;
+
+typedef struct{
+	uint32_t cantCocineroAfinidad;
+	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
+	t_coordenadas posicion;
+	uint32_t cantRecetas;
+	t_list* recetas; //lista de t_nombre
+	uint32_t cantHornos;
+}rta_obtenerRestaurante;
+
+typedef struct{
+	t_nombre restaurante;
+	uint32_t idPedido;
+	t_nombre comida; //plato?
+	uint32_t cantidad;
+}m_guardarPlato;
+
+typedef struct{
+	t_nombre restaurante;
+	uint32_t idPedido;
+	t_nombre comida; //plato?
+}m_platoListo;
+
+typedef enum{
+	PENDIENTE = 1,
+	CONFIRMADO = 2,
+	TERMINADO = 3,
+}est_pedido;
+
+typedef enum{
+	LISTO = 1,
+	EN_PROCESO = 2,
+}est_plato;
+
+typedef struct{
+	t_nombre plato;
+	est_plato estadoPlato;
+}t_plato_con_estado;
+
+typedef struct{
+	t_nombre restaurante;
+	uint32_t idRepartidor;
+	est_pedido estadoPedido;
+	uint32_t cantPlatos;
+	t_list* platos; //ver si va con estado
+}rta_consultarPedido;
+
+typedef struct{    //mensajes obtener pedido, finalizar pedido, terminar pedido
+	t_nombre nombre;
+	uint32_t id;
+}t_nombre_y_id;
+
+typedef struct{
+	t_nombre comida;
+	uint32_t cantTotal;
+	uint32_t cantHecha;
+}t_elemPedido;
+
+typedef struct{
+	uint32_t cantPedidos;
+	t_list* infoPedidos; //lista de elemPedido
+}rta_obtenerPedido;
+
+
+
 t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
 void liberar_vector (char** vector);
@@ -119,8 +224,21 @@ char* op_code_to_string(op_code tipo_mensaje);
 op_code string_to_op_code(char* tipo_mensaje);
 struct_code op_code_to_struct_code(op_code tipo_mensaje);
 
-
-
+void free_struct_mensaje(void* mensaje, op_code tipo_mensaje);
+void free_restaurante_y_plato(t_restaurante_y_plato* mensaje);
+void free_seleccionar_restaurante(m_seleccionarRestaurante* mensaje);
+void free_id_o_confirmacion(uint32_t* mensaje);
+void free_nombre(t_nombre* mensaje);
+void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje);
+void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
+void free_nombre_y_id(t_nombre_y_id* mensaje);
+void free_plato_listo(m_platoListo* mensaje);
+void free_rta_consultar_pedido(rta_consultarPedido* mensaje);
+void free_platos(t_plato_con_estado* plato);
+void free_rta_obtener_pedido(rta_obtenerPedido* mensaje);
+void free_infoPedidos(t_elemPedido* info_pedido);
+void free_guardar_plato(m_guardarPlato* mensaje);
+void free_posicion(t_coordenadas* mensaje);
 
 
 

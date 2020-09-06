@@ -16,6 +16,7 @@ int iniciar_servidor (int puerto){
 
 	if(bind(servidor, (void*) &direccion_servidor, sizeof(direccion_servidor)) !=0){
 		perror("Fallo el bind");
+		return -1;
 	}
 
 

@@ -18,6 +18,9 @@ int main(int argc, char* argv[]) {
 		return EXIT_SUCCESS;
 	}
 
+	pthread_mutex_init(&iniciar_consola_mtx, NULL);
+	pthread_mutex_lock(&iniciar_consola_mtx);
+
 	proceso = string_duplicate(argv[1]);
 //	proceso = COMANDA;
 	string_to_upper(proceso);
@@ -25,20 +28,20 @@ int main(int argc, char* argv[]) {
 
 	mensajes_a_enviar = queue_create();
 	sem_init(&sem_mensajes_a_enviar, 0, 0);
+	pthread_t consola;
+	pthread_create(&consola, NULL, (void*)iniciar_consola, NULL);
 
 
-	pthread_t conexion1;
-	pthread_create(&conexion1, NULL, (void*)conexionEnvio, NULL);
+	pthread_t envio_mensajes;
+	pthread_create(&envio_mensajes, NULL, (void*)conexionEnvio, NULL);
+	pthread_detach(envio_mensajes);
 
 
-//	pthread_t conexion2;
-//	pthread_create(&conexion2, NULL, (void*)conexionEnvio, NULL);
-//	pthread_join(conexion2, NULL);
+	pthread_t conexion2;
+	pthread_create(&conexion2, NULL, (void*)conexionRecepcion, NULL);
+	pthread_join(conexion2, NULL);
 
-
-	iniciar_consola();
-	pthread_join(conexion1, NULL);
-
+	pthread_join(consola, NULL);
 
 
 	return EXIT_SUCCESS;

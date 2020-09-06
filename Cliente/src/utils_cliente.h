@@ -20,6 +20,7 @@
 #include <semaphore.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
+#include <../commonsCoronaLinux/logs.h>
 
 //Formatos
 
@@ -53,9 +54,13 @@ t_log* log_cliente;
 t_conexion* conexion;
 char* proceso;
 
+pthread_mutex_t iniciar_consola_mtx;
+
 t_queue* mensajes_a_enviar;
 
 sem_t sem_mensajes_a_enviar;
+
+bool conexion_ok;
 
 void iniciar_consola();
 bool validar_proceso_mensaje(char* tipo_mensaje);
@@ -65,6 +70,7 @@ bool validar_mensaje(char* linea);
 bool validar_proceso(int argc, char** argv);
 void configurar_ip_puerto();
 void conexionEnvio();
+void conexionRecepcion();
 
 void imprimir_mensajes_disponibles();
 

@@ -6,112 +6,7 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/socket.h>
-#include<commons/collections/list.h>
 #include "utils.h"
-
-typedef struct{
-	op_code tipo_mensaje;
-	void* parametros; //struct del tipo de mensaje
-}t_mensaje;
-
-
-typedef struct{
-	uint32_t size;
-	void* stream;
-} t_buffer;
-
-typedef struct{
-	char* nombre;
-	uint32_t largo_nombre;
-}t_nombre;
-
-typedef struct{
-	op_code codigo_operacion;
-	t_buffer* buffer;
-} t_paquete;
-
-typedef struct{
-	uint32_t x;
-	uint32_t y;
-}t_coordenadas;
-
-typedef struct{
-	t_list* nombres; //lista de t_nombre
-	uint32_t cantElementos; //element count de los nombres
-}t_restaurante_y_plato;
-
-typedef struct{
-	uint32_t cliente;
-	t_nombre restaurante;
-}m_seleccionarRestaurante;
-
-typedef struct{
-	uint32_t idCocinero;
-	t_nombre afinidad;
-}t_cocineroAfinidad;
-
-typedef struct{
-	uint32_t cantCocineroAfinidad;
-	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
-	t_coordenadas posicion;
-	uint32_t cantRecetas;
-	t_list* recetas; //lista de t_nombre
-	uint32_t cantHornos;
-}rta_obtenerRestaurante;
-
-typedef struct{
-	t_nombre restaurante;
-	uint32_t idPedido;
-	t_nombre comida; //plato?
-	uint32_t cantidad;
-}m_guardarPlato;
-
-typedef struct{
-	t_nombre restaurante;
-	uint32_t idPedido;
-	t_nombre comida; //plato?
-}m_platoListo;
-
-typedef enum{
-	PENDIENTE = 1,
-	CONFIRMADO = 2,
-	TERMINADO = 3,
-}est_pedido;
-
-typedef enum{
-	LISTO = 1,
-	EN_PROCESO = 2,
-}est_plato;
-
-typedef struct{
-	t_nombre plato;
-	est_plato estadoPlato;
-}t_plato_con_estado;
-
-typedef struct{
-	t_nombre restaurante;
-	uint32_t idRepartidor;
-	est_pedido estadoPedido;
-	uint32_t cantPlatos;
-	t_list* platos; //ver si va con estado
-}rta_consultarPedido;
-
-typedef struct{    //mensajes obtener pedido, finalizar pedido, terminar pedido
-	t_nombre nombre;
-	uint32_t id;
-}t_nombre_y_id;
-
-typedef struct{
-	t_nombre comida;
-	uint32_t cantTotal;
-	uint32_t cantHecha;
-}t_elemPedido;
-
-typedef struct{
-	uint32_t cantPedidos;
-	t_list* infoPedidos; //lista de elemPedido
-}rta_obtenerPedido;
-
 
 void enviar_mensaje(t_mensaje* mensaje, int socket);
 void* serializar_paquete(t_paquete* paquete, int *bytes);
@@ -145,26 +40,6 @@ t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido);
 rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer);
 t_buffer* buffer_posicion(t_coordenadas* posicion);
 t_coordenadas* deserializar_posicion(void* buffer);
-
-
-
-t_log* iniciar_logger(t_config*);
-char* t_mensaje_to_string(void* mensaje, op_code tipo_mensaje);
-void loggear_mensaje_enviado(void* mensaje, op_code tipo_mensaje, t_log* logger);
-void loggear_mensaje_recibido(void* mensaje, op_code tipo_mensaje, t_log* logger);
-char* vacio_to_string(op_code tipo_mensaje);
-char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op_code tipo_mensaje);
-char* seleccionar_restaurante_to_string(m_seleccionarRestaurante * seleccionar_restaurante, op_code tipo_mensaje);
-char* id_o_confirmacion_to_string(uint32_t * id_confirmacion, op_code tipo_mensaje);
-bool es_id(op_code tipo_mensaje);
-char* bool_to_string(bool confirmacion);
-char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje);
-char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaurante, op_code tipo_mensaje);
-char* nombre_y_id_to_string(t_nombre_y_id * nombre_id, op_code tipo_mensaje);
-char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje);
-char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_code tipo_mensaje);
-char* rta_obtener_pedido_to_string(rta_obtenerPedido* obtener_pedido, op_code tipo_mensaje);
-char* guardar_plato_to_string(m_guardarPlato* guardar_plato, op_code tipo_mensaje);
 
 
 #endif /* serializacion_h */
