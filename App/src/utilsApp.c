@@ -259,3 +259,16 @@ void liberar_memoria(void) {
         // t_list* cola_NEW;
         // t_list* cola_READY;
 }
+
+/* CONEXIONES */
+
+void* fhilo_conectarConComanda(void* arg) {
+    int conexion_comanda;
+    conexion_comanda = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
+}
+
+void* fhilo_servidor(void* arg) {
+    int conexion_servidor;
+    conexion_servidor = iniciar_servidor("se re aprueba", cfval_puertoEscucha);
+    
+}

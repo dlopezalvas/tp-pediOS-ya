@@ -13,8 +13,10 @@ int main(int argc, char* argv[]) {
 	// Al momento de inicializar el proceso se realizarán las siguientes operaciones:
 
 		// Se conectará al módulo Comanda.
+		pthread_create(&, NULL, fhilo_conectarConComanda, NULL);
 
 		// Abrirá un puerto de escucha para que los distintos Restaurantes se puedan conectar a él.	
+		pthread_create(&, NULL, fhilo_servidor, NULL);
 
 	liberar_memoria();
 

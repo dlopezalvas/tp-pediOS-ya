@@ -30,20 +30,12 @@ int iniciar_servidor (int puerto){
 
 
 
-<<<<<<< HEAD
-int iniciar_cliente(char* ip, char* puerto){
-=======
 int iniciar_cliente(char* ip, int puerto){
->>>>>>> origin/master
 	struct sockaddr_in direccion_servidor;
 
 	direccion_servidor.sin_family = AF_INET;
 	direccion_servidor.sin_addr.s_addr = inet_addr(ip);
-<<<<<<< HEAD
-	direccion_servidor.sin_port = htons(atoi(puerto));
-=======
 	direccion_servidor.sin_port = htons(puerto);
->>>>>>> origin/master
 
 	int cliente = socket(AF_INET, SOCK_STREAM, 0);
 
