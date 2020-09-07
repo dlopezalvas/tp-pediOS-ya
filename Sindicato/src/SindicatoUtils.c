@@ -1,54 +1,73 @@
 #include "SindicatoUtils.h"
-#include <commons/string.h>
-#include <readline/readline.h>
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
-void execute(char** command){
-	//TODO: Definir el llamado de los comandos
-	//TODO: Crear sindicato API donde van a ir todos los mensajes y funciones de file system
-}
+bool sindicato_utils_validate_arguments(char** arguments, command_type_id commandType){
 
-bool validate_arguments(char** arguments, int command){
-	return true;
-}
+	int position = 0;
 
-void execute_command(char** command){
-
-	if((strncmp(command[0],COMMAND_CREAR_RESTAURANTE,LENGHT_CREAR_RESTAURANTE) != 0) && (strncmp(command[0],COMMAND_CREAR_RECETA,LENGHT_CREAR_RECETA) != 0 ))
-		printf("%s%s\n",command[0],ERROR_COMMAND);
-
-	if(strlen(command[0]) == LENGHT_CREAR_RESTAURANTE){
-		if(!validate_arguments(command, 1))
-			printf("%s %s\n",ERROR_ARGUMENTS,command[0]);
-
-		execute(command);
+	while(arguments[position] != NULL){
+		position++;
 	}
 
-	if(strlen(command[0]) == LENGHT_CREAR_RECETA){
-		if(!validate_arguments(command, 2))
-			printf("%s %s\n",ERROR_ARGUMENTS,command[0]);
+	if(position == QTY_CREAR_RESTAURANTE && commandType == TYPE_CREAR_RESTAURANTE)
+		return true;
 
-		execute(command);
+	if(position == QTY_CREAR_RECETA && commandType == TYPE_CREAR_RECETA)
+		return true;
+
+	return false;
+}
+
+void sindicato_utils_execute_command(char** commandLine){
+
+	/* Validate if the commandLine is valid */
+	if(!string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RESTAURANTE)
+			&& !string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RECETA)){
+
+		printf("%s%s\n",commandLine[0],ERROR_COMMAND);
+		return;
+	}
+
+	/* Validate if the arguments are valid */
+	if(!sindicato_utils_validate_arguments(commandLine, TYPE_CREAR_RESTAURANTE)
+			&& !sindicato_utils_validate_arguments(commandLine, TYPE_CREAR_RECETA)){
+
+		printf("%s %s\n",ERROR_ARGUMENTS,commandLine[0]);
+		return;
+	}
+
+	if(string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RESTAURANTE)){
+		// TODO: pasar parametros
+		sindicato_api_crear_restaurante(commandLine[1],commandLine[2],commandLine[3],commandLine[4],commandLine[5],commandLine[6],commandLine[7]);
+		return;
+
+	}
+
+	if(string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RECETA)){
+		// TODO: pasar parametros
+		sindicato_api_crear_receta(commandLine[1],commandLine[2],commandLine[3]);
+		return;
 	}
 }
 
-void console_init(){
+void sindicato_utils_console_init(){
 
 	char* read;
 
 	while(true){
 		read = readline(">");
 
-		if(strncmp(read, COMMAND_EXIT, LENGHT_EXIT) == 0 && strlen(read) == LENGHT_EXIT){
-			break;
-		}
-
-		printf("%s\n", read);
+		if(read) add_history(read);
 
 		char** splitted_command = string_split(read," ");
 
-		execute_command(splitted_command);
+		if(string_equals_ignore_case(splitted_command[0],COMMAND_EXIT)){
+			free(read);
+			break;
+		}
+
+		sindicato_utils_execute_command(splitted_command);
 			
 		free(read);
 	}
@@ -59,6 +78,5 @@ void console_init(){
 void sindicato_initialize(){
 	printf("Initializing\n");
 
-	console_init();
+	sindicato_utils_console_init();
 }
-
