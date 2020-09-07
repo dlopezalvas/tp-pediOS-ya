@@ -1,12 +1,12 @@
 #include "socket.h"
 
 
-int iniciar_servidor (char* ip, char* puerto){
+int iniciar_servidor (int puerto){
 	struct sockaddr_in direccion_servidor;
 
 	direccion_servidor.sin_family = AF_INET;
 	direccion_servidor.sin_addr.s_addr = INADDR_ANY;
-	direccion_servidor.sin_port = htons(atoi(puerto));
+	direccion_servidor.sin_port = htons(puerto);
 
 	int servidor = socket(AF_INET, SOCK_STREAM,0);
 
@@ -16,6 +16,7 @@ int iniciar_servidor (char* ip, char* puerto){
 
 	if(bind(servidor, (void*) &direccion_servidor, sizeof(direccion_servidor)) !=0){
 		perror("Fallo el bind");
+		return -1;
 	}
 
 
@@ -29,12 +30,12 @@ int iniciar_servidor (char* ip, char* puerto){
 
 
 
-int iniciar_cliente(char* ip, char* puerto){
+int iniciar_cliente(char* ip, int puerto){
 	struct sockaddr_in direccion_servidor;
 
 	direccion_servidor.sin_family = AF_INET;
 	direccion_servidor.sin_addr.s_addr = inet_addr(ip);
-	direccion_servidor.sin_port = htons(atoi(puerto));
+	direccion_servidor.sin_port = htons(puerto);
 
 	int cliente = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -61,8 +62,30 @@ void* recibir_mensaje(int socket_cliente, int* size)
 	return buffer;
 }
 
+void enviar_mensaje(t_mensaje* mensaje, int socket){
+
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+
+	t_buffer* buffer_cargado = cargar_buffer(mensaje);
+
+	paquete -> buffer = buffer_cargado;
+
+	paquete -> codigo_operacion = mensaje -> tipo_mensaje;
+
+	int bytes = 0;
+
+	void* a_enviar = serializar_paquete(paquete, &bytes);
+
+	send(socket,a_enviar,bytes,0);
+
+	free(a_enviar);
+	free(paquete -> buffer->stream);
+	free(paquete->buffer);
+	free(paquete);
+
+}
+
 void liberar_conexion(int socket_cliente){
 	close(socket_cliente);
 }
-
 
