@@ -14,7 +14,10 @@
 #include "../../commonsCoronaLinux/socket.h"
 #include "../../commonsCoronaLinux/logs.h"
 
-// variables de logging
+// debug
+    bool modo_noRest_noComanda;
+
+// logging
     t_log*  logger_obligatorio;
     bool    logger_obligatorio_consolaActiva;
 
@@ -53,7 +56,8 @@
         char* nombre;
     } t_restaurante;
 
-    t_list* restaurantes; // TODO: init
+    t_list* restaurantes;
+    pthread_mutex_t mutex_lista_restaurantes;
     t_restaurante* get_restaurante(char* nombre_restaurante);
 
 // clientes
@@ -63,7 +67,8 @@
         int id;
     } t_cliente;
 
-    t_list* clientes; // TODO: init
+    t_list* clientes;
+    pthread_mutex_t mutex_lista_clientes;
     t_cliente* get_cliente(int id_cliente);
 
 // repartidores
@@ -71,18 +76,17 @@
         int pos_x;
         int pos_y;
         int frecuenciaDescanso;
-        int frecuenciaDescanso_restante; // TODO: inicalizar al asignar pedido
+        int frecuenciaDescanso_restante;
         int tiempoDescanso;
-        int tiempoDescanso_restante; // TODO: inicalizar al asignar pedido
+        int tiempoDescanso_restante;
         bool tiene_pedido_asignado;
     } t_repartidor;
 
     t_list* repartidores;
     pthread_mutex_t mutex_lista_repartidores;
     sem_t semaforo_repartidoresSinPedido;
-    sem_t semaforo_vacantesEXEC;
     bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino_y);
-    void consumir_ciclo(t_repartidor* repartidor);
+    void repartidor_disponibilizar(t_repartidor* repartidor);
 
 // pedidos
     typedef enum {
@@ -99,11 +103,12 @@
         t_repartidor* repartidor;
         int pedido_id;
         t_estado pedido_estado;
-        pthread_mutex_t* mutex_EXEC; // ???
+        pthread_mutex_t* mutex_EXEC;
         pthread_t* hilo;
     } t_pedido;
 
     void* fhilo_pedido(void* pedido_sin_castear); // toma t_pedido* por param
+    void consumir_ciclo(t_pedido* pedido);
     void pedido_repartidorLlegoARestaurante(t_pedido* pedido);
     void pedido_repartidorLlegoACliente(t_pedido* pedido);
 
@@ -120,7 +125,13 @@
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
     void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante);
-    void planif_asignarRepartidor(t_pedido* pedido);
+    t_pedido* planif_asignarRepartidor(void);
+    t_pedido* planif_FIFO(void);
+    t_pedido* planif_SJF_SD(void);
+    t_pedido* planif_HRRN(void);
+    sem_t semaforo_pedidos_NEW;
+    sem_t semaforo_pedidos_READY;
+    sem_t semaforo_vacantesEXEC;
 
 // liberacion de memoria
     void liberar_memoria(void);

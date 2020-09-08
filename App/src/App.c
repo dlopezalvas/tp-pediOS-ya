@@ -2,6 +2,9 @@
 
 int main(int argc, char* argv[]) {
 
+	// modos de debug
+		modo_noRest_noComanda = true;
+
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;
 		

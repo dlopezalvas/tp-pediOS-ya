@@ -128,28 +128,80 @@ void configuracionInicial(void) {
     // inicializacion de colas
         cola_NEW = list_create();
         pthread_mutex_init(&mutex_cola_NEW, NULL);
+        sem_init(&semaforo_pedidos_NEW, 0, 0);
 
         cola_READY = list_create();
         pthread_mutex_init(&mutex_cola_READY, NULL);
+        sem_init(&semaforo_pedidos_READY, 0, 0);
+
+    // lista de restaurantes
+        restaurantes = list_create();
+        pthread_mutex_init(&mutex_lista_restaurantes, NULL);
+
+    // lista de clientes
+        clientes = list_create();
+        pthread_mutex_init(&mutex_lista_clientes, NULL);
 }
 
 void planif_encolar_NEW(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_NEW);
+    pedido->pedido_estado = NEW;
     list_add(cola_NEW, pedido);
     pthread_mutex_unlock(&mutex_cola_NEW);
 }
 
 void planif_encolar_READY(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_READY);
+    pedido->pedido_estado = READY;
     list_add(cola_READY, pedido);
     pthread_mutex_unlock(&mutex_cola_READY);
 }
 
 void* fhilo_planificador_largoPlazo(void* __sin_uso__) { // (de NEW a READY)
-    // TODO
+    t_pedido* pedido_seleccionado;
+    while (1) {
+        sem_wait(&semaforo_repartidoresSinPedido);
+        sem_wait(&semaforo_pedidos_NEW);
+        pthread_mutex_lock(&mutex_cola_NEW);
+        pthread_mutex_lock(&mutex_lista_repartidores);
+        pedido_seleccionado = planif_asignarRepartidor();
+        pthread_mutex_unlock(&mutex_cola_NEW);
+        pthread_mutex_unlock(&mutex_lista_repartidores);
+        planif_encolar_READY(pedido_seleccionado);
+    }
 }
 
 void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
+    t_pedido* pedido_seleccionado;
+    while (1) {
+        sem_wait(&semaforo_vacantesEXEC);
+        sem_wait(&semaforo_pedidos_READY);
+        pthread_mutex_lock(&mutex_cola_READY);
+        switch (cfval_algoritmoPlanificacion) {
+            case FIFO:
+                pedido_seleccionado = planif_FIFO();
+                break;
+            case SJF_SD:
+                pedido_seleccionado = planif_SJF_SD();
+                break;
+            case HRRN:
+                pedido_seleccionado = planif_HRRN();
+        }
+        pthread_mutex_unlock(&mutex_cola_READY);
+        
+        pthread_mutex_unlock(pedido_seleccionado->mutex_EXEC);
+    }
+}
+
+t_pedido* planif_FIFO(void) {
+    return list_remove(cola_READY, 0);
+}
+
+t_pedido* planif_SJF_SD(void) {
+    // TODO
+}
+
+t_pedido* planif_HRRN(void) {
     // TODO
 }
 
@@ -158,8 +210,8 @@ void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante)
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
 
-    cliente = get_cliente(id_cliente); // TODO
-    restaurante = get_restaurante(nombre_restaurante); // TODO
+    cliente = get_cliente(id_cliente);
+    restaurante = get_restaurante(nombre_restaurante);
 
     pedidoNuevo = malloc(sizeof(t_pedido));
     pedidoNuevo->cliente = cliente;
@@ -173,21 +225,55 @@ void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante)
     pedidoNuevo->hilo = malloc(sizeof(pthread_t));
     pthread_create(pedidoNuevo->hilo, NULL, fhilo_pedido, pedidoNuevo);
 
-    planif_asignarRepartidor(pedidoNuevo);
-
     planif_encolar_NEW(pedidoNuevo);
 }
 
 t_cliente* get_cliente(int id_cliente) {
-    // TODO
+    t_cliente* cliente;
+    pthread_mutex_lock(&mutex_lista_clientes);
+    for (
+        unsigned index_cli = 0;
+        index_cli < list_size(clientes);
+        index_cli++
+    ) {
+        cliente = list_get(clientes, index_cli);
+        if (cliente->id == id_cliente) {
+            pthread_mutex_unlock(&mutex_lista_clientes);
+            return cliente;        
+        }
+    }
+    pthread_mutex_unlock(&mutex_lista_clientes);
+    return NULL;
 }
 
 t_restaurante* get_restaurante(char* nombre_restaurante) {
-    // TODO
+    t_restaurante* restaurante;
+    pthread_mutex_lock(&mutex_lista_restaurantes);
+    for (
+        unsigned index_rest = 0;
+        index_rest < list_size(restaurantes);
+        index_rest++
+    ) {
+        restaurante = list_get(restaurantes, index_rest);
+        if (
+            string_equals_ignore_case(
+                nombre_restaurante,
+                restaurante->nombre
+            )
+        ) {
+            pthread_mutex_unlock(&mutex_lista_restaurantes);
+            return restaurante;        
+        }
+    }
+    pthread_mutex_unlock(&mutex_lista_restaurantes);
+    return NULL;
 }
 
-void planif_asignarRepartidor(t_pedido* pedido) {
+t_pedido* planif_asignarRepartidor(void) {
     // TODO
+    // (no preocuparse por mutex)
+    // repartidor->frecuenciaDescanso_restante = repartidor->frecuenciaDescanso;
+    // repartidor->tiene_pedido_asignado = true;
 }
 
 void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
@@ -202,7 +288,7 @@ void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
     ) {
         consumir_ciclo(pedido->repartidor);
     }
-    pedido_repartidorLlegoARestaurante(pedido); // TODO: los ciclos solo se consumen en movimiento?
+    pedido_repartidorLlegoARestaurante(pedido);
     while (
         repartidor_mover_hacia(
             pedido->repartidor,
@@ -212,7 +298,7 @@ void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
     ) {
         consumir_ciclo(pedido->repartidor);
     }
-    pedido_repartidorLlegoACliente(pedido); // TODO: los ciclos solo se consumen en movimiento?
+    pedido_repartidorLlegoACliente(pedido);
     // TODO: que pasa con el pedido luego de finalizar?
 }
 
@@ -240,24 +326,43 @@ bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino
 }
 
 void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
-    // TODO
+    if (modo_noRest_noComanda) {
+        return;
+    }
+    // TODO: casos reales lol
 }
 
 void pedido_repartidorLlegoACliente(t_pedido* pedido) {
-    // TODO
+    pedido->pedido_estado = EXIT;
+    repartidor_disponibilizar(pedido->repartidor);
+    // TODO: envio de mensaje al Cliente corresp.
 }
 
-void consumir_ciclo(t_repartidor* repartidor) {
-    // TODO   
+void repartidor_disponibilizar(t_repartidor* repartidor) {
+    repartidor->tiene_pedido_asignado = false;
+    sem_post(&semaforo_repartidoresSinPedido);
+}
+
+void consumir_ciclo(t_pedido* pedido) {
+    pedido->repartidor->frecuenciaDescanso_restante--;
+    if (pedido->repartidor->frecuenciaDescanso_restante) {
+        sleep(cfval_retardoCicloCPU);
+        return;
+    }
+    pedido->pedido_estado = BLOCK;
+    for (
+        pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
+        pedido->repartidor->tiempoDescanso_restante > 0;
+        pedido->repartidor->tiempoDescanso_restante--
+    ) {
+        sleep(cfval_retardoCicloCPU);
+    }
+    planif_encolar_READY(pedido);
+    pthread_mutex_lock(pedido->mutex_EXEC);
 }
 
 void liberar_memoria(void) {
     // TODO
-        // t_log*  logger_obligatorio;
-        // t_log*  logger_configuracion;
-        // t_list* repartidores;
-        // t_list* cola_NEW;
-        // t_list* cola_READY;
 }
 
 
