@@ -24,6 +24,7 @@ void configuracionInicial(void) {
 
     // configuracion de loggers adicionales para debug
         logger_configuracion = log_create(logger_configuracion_path, program_name, logger_configuracion_consolaActiva, LOG_LEVEL_DEBUG);
+        logger_planificacion = log_create(logger_planificacion_path, program_name, logger_planificacion_consolaActiva, LOG_LEVEL_DEBUG);
 
     // configuracion del logger para el log obligatorio
         pathArchivoLog = config_get_string_value(config, "ARCHIVO_LOG");
@@ -145,38 +146,73 @@ void configuracionInicial(void) {
 
 void planif_encolar_NEW(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_NEW);
+    log_debug(logger_planificacion, "[PLANIF_NP] Encolando pedido %i en NEW...", pedido->pedido_id);
     pedido->pedido_estado = NEW;
     list_add(cola_NEW, pedido);
     pthread_mutex_unlock(&mutex_cola_NEW);
+    sem_post(&semaforo_pedidos_NEW);
 }
 
 void planif_encolar_READY(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_READY);
+    switch (pedido->pedido_estado) {
+        case NEW:
+            log_debug(logger_planificacion, "[PLANIF_LP] Encolando pedido %i en READY...", pedido->pedido_id);
+            break;
+        case BLOCK:
+            log_debug(logger_planificacion, "[REP_%2i] Encolando pedido %i en READY...", pedido->repartidor->id, pedido->pedido_id);
+    }
     pedido->pedido_estado = READY;
     list_add(cola_READY, pedido);
     pthread_mutex_unlock(&mutex_cola_READY);
+    sem_post(&semaforo_pedidos_READY);
 }
 
 void* fhilo_planificador_largoPlazo(void* __sin_uso__) { // (de NEW a READY)
     t_pedido* pedido_seleccionado;
+    log_debug(logger_planificacion, "[PLANIF_LP] Hilo comenzando...");
     while (1) {
+        log_debug(logger_planificacion, "[PLANIF_LP] Esperando repartidor disponible");
         sem_wait(&semaforo_repartidoresSinPedido);
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Hay repartidor(es) disponible(s; esperando pedido en NEW");
         sem_wait(&semaforo_pedidos_NEW);
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Hay pedido(s) en NEW; esperando para lockear cola de NEW");
         pthread_mutex_lock(&mutex_cola_NEW);
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Cola de NEW lockeada; esperando para lockear lista de repartidores");
         pthread_mutex_lock(&mutex_lista_repartidores);
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Lista de repartidores lockeada");
+
         pedido_seleccionado = planif_asignarRepartidor();
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Unlockeando cola de NEW...");
         pthread_mutex_unlock(&mutex_cola_NEW);
+
+        log_debug(logger_planificacion, "[PLANIF_LP] Unlockeando lista de repartidores...");
         pthread_mutex_unlock(&mutex_lista_repartidores);
+
         planif_encolar_READY(pedido_seleccionado);
     }
 }
 
 void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
     t_pedido* pedido_seleccionado;
+    log_debug(logger_planificacion, "[PLANIF_CP] Hilo comenzando...");
     while (1) {
+        log_debug(logger_planificacion, "[PLANIF_CP] Esperando vacante para EXEC");
         sem_wait(&semaforo_vacantesEXEC);
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Hay vacante(s) para EXEC; esperando pedidos en READY");
         sem_wait(&semaforo_pedidos_READY);
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Hay pedido(s) en READY; esperando para lockear cola de READY");
         pthread_mutex_lock(&mutex_cola_READY);
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Cola de READY lockeada");
+
         switch (cfval_algoritmoPlanificacion) {
             case FIFO:
                 pedido_seleccionado = planif_FIFO();
@@ -187,13 +223,21 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
             case HRRN:
                 pedido_seleccionado = planif_HRRN();
         }
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Pedido seleccionado: %i", pedido_seleccionado->pedido_id);
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando cola de READY...");
         pthread_mutex_unlock(&mutex_cola_READY);
         
+        log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando EXEC de pedido %i", pedido_seleccionado->pedido_id);
         pthread_mutex_unlock(pedido_seleccionado->mutex_EXEC);
+
+        log_debug(logger_planificacion, "[PLANIF_CP] Recomenzando ciclo...");
     }
 }
 
 t_pedido* planif_FIFO(void) {
+    log_debug(logger_planificacion, "[PLANIF_CP] Desencolando pedido de READY...");
     return list_remove(cola_READY, 0);
 }
 
@@ -205,13 +249,18 @@ t_pedido* planif_HRRN(void) {
     // TODO
 }
 
-void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante) {
+void planif_nuevoPedido(int id_pedido, int id_cliente, char* nombre_restaurante) {
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
 
+    log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido: %i", id_pedido);
+
     cliente = get_cliente(id_cliente);
+    log_debug(logger_planificacion, "[PLANIF_NP] Cliente: %i", cliente->id);
+
     restaurante = get_restaurante(nombre_restaurante);
+    log_debug(logger_planificacion, "[PLANIF_NP] Restaurante: %s", restaurante->nombre);
 
     pedidoNuevo = malloc(sizeof(t_pedido));
     pedidoNuevo->cliente = cliente;
@@ -221,8 +270,10 @@ void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante)
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_EXEC, NULL);
     pthread_mutex_lock(pedidoNuevo->mutex_EXEC);
+    log_debug(logger_planificacion, "[PLANIF_NP] Mutex de EXEC inicializado");
 
     pedidoNuevo->hilo = malloc(sizeof(pthread_t));
+    log_debug(logger_planificacion, "[PLANIF_NP] Lanzando hilo del pedido...");
     pthread_create(pedidoNuevo->hilo, NULL, fhilo_pedido, pedidoNuevo);
 
     planif_encolar_NEW(pedidoNuevo);
@@ -269,16 +320,74 @@ t_restaurante* get_restaurante(char* nombre_restaurante) {
     return NULL;
 }
 
-t_pedido* planif_asignarRepartidor(void) {
-    // TODO
-    // (no preocuparse por mutex)
-    // repartidor->frecuenciaDescanso_restante = repartidor->frecuenciaDescanso;
-    // repartidor->tiene_pedido_asignado = true;
+t_pedido* planif_asignarRepartidor(void) { // TODO: logging
+    t_list* repartidores_disponibles;
+    t_pedido* pedido;
+    t_repartidor* repartidor;
+    t_pedido* pedido_a_planif;
+    t_repartidor* repartidor_a_planif;
+    unsigned distancia;
+    unsigned distancia_minima;
+
+    repartidores_disponibles = list_create();
+
+    for (
+        unsigned index_repartidor = 0;
+        index_repartidor < list_size(repartidores);
+        index_repartidor++
+    ) {
+        repartidor = list_get(repartidores, index_repartidor);
+        if (repartidor->tiene_pedido_asignado)
+            list_add(repartidores_disponibles, repartidor);
+    }
+
+    if (list_is_empty(repartidores_disponibles))
+        log_debug(logger_planificacion, "[PLANIF_LP] Algo horrible ha sucedido");
+
+    repartidor = NULL;
+    distancia_minima = -1;
+
+    for (
+        unsigned index_pedido = 0;
+        index_pedido < list_size(cola_NEW);
+        index_pedido++
+    ) {
+        pedido = list_get(cola_NEW, index_pedido);
+        for (
+            unsigned index_repartidor = 0;
+            index_repartidor < list_size(repartidores_disponibles);
+            index_repartidor++
+        ) {
+            repartidor = list_get(repartidores_disponibles, index_repartidor);
+            distancia = distancia_entre(
+                            repartidor->pos_x,
+                            repartidor->pos_y,
+                            pedido->restaurante->pos_x,
+                            pedido->restaurante->pos_y
+                        );
+            if (distancia < distancia_minima) {
+                distancia_minima = distancia;
+                repartidor_a_planif = repartidor;
+                pedido_a_planif = pedido;
+            }
+        }
+    }
+
+    pedido_a_planif->repartidor = repartidor_a_planif;
+    repartidor_a_planif->tiene_pedido_asignado = true;
+    repartidor_a_planif->frecuenciaDescanso_restante = repartidor_a_planif->frecuenciaDescanso;
+    return pedido_a_planif;
+}
+
+unsigned distancia_entre(int ax, int ay, int bx, int by) {
+    return abs(ax - bx) + abs(ay - by);
 }
 
 void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
     t_pedido* pedido = (t_pedido*) pedido_sin_castear;
-    pthread_mutex_lock(pedido->mutex_EXEC); // ???
+    log_debug(logger_planificacion, "[PEDIDO_%2i] Hilo comenzando...", pedido->pedido_id);
+    log_debug(logger_planificacion, "[PEDIDO_%2i] Lanzando hilo del pedido...", pedido->pedido_id);
+    pthread_mutex_lock(pedido->mutex_EXEC);
     while (
         repartidor_mover_hacia(
             pedido->repartidor,
@@ -286,7 +395,7 @@ void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
             pedido->restaurante->pos_y
         )
     ) {
-        consumir_ciclo(pedido->repartidor);
+        consumir_ciclo(pedido);
     }
     pedido_repartidorLlegoARestaurante(pedido);
     while (
@@ -296,7 +405,7 @@ void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
             pedido->cliente->pos_y
         )
     ) {
-        consumir_ciclo(pedido->repartidor);
+        consumir_ciclo(pedido);
     }
     pedido_repartidorLlegoACliente(pedido);
     // TODO: que pasa con el pedido luego de finalizar?
@@ -326,7 +435,13 @@ bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino
 }
 
 void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
-    if (modo_noRest_noComanda) {
+    if (modo_noRest) {
+        log_debug(
+            logger_planificacion,
+            "[PEDIDO_%2i] Llego a restaurante %s",
+            pedido->pedido_id,
+            pedido->restaurante->nombre
+        );
         return;
     }
     // TODO: casos reales lol
@@ -334,21 +449,51 @@ void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
 
 void pedido_repartidorLlegoACliente(t_pedido* pedido) {
     pedido->pedido_estado = EXIT;
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Llegado a cliente %2i; pasado a EXIT",
+        pedido->pedido_id,
+        pedido->cliente->id
+    );
     repartidor_disponibilizar(pedido->repartidor);
-    // TODO: envio de mensaje al Cliente corresp.
+    // TODO: envio de mensaje al cliente corresp.
 }
 
 void repartidor_disponibilizar(t_repartidor* repartidor) {
+    log_debug(
+        logger_planificacion,
+        "[REP_%2i] Disponibilizado",
+        repartidor->id
+    );
     repartidor->tiene_pedido_asignado = false;
     sem_post(&semaforo_repartidoresSinPedido);
 }
 
 void consumir_ciclo(t_pedido* pedido) {
     pedido->repartidor->frecuenciaDescanso_restante--;
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Movido a posicion (%i;%i)",
+        pedido->pedido_id,
+        pedido->repartidor->pos_x,
+        pedido->repartidor->pos_y
+    );
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Ciclo consumido (restan %i)",
+        pedido->pedido_id,
+        pedido->repartidor->frecuenciaDescanso_restante
+    );
     if (pedido->repartidor->frecuenciaDescanso_restante) {
         sleep(cfval_retardoCicloCPU);
         return;
     }
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Bloqueando por descanso...",
+        pedido->pedido_id,
+        pedido->repartidor->frecuenciaDescanso_restante
+    );
     pedido->pedido_estado = BLOCK;
     for (
         pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
@@ -357,7 +502,17 @@ void consumir_ciclo(t_pedido* pedido) {
     ) {
         sleep(cfval_retardoCicloCPU);
     }
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Descanso terminado",
+        pedido->pedido_id
+    );
     planif_encolar_READY(pedido);
+    log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Unlockeando EXEC",
+        pedido->pedido_id
+    );
     pthread_mutex_lock(pedido->mutex_EXEC);
 }
 

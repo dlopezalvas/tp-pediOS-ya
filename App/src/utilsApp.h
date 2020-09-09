@@ -15,7 +15,8 @@
 #include "../../commonsCoronaLinux/logs.h"
 
 // debug
-    bool modo_noRest_noComanda;
+    bool modo_noComanda;
+    bool modo_noRest;
 
 // logging
     t_log*  logger_obligatorio;
@@ -24,6 +25,10 @@
     t_log*  logger_configuracion;
     bool    logger_configuracion_consolaActiva;
     char*   logger_configuracion_path;
+
+    t_log*  logger_planificacion;
+    bool    logger_planificacion_consolaActiva;
+    char*   logger_planificacion_path;
 
     t_log*	logger_mensajes;
     bool    logger_mensajes_consolaActiva;
@@ -73,6 +78,7 @@
 
 // repartidores
     typedef struct {
+        unsigned id; // TODO: init
         int pos_x;
         int pos_y;
         int frecuenciaDescanso;
@@ -124,7 +130,7 @@
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
-    void planif_pedidoNuevo(int id_pedido, int id_cliente, char* nombre_restaurante);
+    void planif_nuevoPedido(int id_pedido, int id_cliente, char* nombre_restaurante);
     t_pedido* planif_asignarRepartidor(void);
     t_pedido* planif_FIFO(void);
     t_pedido* planif_SJF_SD(void);
@@ -132,6 +138,7 @@
     sem_t semaforo_pedidos_NEW;
     sem_t semaforo_pedidos_READY;
     sem_t semaforo_vacantesEXEC;
+    unsigned distancia_entre(int ax, int ay, int bx, int by);
 
 // liberacion de memoria
     void liberar_memoria(void);
