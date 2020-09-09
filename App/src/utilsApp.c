@@ -491,8 +491,7 @@ void consumir_ciclo(t_pedido* pedido) {
     log_debug(
         logger_planificacion,
         "[PEDIDO_%2i] Bloqueando por descanso...",
-        pedido->pedido_id,
-        pedido->repartidor->frecuenciaDescanso_restante
+        pedido->pedido_id
     );
     pedido->pedido_estado = BLOCK;
     for (
