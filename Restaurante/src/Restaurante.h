@@ -9,14 +9,12 @@
 #define RESTAURANTE_SRC_RESTAURANTE_H_
 
 #include "utils_restaurante.h"
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/string.h>
-#include<commons/log.h>
-#include<commons/config.h>
+bool bool_log_oficial;
+bool bool_log_restaurante;
 
-*/
+
+
+
 
 
 

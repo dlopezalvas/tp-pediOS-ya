@@ -13,14 +13,20 @@
 #include <commons/string.h>
 #include<commons/log.h>
 #include<commons/config.h>
-
-
-bool bool_log_oficial;
-bool bool_log_restaurante;
+#include <../commonsCoronaLinux/utils.h>
+#include <../commonsCoronaLinux/socket.h>
 
 t_config* config;
+t_config* config_sindicato;
+
+char* ip;
+int puerto;
+
+void iniciar_restaurante(char*,int);
+
 t_log* log_oficial;
 t_log* log_config_ini;
-
+void delay (int number_of_seconds);
+rta_obtenerRestaurante* metadata_restaurante(int socket);
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
