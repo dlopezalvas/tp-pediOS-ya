@@ -30,18 +30,23 @@ int main(int argc, char* argv[]) {
 	         // cargar config desde path provisto mediante argv[1]
 	         config = config_create(argv[1]);
 	     }
-// FIN ACTIVACION DE CONSOLA POR TIPO DE LOG:
-
-puerto=config_get_int_value(config,"PUERTO_SINDICATO");
-//puerto =5002;
-ip=config_get_string_value(config,"IP_SINDICATO");
-
-log_info(log_config_ini ,ip);
-//log_info(log_config_ini ,puerto);
+//PRUEBA DE LOGS
+log_info(log_config_ini, "\tSE INICIO EL LOG INICIAL \n");
+log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
 
 
-iniciar_restaurante(ip,puerto);
+//CARGO CONFIGURACION
+cargar_configuracion();
 
+//INICIO RESTAURANTE CON METADATA
+iniciar_restaurante();
+
+
+
+
+//Abrir puerto de escucha para clientes
+	//pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
+	//pthread_join(hilo_servidor_clientes,NULL);
 
 
 
