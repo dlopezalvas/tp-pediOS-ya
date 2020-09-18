@@ -3,7 +3,7 @@
 void loggear_mensaje_enviado(void* mensaje, op_code tipo_mensaje, t_log* logger){
 	char* mensaje_string = t_mensaje_to_string(mensaje, tipo_mensaje);
 	log_info(logger, "Se envio el mensaje %s", mensaje_string);
-	free(mensaje);
+	free(mensaje_string);
 }
 
 void loggear_mensaje_recibido(void* mensaje, op_code tipo_mensaje, t_log* logger){
