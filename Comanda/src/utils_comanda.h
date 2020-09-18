@@ -45,7 +45,7 @@ pthread_mutex_t hilos_operaciones_mtx;
 void* memoria_principal;
 void* memoria_swap;
 
-
+void iniciar_comanda();
 void process_request(int cod_op, int cliente_fd);
 void serve_client(int socket);
 void esperar_cliente(int servidor);

@@ -3,6 +3,7 @@
 void iniciar_comanda(){
 
 	config_comanda = leer_config(PATH);
+	log_comanda = log_create("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/comanda.LOG","comanda",1,LOG_LEVEL_INFO);
 
 	hilos_clientes = list_create();
 	pthread_mutex_init(&hilos_clientes_mtx, NULL);
@@ -12,6 +13,7 @@ void iniciar_comanda(){
 
 	memoria_principal = malloc(config_get_int_value(config_comanda, TAMANIO_MEMORIA));
 	memoria_swap = malloc(config_get_int_value(config_comanda, TAMANIO_SWAP));
+
 }
 
 //void iniciar_colas(){
