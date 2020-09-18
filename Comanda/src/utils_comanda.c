@@ -50,27 +50,27 @@ void process_request(int cod_op, int cliente_fd){
 	switch (cod_op) {
 	case GUARDAR_PEDIDO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_pedido, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	case GUARDAR_PLATO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_plato, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	case CONFIRMAR_PEDIDO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_confirmar_pedido, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	case PLATO_LISTO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_plato_listo, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	case OBTENER_PEDIDO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_obtener_pedido, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	case FINALIZAR_PEDIDO:
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje);
-		pthread_detach(&hilo_operacion);
+		pthread_detach(hilo_operacion);
 		break;
 	default:
 		puts("error");
@@ -105,7 +105,7 @@ void esperar_cliente(int servidor){
 	list_add(hilos_clientes, &hilo);
 	pthread_mutex_unlock(&hilos_clientes_mtx);
 
-	pthread_create(&hilo,NULL,(void*)serve_client,cliente);
+	pthread_create(&hilo,NULL,(void*)serve_client,(void*)cliente);
 	pthread_detach(hilo);
 
 }
