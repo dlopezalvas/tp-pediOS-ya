@@ -300,7 +300,7 @@ t_mensaje* llenar_id_o_confirmacion(char** parametros){
 	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 
 	uint32_t* numero = malloc(sizeof(uint32_t));
-	*numero = atoi(parametros[1]);;
+	*numero = atoi(parametros[1]);
 
 	mensaje->parametros = numero;
 
