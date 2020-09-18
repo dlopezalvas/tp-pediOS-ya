@@ -17,9 +17,9 @@
 
 
 int main(void) {
-	log_comanda = log_create("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/comanda.LOG","comanda",1,LOG_LEVEL_INFO);
 
-	int servidor = iniciar_servidor(5001);
+	iniciar_comanda();
+	int servidor = iniciar_servidor(config_get_int_value(config_comanda, PUERTO_ESCUCHA));
 
 	while(1){
 		esperar_cliente(servidor);
