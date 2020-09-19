@@ -86,6 +86,7 @@ void imprimir_mensajes_disponibles(){
 		printf("5-%s\n", FORMATO_OBTENER_RESTAURANTE);
 		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO);
 		printf("7-%s\n", FORMATO_PLATO_LISTO);
+		printf("8-%s\n", FORMATO_OBTENER_RECETA);
 	}
 
 	printf("Para consultar los mensajes ingrese %s\n", COMANDO_HELP);
@@ -136,6 +137,7 @@ bool validar_proceso_mensaje(char* tipo_mensaje){
 				string_equals_ignore_case(MENSAJE_OBTENER_PEDIDO, tipo_mensaje) ||
 				string_equals_ignore_case(MENSAJE_OBTENER_RESTAURANTE, tipo_mensaje) ||
 				string_equals_ignore_case(MENSAJE_PLATO_LISTO, tipo_mensaje) ||
+				string_equals_ignore_case(MENSAJE_OBTENER_RECETA, tipo_mensaje) ||
 				string_equals_ignore_case(MENSAJE_CONFIRMAR_PEDIDO, tipo_mensaje);
 	}
 	return false;
