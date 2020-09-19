@@ -36,18 +36,24 @@ log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
 
 
 //CARGO CONFIGURACION
-cargar_configuracion();
+	cargar_configuracion();
+	//Abrir puerto de escucha para clientes
+
+
+
+
 
 //INICIO RESTAURANTE CON METADATA
-iniciar_restaurante();
+	iniciar_restaurante();
+
+	//planificacion
 
 
 
 
-//Abrir puerto de escucha para clientes
-	//pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
-	//pthread_join(hilo_servidor_clientes,NULL);
-
+	pthread_detach(hilo_planificador);
+	//pthread_join(hilo_planificador,NULL);
+	pthread_join(hilo_servidor_clientes,NULL);
 
 
 

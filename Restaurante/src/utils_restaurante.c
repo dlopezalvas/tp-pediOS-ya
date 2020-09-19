@@ -146,14 +146,58 @@ void iniciar_restaurante(){
 
 	//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
 		log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
-		//iniciar_colas_ready_es (rta_obtenerRestaurante* metadata);
+		iniciar_colas_ready_es (metadata_rest);
 
 	//CREAR PROCESO PLANIFICADOR
-		log_info(log_config_ini, "\tIniciar_planificador de platos \n");
+		log_info(log_config_ini, "Iniciar_planificador de platos \n");
 		//pthread_create(plafinificar);
+		pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
+		pthread_create(&hilo_planificador, NULL,(void*) fhilo_planificador, NULL);
+
+
 
 
 }
+
+void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata){
+
+
+
+
+	log_info(log_config_ini, "Comienza proceso de colas");
+
+
+
+	log_info(log_config_ini, "\treceta1: %s \n",list_get(metadata->recetas, 0));
+
+
+
+	log_info(log_config_ini, "\treceta2: %s \n",list_get(metadata->recetas, 1));
+
+
+
+	log_info(log_config_ini, "\treceta3: %s \n",list_get(metadata->recetas, 2));
+
+
+	log_info(log_config_ini, "\tcantidad de hornos %d  \n", metadata->cantHornos);
+
+	log_info(log_config_ini, "Fin inicializacion colas de ready \n");
+}
+
+void* fhilo_planificador(void* v){
+	int contador=0;
+
+	while (contador <10){
+
+		log_info(log_config_ini, "\tCONTADOR: %d \n",contador);
+
+		delay(3);
+		contador=contador+1;
+
+	}
+
+}
+
 
 
 void* fhilo_servidor_clientes(void* v){
@@ -210,7 +254,7 @@ void process_request(int cod_op, int cliente_fd) {
 	int size = 0;
 	void* buffer = recibir_mensaje(cliente_fd, &size);
 
-    //void* mensaje_deserializado = deserialilzar_mensaje(buffer, cod_op);
+    void* mensaje_deserializado = deserializar_mensaje(buffer, cod_op);
 
 
 
@@ -223,28 +267,33 @@ void process_request(int cod_op, int cliente_fd) {
 		//DESERIALIZO EL MJ
 
 
-		//ENVIAR MJ A SINDICATO
-
-		//RECIBO RESPUESTA
-
-		//RESPONDO AL CLIENTE
-
-
 
 			//free(buffer);
 			break;
 		case CREAR_PEDIDO:
 
 		log_info(log_config_ini ,"Se recibio el mj CREAR_PEDIDO: ",cod_op);
+		uint32_t* numero = malloc(sizeof(uint32_t));
 
-		//DESERIALIZO EL MJ
+		*numero = 1; //1 para OK, 0 para FAIL
 
 
-		//ENVIAR MJ A SINDICATO
+			//ENVIAR MJ A SINDICATO
+			//list_pedidos= list_create();
+			//list_add(list_pedidos,id_pedido);
+			//RECIBO RESPUESTA
 
-		//RECIBO RESPUESTA
+			//RESPONDO AL CLIENTE
 
-		//RESPONDO AL CLIENTE
+			t_mensaje* rta= malloc(sizeof(t_mensaje));
+			rta->tipo_mensaje=RTA_CREAR_PEDIDO;
+			rta->parametros=numero;
+
+			enviar_mensaje(rta, cliente_fd);
+			log_info(log_config_ini ,"Se envio la confirmacion: ",cod_op);
+
+
+
 
 		break;
 		case AGREGAR_PLATO:

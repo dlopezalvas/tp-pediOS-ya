@@ -15,7 +15,7 @@
 #include<commons/config.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
-#include <../commonsCoronaLinux/serializacion.h>
+
 #include <pthread.h>
 #include <sys/socket.h>
 
@@ -48,16 +48,25 @@ void process_request(int cod_op, int cliente_fd);
 rta_obtenerRestaurante* metadata_restaurante(int socket);
 int conectar_con_sindicato();
 
+//HILOS - SEMAFOROS
 pthread_t hilo_servidor_clientes;
-pthread_t hilo_restaurante;
+pthread_t hilo_planificador;
 t_list *  hilos;
 pthread_mutex_t mutex_hilos;
 
 
+//FHILOS
+void* fhilo_planificador (void* v);
+
+
 //METADATA
 rta_obtenerRestaurante* metadata_rest;
-
+void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
 void delay (int number_of_seconds);
+
+//LISTAS
+t_list *  list_pedidos;
+
 
 
 
