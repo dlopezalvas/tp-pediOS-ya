@@ -13,6 +13,8 @@
 #include <../commonsCoronaLinux/socket.h>
 #include <../commonsCoronaLinux/logs.h>
 
+#define TAMANIO_PAGINA 32
+#define TAMANIO_NOMBRE 24
 #define PATH "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/Comanda.config"
 #define PUERTO_ESCUCHA "PUERTO_ESCUCHA"
 #define TAMANIO_MEMORIA "TAMANIO_MEMORIA"
@@ -27,6 +29,40 @@ pthread_mutex_t hilos_clientes_mtx;
 
 t_list* hilos_operaciones;
 pthread_mutex_t hilos_operaciones_mtx;
+
+typedef struct{
+	char* nombre;
+	t_list* tabla_segmentos;
+	pthread_mutex_t tabla_segmentos_mtx;
+} t_restaurante;
+
+typedef struct{
+	int id_pedido;
+	t_list* tabla_paginas;
+} t_segmento;
+
+typedef struct{
+	void* mensaje;
+	int socket_cliente;
+} t_mensaje_a_procesar;
+
+typedef struct{
+	uint32_t frame;
+	uint32_t ultimo_acceso; // time(NULL);
+	bool uso; //se inicia en 1
+	bool modificado; // se inicia en 0
+}t_pagina;
+
+typedef struct{
+	uint32_t cant_pedida;
+	uint32_t cant_lista;
+	char nombre[24];
+}t_plato;
+
+
+pthread_mutex_t restaurantes_mtx;
+t_list* restaurantes;
+
 
 //pthread_t guardar_pedido_queue_mtx;
 //pthread_t guardar_plato_queue_mtx;
@@ -50,11 +86,17 @@ void process_request(int cod_op, int cliente_fd);
 void serve_client(int socket);
 void esperar_cliente(int servidor);
 
-void ejecucion_guardar_pedido();
-void ejecucion_guardar_plato();
-void ejecucion_finalizar_pedido();
-void ejecucion_confirmar_pedido();
-void ejecucion_plato_listo();
-void ejecucion_obtener_pedido();
+t_restaurante* buscarRestaurante(char* nombre);
+t_segmento* buscarPedido(uint32_t id_pedido, char* nombre);
+void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
+t_pagina* buscarPlato(t_list* tabla_paginas, char* comida);
+void* serializar_pagina(t_plato* plato);
+
+void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 
 #endif /* UTILS_COMANDA_H_ */
