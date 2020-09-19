@@ -110,10 +110,10 @@ char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaura
 		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad);
 	}
 	string_append(&string_mensaje, "recetas: ");
-	char* receta;
-	for(int j = 0; j<obtener_restaurante->cantCocineroAfinidad; j++){
-		receta = list_get(obtener_restaurante->cocineroAfinidad, j);
-		string_append_with_format(&string_mensaje, "%s ", receta);
+	t_receta* receta;
+	for(int j = 0; j<obtener_restaurante->recetas; j++){
+		receta = list_get(obtener_restaurante->recetas, j);
+		string_append_with_format(&string_mensaje, "%s - precio: %d", receta->receta.nombre, receta->precio);
 	}
 	return string_mensaje;
 }

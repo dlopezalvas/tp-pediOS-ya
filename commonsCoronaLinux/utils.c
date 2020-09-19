@@ -278,14 +278,18 @@ void free_nombre(t_nombre* mensaje){
 
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje){
 	list_destroy_and_destroy_elements(mensaje->cocineroAfinidad, (void*) free_cocineroAfinidad);
-	list_destroy(mensaje->recetas);
+	list_destroy_and_destroy_elements(mensaje->recetas, (void*) free_receta);
 	free(mensaje);
-
 }
 
 void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad){
 	free(cocineroAfinidad->afinidad.nombre);
 	free(cocineroAfinidad);
+}
+
+void free_receta(t_receta* receta){
+	free(receta->receta.nombre);
+	free(receta);
 }
 
 void free_nombre_y_id(t_nombre_y_id* mensaje){

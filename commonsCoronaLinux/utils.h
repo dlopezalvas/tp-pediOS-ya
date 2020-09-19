@@ -168,6 +168,11 @@ typedef struct{
 }rta_obtenerRestaurante;
 
 typedef struct{
+	t_nombre receta;
+	uint32_t precio;
+}t_receta;
+
+typedef struct{
 	t_nombre restaurante;
 	uint32_t idPedido;
 	t_nombre comida; //plato?
@@ -243,6 +248,7 @@ void free_seleccionar_restaurante(m_seleccionarRestaurante* mensaje);
 void free_id_o_confirmacion(uint32_t* mensaje);
 void free_nombre(t_nombre* mensaje);
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje);
+void free_receta(t_receta* receta);
 void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
 void free_nombre_y_id(t_nombre_y_id* mensaje);
 void free_plato_listo(m_platoListo* mensaje);
