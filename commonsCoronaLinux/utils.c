@@ -32,91 +32,97 @@ void liberar_vector (char** vector){
 
 char* op_code_to_string(op_code tipo_mensaje){
 	switch (tipo_mensaje) {
-		case CONSULTAR_RESTAURANTES:
-			return MENSAJE_CONSULTAR_RESTAURANTES;
-			break;
-		case RTA_CONSULTAR_RESTAURANTES:
-			return MENSAJE_RTA_CONSULTAR_RESTAURANTES;
-			break;
-		case SELECCIONAR_RESTAURANTE:
-			return MENSAJE_SELECCIONAR_RESTAURANTE;
-			break;
-		case RTA_SELECCIONAR_RESTAURANTE:
-			return MENSAJE_RTA_SELECCIONAR_RESTAURANTE;
-			break;
-		case OBTENER_RESTAURANTE:
-			return MENSAJE_OBTENER_RESTAURANTE;
-			break;
-		case RTA_OBTENER_RESTAURANTE:
-			return MENSAJE_RTA_OBTENER_RESTAURANTE;
-			break;
-		case CONSULTAR_PLATOS:
-			return MENSAJE_CONSULTAR_PLATOS;
-			break;
-		case RTA_CONSULTAR_PLATOS:
-			return MENSAJE_RTA_CONSULTAR_PLATOS;
-			break;
-		case CREAR_PEDIDO:
-			return MENSAJE_CREAR_PEDIDO;
-			break;
-		case RTA_CREAR_PEDIDO:
-			return MENSAJE_RTA_CREAR_PEDIDO;
-			break;
-		case GUARDAR_PEDIDO:
-			return MENSAJE_GUARDAR_PEDIDO;
-			break;
-		case RTA_GUARDAR_PEDIDO:
-			return MENSAJE_RTA_GUARDAR_PEDIDO;
-			break;
-		case AGREGAR_PLATO:
-			return MENSAJE_AGREGAR_PLATO;
-			break;
-		case RTA_AGREGAR_PLATO:
-			return MENSAJE_RTA_AGREGAR_PLATO;
-			break;
-		case GUARDAR_PLATO:
-			return MENSAJE_GUARDAR_PLATO;
-			break;
-		case RTA_GUARDAR_PLATO:
-			return MENSAJE_RTA_GUARDAR_PLATO;
-			break;
-		case CONFIRMAR_PEDIDO:
-			return MENSAJE_CONFIRMAR_PEDIDO;
-			break;
-		case RTA_CONFIRMAR_PEDIDO:
-			return MENSAJE_RTA_CONFIRMAR_PEDIDO;
-			break;
-		case PLATO_LISTO:
-			return MENSAJE_PLATO_LISTO;
-			break;
-		case RTA_PLATO_LISTO:
-			return MENSAJE_RTA_PLATO_LISTO;
-			break;
-		case CONSULTAR_PEDIDO:
-			return MENSAJE_CONSULTAR_PEDIDO;
-			break;
-		case RTA_CONSULTAR_PEDIDO:
-			return MENSAJE_RTA_CONSULTAR_PEDIDO;
-			break;
-		case OBTENER_PEDIDO:
-			return MENSAJE_OBTENER_PEDIDO;
-			break;
-		case RTA_OBTENER_PEDIDO:
-			return MENSAJE_RTA_OBTENER_PEDIDO;
-			break;
-		case FINALIZAR_PEDIDO:
-			return MENSAJE_FINALIZAR_PEDIDO;
-			break;
-		case RTA_FINALIZAR_PEDIDO:
-			return MENSAJE_RTA_FINALIZAR_PEDIDO;
-			break;
-		case TERMINAR_PEDIDO:
-			return MENSAJE_TERMINAR_PEDIDO;
-			break;
-		case RTA_TERMINAR_PEDIDO:
-			return MENSAJE_RTA_TERMINAR_PEDIDO;
-			break;
-		}
+	case CONSULTAR_RESTAURANTES:
+		return MENSAJE_CONSULTAR_RESTAURANTES;
+		break;
+	case RTA_CONSULTAR_RESTAURANTES:
+		return MENSAJE_RTA_CONSULTAR_RESTAURANTES;
+		break;
+	case SELECCIONAR_RESTAURANTE:
+		return MENSAJE_SELECCIONAR_RESTAURANTE;
+		break;
+	case RTA_SELECCIONAR_RESTAURANTE:
+		return MENSAJE_RTA_SELECCIONAR_RESTAURANTE;
+		break;
+	case OBTENER_RESTAURANTE:
+		return MENSAJE_OBTENER_RESTAURANTE;
+		break;
+	case RTA_OBTENER_RESTAURANTE:
+		return MENSAJE_RTA_OBTENER_RESTAURANTE;
+		break;
+	case CONSULTAR_PLATOS:
+		return MENSAJE_CONSULTAR_PLATOS;
+		break;
+	case RTA_CONSULTAR_PLATOS:
+		return MENSAJE_RTA_CONSULTAR_PLATOS;
+		break;
+	case CREAR_PEDIDO:
+		return MENSAJE_CREAR_PEDIDO;
+		break;
+	case RTA_CREAR_PEDIDO:
+		return MENSAJE_RTA_CREAR_PEDIDO;
+		break;
+	case GUARDAR_PEDIDO:
+		return MENSAJE_GUARDAR_PEDIDO;
+		break;
+	case RTA_GUARDAR_PEDIDO:
+		return MENSAJE_RTA_GUARDAR_PEDIDO;
+		break;
+	case AGREGAR_PLATO:
+		return MENSAJE_AGREGAR_PLATO;
+		break;
+	case RTA_AGREGAR_PLATO:
+		return MENSAJE_RTA_AGREGAR_PLATO;
+		break;
+	case GUARDAR_PLATO:
+		return MENSAJE_GUARDAR_PLATO;
+		break;
+	case RTA_GUARDAR_PLATO:
+		return MENSAJE_RTA_GUARDAR_PLATO;
+		break;
+	case CONFIRMAR_PEDIDO:
+		return MENSAJE_CONFIRMAR_PEDIDO;
+		break;
+	case RTA_CONFIRMAR_PEDIDO:
+		return MENSAJE_RTA_CONFIRMAR_PEDIDO;
+		break;
+	case PLATO_LISTO:
+		return MENSAJE_PLATO_LISTO;
+		break;
+	case RTA_PLATO_LISTO:
+		return MENSAJE_RTA_PLATO_LISTO;
+		break;
+	case CONSULTAR_PEDIDO:
+		return MENSAJE_CONSULTAR_PEDIDO;
+		break;
+	case RTA_CONSULTAR_PEDIDO:
+		return MENSAJE_RTA_CONSULTAR_PEDIDO;
+		break;
+	case OBTENER_PEDIDO:
+		return MENSAJE_OBTENER_PEDIDO;
+		break;
+	case RTA_OBTENER_PEDIDO:
+		return MENSAJE_RTA_OBTENER_PEDIDO;
+		break;
+	case FINALIZAR_PEDIDO:
+		return MENSAJE_FINALIZAR_PEDIDO;
+		break;
+	case RTA_FINALIZAR_PEDIDO:
+		return MENSAJE_RTA_FINALIZAR_PEDIDO;
+		break;
+	case TERMINAR_PEDIDO:
+		return MENSAJE_TERMINAR_PEDIDO;
+		break;
+	case RTA_TERMINAR_PEDIDO:
+		return MENSAJE_RTA_TERMINAR_PEDIDO;
+		break;
+	case OBTENER_RECETA:
+		return MENSAJE_OBTENER_RECETA;
+		break;
+	case RTA_OBTENER_RECETA:
+		return MENSAJE_RTA_OBTENER_RECETA;
+		break;
+	}
 	return NULL;
 }
 
@@ -150,6 +156,8 @@ op_code string_to_op_code(char* tipo_mensaje){
 		return FINALIZAR_PEDIDO;
 	}else if(string_equals_ignore_case(MENSAJE_TERMINAR_PEDIDO, tipo_mensaje)){
 		return TERMINAR_PEDIDO;
+	}else if(string_equals_ignore_case(MENSAJE_OBTENER_RECETA, tipo_mensaje)){
+		return OBTENER_RECETA;
 	}else{
 		return 0;
 	}
@@ -173,6 +181,7 @@ struct_code op_code_to_struct_code(op_code tipo_mensaje){
 			tipo_mensaje == TERMINAR_PEDIDO ||
 			tipo_mensaje == AGREGAR_PLATO) return STRC_NOMBRE_ID;
 	else if(tipo_mensaje == OBTENER_RESTAURANTE ||
+			tipo_mensaje == OBTENER_RECETA ||
 			tipo_mensaje == CONSULTAR_PLATOS) return STRC_NOMBRE;
 	else if(tipo_mensaje == CONSULTAR_RESTAURANTES ||
 			tipo_mensaje == CREAR_PEDIDO) return STRC_MENSAJE_VACIO;
@@ -185,6 +194,7 @@ struct_code op_code_to_struct_code(op_code tipo_mensaje){
 	else if(tipo_mensaje == RTA_OBTENER_PEDIDO) return STRC_RTA_OBTENER_PEDIDO;
 	else if(tipo_mensaje == RTA_OBTENER_RESTAURANTE) return STRC_RTA_OBTENER_RESTAURANTE;
 	else if(tipo_mensaje == POSICION_CLIENTE) return STRC_POSICION;
+	else if(tipo_mensaje == RTA_OBTENER_RECETA) return STRC_RTA_OBTENER_RECETA;
 	return -1;
 }
 
@@ -231,7 +241,20 @@ void free_struct_mensaje(void* mensaje, op_code tipo_mensaje){
 	case STRC_POSICION:
 		free_posicion(mensaje);
 		break;
+	case STRC_RTA_OBTENER_RECETA:
+		free_rta_obtener_receta(mensaje);
+		break;
 	}
+}
+
+void free_rta_obtener_receta(rta_obtenerReceta* mensaje){
+	list_destroy_and_destroy_elements(mensaje->pasos, (void*) free_pasos);
+	free(mensaje);
+}
+
+void free_pasos(t_paso* paso){
+	free(paso->paso.nombre);
+	free(paso);
 }
 
 void free_restaurante_y_plato(t_restaurante_y_plato* mensaje){

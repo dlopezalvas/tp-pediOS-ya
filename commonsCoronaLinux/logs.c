@@ -38,6 +38,8 @@ char* t_mensaje_to_string(void* mensaje, op_code tipo_mensaje){
 	case STRC_RTA_OBTENER_PEDIDO:return rta_obtener_pedido_to_string(mensaje, tipo_mensaje);
 
 	case STRC_GUARDAR_PLATO:return guardar_plato_to_string(mensaje, tipo_mensaje);
+
+	case STRC_RTA_OBTENER_RECETA:return rta_obtener_receta_to_string(mensaje, tipo_mensaje);
 	}
 	return NULL;
 
@@ -64,9 +66,9 @@ char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op
 
 char* seleccionar_restaurante_to_string(m_seleccionarRestaurante * seleccionar_restaurante, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-		string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(tipo_mensaje),
-				seleccionar_restaurante->restaurante.nombre, seleccionar_restaurante->cliente);
-		return string_mensaje;
+	string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(tipo_mensaje),
+			seleccionar_restaurante->restaurante.nombre, seleccionar_restaurante->cliente);
+	return string_mensaje;
 }
 
 char* id_o_confirmacion_to_string(uint32_t* id_confirmacion, op_code tipo_mensaje){
@@ -170,5 +172,17 @@ char* guardar_plato_to_string(m_guardarPlato* guardar_plato, op_code tipo_mensaj
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s id: %d %s cantidad: %d", op_code_to_string(tipo_mensaje), guardar_plato->restaurante.nombre,
 			guardar_plato->idPedido, guardar_plato->comida.nombre, guardar_plato->cantidad);
+	return string_mensaje;
+}
+
+char* rta_obtener_receta_to_string(rta_obtenerReceta* obtener_receta, op_code tipo_mensaje){
+	char* string_mensaje = string_new();
+	string_append_with_format(&string_mensaje, "%s ", op_code_to_string(tipo_mensaje));
+	t_paso* paso;
+	for(int i = 0; i<obtener_receta->cantPasos; i++){
+		paso = list_get(obtener_receta->pasos, i);
+		string_append_with_format(&string_mensaje, "%s duracion:%d", paso->paso.nombre, paso->duracion);
+	}
+
 	return string_mensaje;
 }
