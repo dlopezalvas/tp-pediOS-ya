@@ -18,9 +18,13 @@ int main(int argc, char* argv[]) {
 		logger_mensajes_consolaActiva = true;
 		logger_mensajes_path = "./mensajes.log";
 	
-	configuracionInicial();
-	
-	configuracionConexiones();
+	// lectura de config y configuracion inicial y de conexiones
+		configuracionInicial();
+		configuracionConexiones();
+
+	// inicializacion de hilos de planificacion
+		pthread_create(&hilo_planificador_cortoPlazo, NULL, fhilo_planificador_cortoPlazo, NULL);
+		pthread_create(&hilo_planificador_largoPlazo, NULL, fhilo_planificador_largoPlazo, NULL);
 	
 	// Al momento de inicializar el proceso se realizarán las siguientes operaciones:
 		

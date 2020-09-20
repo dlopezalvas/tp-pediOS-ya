@@ -64,17 +64,22 @@
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
     t_restaurante* get_restaurante(char* nombre_restaurante);
+    void guardar_nuevoRest(char* nombre, int pos_x, int pos_y);
 
 // clientes
     typedef struct {
         int pos_x;
         int pos_y;
         int id;
+        int pedido_id;
+        t_restaurante* restaurante_seleccionado;
     } t_cliente;
 
     t_list* clientes;
     pthread_mutex_t mutex_lista_clientes;
     t_cliente* get_cliente(int id_cliente);
+    void guardar_nuevoCliente(int id, int pos_x, int pos_y);
+    void guardar_seleccion(char* nombre_rest, int id_cliente);
 
 // repartidores
     typedef struct {
@@ -92,7 +97,7 @@
     pthread_mutex_t mutex_lista_repartidores;
     sem_t semaforo_repartidoresSinPedido;
     bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino_y);
-    void repartidor_disponibilizar(t_repartidor* repartidor);
+    void repartidor_desocupar(t_repartidor* repartidor);
 
 // pedidos
     typedef enum {
@@ -113,6 +118,8 @@
         pthread_t* hilo;
     } t_pedido;
 
+    t_list* pedidos;
+    pthread_mutex_t mutex_pedidos;
     void* fhilo_pedido(void* pedido_sin_castear); // toma t_pedido* por param
     void consumir_ciclo(t_pedido* pedido);
     void pedido_repartidorLlegoARestaurante(t_pedido* pedido);
@@ -127,10 +134,16 @@
     pthread_mutex_t mutex_cola_READY;
     void planif_encolar_READY(t_pedido* pedido);
 
+    t_list* cola_BLOCK; // esta cola es solo para esperar los platos no terminados, no para el descanso
+    pthread_mutex_t mutex_cola_BLOCK;
+    void planif_encolar_BLOCK(t_pedido* pedido);
+
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
-    void planif_nuevoPedido(int id_pedido, int id_cliente, char* nombre_restaurante);
+    pthread_t hilo_planificador_cortoPlazo;
+    pthread_t hilo_planificador_largoPlazo;
+    void planif_nuevoPedido(int id_pedido);
     t_pedido* planif_asignarRepartidor(void);
     t_pedido* planif_FIFO(void);
     t_pedido* planif_SJF_SD(void);

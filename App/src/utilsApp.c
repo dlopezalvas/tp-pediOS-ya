@@ -135,6 +135,13 @@ void configuracionInicial(void) {
         pthread_mutex_init(&mutex_cola_READY, NULL);
         sem_init(&semaforo_pedidos_READY, 0, 0);
 
+        cola_BLOCK = list_create();
+        pthread_mutex_init(&mutex_cola_BLOCK, NULL);
+
+    // lista de pedidos
+        pedidos = list_create();
+        pthread_mutex_init(&mutex_pedidos, NULL);
+
     // lista de restaurantes
         restaurantes = list_create();
         pthread_mutex_init(&mutex_lista_restaurantes, NULL);
@@ -166,6 +173,14 @@ void planif_encolar_READY(t_pedido* pedido) {
     list_add(cola_READY, pedido);
     pthread_mutex_unlock(&mutex_cola_READY);
     sem_post(&semaforo_pedidos_READY);
+}
+
+void planif_encolar_BLOCK(t_pedido* pedido) {
+    pthread_mutex_lock(&mutex_cola_BLOCK);
+    log_debug(logger_planificacion, "[PEDIDO_%2i] Encolando en BLOCK...", pedido->pedido_id);
+    pedido->pedido_estado = BLOCK;
+    list_add(cola_BLOCK, pedido);
+    pthread_mutex_unlock(&mutex_cola_BLOCK);
 }
 
 void* fhilo_planificador_largoPlazo(void* __sin_uso__) { // (de NEW a READY)
@@ -249,17 +264,17 @@ t_pedido* planif_HRRN(void) {
     // TODO
 }
 
-void planif_nuevoPedido(int id_pedido, int id_cliente, char* nombre_restaurante) {
+void planif_nuevoPedido(int id_pedido) {
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
 
     log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido: %i", id_pedido);
 
-    cliente = get_cliente(id_cliente);
+    cliente = get_cliente(id_pedido);
     log_debug(logger_planificacion, "[PLANIF_NP] Cliente: %i", cliente->id);
 
-    restaurante = get_restaurante(nombre_restaurante);
+    restaurante = cliente->restaurante_seleccionado; // TODO
     log_debug(logger_planificacion, "[PLANIF_NP] Restaurante: %s", restaurante->nombre);
 
     pedidoNuevo = malloc(sizeof(t_pedido));
@@ -279,7 +294,7 @@ void planif_nuevoPedido(int id_pedido, int id_cliente, char* nombre_restaurante)
     planif_encolar_NEW(pedidoNuevo);
 }
 
-t_cliente* get_cliente(int id_cliente) {
+t_cliente* get_cliente(int id_pedido) {
     t_cliente* cliente;
     pthread_mutex_lock(&mutex_lista_clientes);
     for (
@@ -288,9 +303,9 @@ t_cliente* get_cliente(int id_cliente) {
         index_cli++
     ) {
         cliente = list_get(clientes, index_cli);
-        if (cliente->id == id_cliente) {
+        if (cliente->pedido_id == id_pedido) {
             pthread_mutex_unlock(&mutex_lista_clientes);
-            return cliente;        
+            return cliente;
         }
     }
     pthread_mutex_unlock(&mutex_lista_clientes);
@@ -455,11 +470,11 @@ void pedido_repartidorLlegoACliente(t_pedido* pedido) {
         pedido->pedido_id,
         pedido->cliente->id
     );
-    repartidor_disponibilizar(pedido->repartidor);
+    repartidor_desocupar(pedido->repartidor);
     // TODO: envio de mensaje al cliente corresp.
 }
 
-void repartidor_disponibilizar(t_repartidor* repartidor) {
+void repartidor_desocupar(t_repartidor* repartidor) {
     log_debug(
         logger_planificacion,
         "[REP_%2i] Disponibilizado",
@@ -494,6 +509,7 @@ void consumir_ciclo(t_pedido* pedido) {
         pedido->pedido_id
     );
     pedido->pedido_estado = BLOCK;
+    sem_post(&semaforo_vacantesEXEC);
     for (
         pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
         pedido->repartidor->tiempoDescanso_restante > 0;
@@ -513,6 +529,85 @@ void consumir_ciclo(t_pedido* pedido) {
         pedido->pedido_id
     );
     pthread_mutex_lock(pedido->mutex_EXEC);
+}
+
+void guardar_nuevoCliente(int id, int pos_x, int pos_y) {
+    t_cliente* cliente = malloc(sizeof(t_cliente));
+    cliente->id = id;
+    cliente->pos_x = pos_x;
+    cliente->pos_y = pos_y;
+    cliente->restaurante_seleccionado = NULL;
+    pthread_mutex_lock(&mutex_lista_clientes);
+    list_add(clientes, cliente);
+    // TODO: logging
+    pthread_mutex_unlock(&mutex_lista_clientes);
+}
+
+
+void guardar_nuevoRest(char* nombre, int pos_x, int pos_y) {
+    t_restaurante* restaurante = malloc(sizeof(t_restaurante));
+    restaurante->nombre = nombre;
+    restaurante->pos_x = pos_x;
+    restaurante->pos_y = pos_y;
+    pthread_mutex_lock(&mutex_lista_restaurantes);
+    list_add(restaurantes, restaurante);
+    // TODO: logging
+    pthread_mutex_unlock(&mutex_lista_restaurantes);
+}
+
+void guardar_seleccion(char* nombre_rest, int id_cliente) {
+    // TODO: logging
+    t_restaurante* restaurante_seleccion;
+    t_cliente* cliente_seleccion;
+
+    pthread_mutex_lock(&mutex_lista_restaurantes);
+    for (
+        unsigned index_rest = 0;
+        index_rest < list_size(restaurantes);
+        index_rest++
+    ) {
+        restaurante_seleccion = list_get(restaurantes, index_rest);
+        if (
+            string_equals_ignore_case(
+                nombre_rest,
+                restaurante_seleccion->nombre
+            )
+        ) break;
+    }
+    pthread_mutex_unlock(&mutex_lista_restaurantes);
+    pthread_mutex_lock(&mutex_lista_clientes);
+    for (
+        unsigned index_cli = 0;
+        index_cli < list_size(clientes);
+        index_cli++
+    ) {
+        cliente_seleccion = list_get(clientes, index_cli);
+        if (cliente_seleccion->id == id_cliente) {
+            cliente_seleccion->restaurante_seleccionado = restaurante_seleccion;
+        }
+    }
+    pthread_mutex_unlock(&mutex_lista_clientes);
+}
+
+char** get_nombresRestConectados(void) {
+    char** nombresRestConectados;
+    pthread_mutex_lock(&mutex_lista_restaurantes);
+    if (list_is_empty(restaurantes) || modo_noRest) {
+        pthread_mutex_unlock(&mutex_lista_restaurantes);
+        nombresRestConectados = malloc(sizeof(char*));
+        *nombresRestConectados = "Resto Default";
+        return nombresRestConectados;
+    }
+    nombresRestConectados = malloc(sizeof(char*) * list_size(restaurantes));
+    for (
+        unsigned index_rest = 0;
+        index_rest < list_size(restaurantes);
+        index_rest++
+    ) {
+        nombresRestConectados[index_rest] = string_duplicate(((t_restaurante*)list_get(restaurantes, index_rest))->nombre);
+    }
+    pthread_mutex_unlock(&mutex_lista_restaurantes);
+    return nombresRestConectados;
 }
 
 void liberar_memoria(void) {
