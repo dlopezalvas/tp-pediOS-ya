@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 
 	pthread_t conexion2;
 	pthread_create(&conexion2, NULL, (void*)conexionRecepcion, NULL);
-	pthread_join(conexion2, NULL);
+	pthread_detach(conexion2);
 
 	pthread_join(consola, NULL);
 

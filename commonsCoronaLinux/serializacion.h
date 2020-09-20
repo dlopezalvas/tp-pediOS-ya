@@ -16,6 +16,8 @@ int tamanio_lista_strings(t_list* lista_de_strings);
 int tamanio_lista_cocineroAfinidad(t_list* lista_de_strings);
 int tamanio_lista_platos_con_estado(t_list* lista_de_platos);
 int tamanio_lista_pedidos(t_list* lista_pedidos);
+int tamanio_lista_pasos(t_list* lista_de_pasos);
+int tamanio_lista_recetas(t_list* lista_recetas);
 
 t_buffer* buffer_seleccionar_restaurante(m_seleccionarRestaurante* seleccionarRestaurante);
 m_seleccionarRestaurante* deserializar_seleccionar_restaurante(void* buffer);
@@ -38,8 +40,11 @@ t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido);
 rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer);
 t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido);
 rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer);
-t_buffer* buffer_posicion(t_coordenadas* posicion);
+t_buffer* buffer_posicion(t_cliente* cliente);
 t_coordenadas* deserializar_posicion(void* buffer);
+t_buffer* buffer_rta_obtener_receta(rta_obtenerReceta* obtenerReceta);
+rta_obtenerReceta* deserializar_rta_obtener_receta(void* buffer);
+
 
 
 #endif /* serializacion_h */
