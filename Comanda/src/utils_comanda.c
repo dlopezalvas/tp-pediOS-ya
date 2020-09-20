@@ -17,6 +17,20 @@ void iniciar_comanda(){
 	memoria_principal = malloc(config_get_int_value(config_comanda, TAMANIO_MEMORIA));
 	memoria_swap = malloc(config_get_int_value(config_comanda, TAMANIO_SWAP));
 
+	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA) * sizeof(uint32_t);
+	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA) * sizeof(uint32_t);
+
+	frames_swap = malloc(cant_frames_swap);
+	frames_MP = malloc(cant_frames_MP);
+
+	for(int i=0; i<cant_frames_swap; i++){
+		frames_swap[i]=0;
+	}
+	for(int j=0; j<cant_frames_MP; j++){
+		frames_MP[j]=0;
+		}
+
+
 }
 
 //void iniciar_colas(){
@@ -170,10 +184,9 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 			//buscar frame
 		}else{
 			//buscar y traer de swap
-			//deserializar
+			//plato = derializar_pagina(void*)
 			//sumar plato deserializado a plato_a_guardar
 		}
-		//serializar
 		//guardar en memoria
 		confirmacion = 1;
 	}else{
@@ -184,10 +197,20 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PLATO);
 }
 
+void guardar_pagina(t_plato* plato){
+	void* pagina = serializar_pagina( plato);
 
+}
 
 void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
+	t_segmento* pedido = buscarPedido(mensaje->id, mensaje->nombre.nombre);
+	if(pedido != NULL){
+
+
+
+	}
+
 }
 
 void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){

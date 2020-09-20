@@ -30,6 +30,7 @@ pthread_mutex_t hilos_clientes_mtx;
 t_list* hilos_operaciones;
 pthread_mutex_t hilos_operaciones_mtx;
 
+
 typedef struct{
 	char* nombre;
 	t_list* tabla_segmentos;
@@ -49,6 +50,7 @@ typedef struct{
 typedef struct{
 	uint32_t frame;
 	uint32_t ultimo_acceso; // time(NULL);
+	bool presencia;
 	bool uso; //se inicia en 1
 	bool modificado; // se inicia en 0
 }t_pagina;
@@ -63,6 +65,10 @@ typedef struct{
 pthread_mutex_t restaurantes_mtx;
 t_list* restaurantes;
 
+uint32_t cant_frames_swap;
+uint32_t cant_frames_MP;
+int* frames_swap;
+int* frames_MP;
 
 //pthread_t guardar_pedido_queue_mtx;
 //pthread_t guardar_plato_queue_mtx;
