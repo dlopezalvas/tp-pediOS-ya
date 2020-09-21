@@ -73,12 +73,13 @@
         int id;
         int pedido_id;
         t_restaurante* restaurante_seleccionado;
+        int socket;
     } t_cliente;
 
     t_list* clientes;
     pthread_mutex_t mutex_lista_clientes;
     t_cliente* get_cliente(int id_cliente);
-    void guardar_nuevoCliente(int id, int pos_x, int pos_y);
+    void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente);
     void guardar_seleccion(char* nombre_rest, int id_cliente);
 
 // repartidores

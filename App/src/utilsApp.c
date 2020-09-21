@@ -531,12 +531,15 @@ void consumir_ciclo(t_pedido* pedido) {
     pthread_mutex_lock(pedido->mutex_EXEC);
 }
 
-void guardar_nuevoCliente(int id, int pos_x, int pos_y) {
+void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente) {
     t_cliente* cliente = malloc(sizeof(t_cliente));
-    cliente->id = id;
-    cliente->pos_x = pos_x;
-    cliente->pos_y = pos_y;
+
+    cliente->id = datos_cliente->id;
+    cliente->pos_x = datos_cliente->posicion.x;
+    cliente->pos_y = datos_cliente->posicion.y;
     cliente->restaurante_seleccionado = NULL;
+    cliente->socket = socket_cliente;
+
     pthread_mutex_lock(&mutex_lista_clientes);
     list_add(clientes, cliente);
     // TODO: logging
@@ -545,6 +548,7 @@ void guardar_nuevoCliente(int id, int pos_x, int pos_y) {
 
 
 void guardar_nuevoRest(char* nombre, int pos_x, int pos_y) {
+    // TODO: cambiar firma porque falta el mensaje handshake con rest
     t_restaurante* restaurante = malloc(sizeof(t_restaurante));
     restaurante->nombre = nombre;
     restaurante->pos_x = pos_x;
@@ -659,6 +663,7 @@ void configuracionConexiones(void) {
     // queue_push(mensajes_a_enviar, mensaje);
     // sem_post(&sem_mensajes_a_enviar);
 void* fhilo_conectarConComanda(void* arg) {
+    // TODO: corregir todo esto
     int socket = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
 
 	if(socket != -1){
@@ -719,13 +724,26 @@ void serve_client(int socket){
 }
 
 void process_request(int cod_op, int cliente_fd) {
-	int size = 0;
-	void* buffer = recibir_mensaje(cliente_fd, &size);
-	
-    void* mensaje_deserializado = deserializar_mensaje(buffer, cod_op);
-    loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
+
+    int size = 0;
+    void* mensaje = NULL;
+    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+        void* buffer = recibir_mensaje(cliente_fd, &size);
+        mensaje = deserializar_mensaje(buffer, cod_op);
+    }
+
+    // TODO loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
 
     // TODO: switch con tipos de mensaje
+    switch (cod_op) {
+        case POSICION_CLIENTE:
+            guardar_nuevoCliente(mensaje, cliente_fd);
+            break;
+        // TODO:
+        // case POSICION_RESTAURANTE:
+        //     guardar_nuevoRest(mensaje, cliente_fd); // TODO
+        //     break;
+    }
 }
 
 
