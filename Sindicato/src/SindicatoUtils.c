@@ -2,6 +2,8 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+/* CONSOLE FUNCTIONS */
+
 bool sindicato_utils_validate_arguments(char** arguments, command_type_id commandType){
 
 	int position = 0;
