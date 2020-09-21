@@ -26,6 +26,7 @@ char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_c
 char* est_plato_to_string(est_plato estado);
 char* rta_obtener_pedido_to_string(rta_obtenerPedido* obtener_pedido, op_code tipo_mensaje);
 char* guardar_plato_to_string(m_guardarPlato* guardar_plato, op_code tipo_mensaje);
+char* rta_obtener_receta_to_string(rta_obtenerReceta* obtener_receta, op_code tipo_mensaje);
 
 
 #endif /* LOGS_H_ */
