@@ -1,10 +1,10 @@
 #ifndef SINDICATOSERVER_H_
 #define SINDICATOSERVER_H_
 
-#include "SindicatoUtils.h"
+#include "SindicatoApi.h"
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
-void sindicato_wait_client(int server);
+void sindicato_server_initialize();
 
 #endif /* SINDICATOSERVER_H_ */

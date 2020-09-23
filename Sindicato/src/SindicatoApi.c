@@ -17,3 +17,11 @@ void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
 	printf("%s\n", pasos);
 	printf("%s\n", tiempoPasos);
 }
+
+/* ********************************** PUBLIC  FUNCTIONS ********************************** */
+
+void sindicato_afip_initialize(){
+	char* mountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
+
+	//TODO: montar el FS
+}

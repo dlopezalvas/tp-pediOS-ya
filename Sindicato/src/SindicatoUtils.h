@@ -1,33 +1,25 @@
 #ifndef SINDICATOUTILS_H_
 #define SINDICATOUTILS_H_
 
-#include "SindicatoApi.h"
+#include <stdio.h>
+#include <stdlib.h>
 
+#include <commons/log.h>
+#include <commons/config.h>
 #include <commons/string.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
-/* Valid commands */
-#define COMMAND_CREAR_RESTAURANTE "CrearRestaurante"
-#define COMMAND_CREAR_RECETA "CrearReceta"
-#define COMMAND_EXIT "exit"
-#define COMMAND_HELP "help"
+#include "../commonsCoronaLinux/logs.h"
+#include "../commonsCoronaLinux/socket.h"
+#include "../commonsCoronaLinux/utils.h"
 
-/* Arguments quantity */
-#define QTY_CREAR_RESTAURANTE 8
-#define QTY_CREAR_RECETA 4
+#define SINDICATO_PATH_CONFIG "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/sindicato.config"
 
-/* Error message */
-#define ERROR_COMMAND ": Command not found"
-#define ERROR_ARGUMENTS "Error - Invalid arguments for command: "
-
-typedef enum{
-	TYPE_CREAR_RESTAURANTE = 1,
-	TYPE_CREAR_RECETA = 2,
-}command_type_id;
+/* Global variables */
+t_log* sindicatoLog;
+t_config* sindicatoConfig;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
-void sindicato_initialize();
+
 
 #endif /* SINDICATOUTILS_H_ */
