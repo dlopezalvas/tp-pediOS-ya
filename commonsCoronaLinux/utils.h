@@ -146,7 +146,7 @@ typedef struct{
 typedef struct{
 	uint32_t id;
 	t_coordenadas posicion;
-}t_cliente;
+}m_cliente;
 
 typedef struct{
 	t_list* nombres; //lista de t_nombre

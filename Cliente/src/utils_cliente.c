@@ -218,7 +218,7 @@ void conexionEnvio(){
 		if(string_equals_ignore_case(proceso, APP)){
 			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
 			handshake_app->tipo_mensaje = POSICION_CLIENTE;
-			t_cliente* cliente = malloc(sizeof(t_cliente));
+			m_cliente* cliente = malloc(sizeof(m_cliente));
 
 			cliente->id = config_get_int_value(config_cliente, ID_CLIENTE);
 			cliente->posicion.x = config_get_int_value(config_cliente, POSICION_X);

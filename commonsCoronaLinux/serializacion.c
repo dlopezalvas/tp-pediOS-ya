@@ -640,7 +640,7 @@ rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 //posicion cliente
 
 
-t_buffer* buffer_posicion(t_cliente* cliente){
+t_buffer* buffer_posicion(m_cliente* cliente){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 
@@ -659,7 +659,7 @@ t_buffer* buffer_posicion(t_cliente* cliente){
 
 t_coordenadas* deserializar_posicion(void* buffer){
 
-	t_cliente* cliente = malloc(sizeof(t_coordenadas));
+	m_cliente* cliente = malloc(sizeof(t_coordenadas));
 	memcpy(&cliente->id, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(&cliente->posicion.x, buffer, sizeof(uint32_t));
