@@ -47,12 +47,14 @@ void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
 rta_obtenerRestaurante* metadata_restaurante(int socket);
 int conectar_con_sindicato();
+void inicio_de_listas_globales();
 
 //HILOS - SEMAFOROS
 pthread_t hilo_servidor_clientes;
 pthread_t hilo_planificador;
 t_list *  hilos;
 pthread_mutex_t mutex_hilos;
+pthread_mutex_t mutex_id_pedidos;
 
 
 //FHILOS
@@ -63,12 +65,17 @@ void* fhilo_planificador (void* v);
 rta_obtenerRestaurante* metadata_rest;
 void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
 void delay (int number_of_seconds);
+int id_pedidos=5;
+
 
 //LISTAS
+
 t_list *  list_pedidos;
+t_list *  status_platos;
 
 
-
+//FUNCIONES
+t_restaurante_y_plato* recibir_RTA_CONSULTAR_PLATOS(int socket);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */

@@ -39,7 +39,7 @@ void cargar_configuracion(){
 
 	cfg_quantum=config_get_int_value(config,"QUANTUM");
 	log_info(log_config_ini, "\t\tcfg_quantum: %d \n",cfg_quantum);
-	hilos = list_create();
+
 
 }
 
@@ -142,6 +142,10 @@ void iniciar_restaurante(){
 
 		}
 
+	//INICIO DE LISTAS GLOBALES
+
+	inicio_de_listas_globales();
+
 
 
 	//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
@@ -155,6 +159,16 @@ void iniciar_restaurante(){
 		pthread_create(&hilo_planificador, NULL,(void*) fhilo_planificador, NULL);
 
 
+
+
+}
+
+
+void inicio_de_listas_globales(){
+
+//LSITA DE HILOS CLIENTE
+	hilos = list_create();
+	status_platos = list_create();
 
 
 }
@@ -239,22 +253,24 @@ void serve_client(int socket){
 		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
-			//			pthread_mutex_lock(&logger_mutex);
-			//			log_info(logger,"Se desconecto el proceso con id: %d",socket);
-			//			pthread_mutex_unlock(&logger_mutex);
+
 			pthread_exit(NULL);
 		}
-		puts("recibi un mensaje");
-		printf("codigo: %d\n", cod_op);
+		log_info(log_config_ini ,"Recibi un mj \n");
+		log_info(log_config_ini ,"Se recibio cod_op: %d \n",cod_op);
+
 		process_request(cod_op, socket);
 	}
 }
 
 void process_request(int cod_op, int cliente_fd) {
 	int size = 0;
-	void* buffer = recibir_mensaje(cliente_fd, &size);
+	    void* mensaje = NULL;
+	    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+	        void* buffer = recibir_mensaje(cliente_fd, &size);
+	        mensaje = deserializar_mensaje(buffer, cod_op);
+	    }
 
-    void* mensaje_deserializado = deserializar_mensaje(buffer, cod_op);
 
 
 
@@ -262,51 +278,198 @@ void process_request(int cod_op, int cliente_fd) {
 	switch (cod_op) {
 		case CONSULTAR_PLATOS:
 
-		log_info(log_config_ini ,"Se recibio el mj CONSULTAR_PLATOS: ",cod_op);
+			log_info(log_config_ini ,"Se recibio el mj CONSULTAR_PLATOS: ",cod_op);
 
-		//DESERIALIZO EL MJ
+			//DESERIALIZO EL MJ (no hace falta)
+			//if(pregunto si el nombre de restaurante es igual al mio)
+			//t_nombre* nombre = malloc(sizeof(t_nombre));
+			//nombre= mensaje;
 
+			//CARGO EL MJ
+			t_mensaje * sindicato_CONSULTAR_PLATOS = malloc(sizeof(t_mensaje));
+			sindicato_CONSULTAR_PLATOS->tipo_mensaje=CONSULTAR_PLATOS;
+			sindicato_CONSULTAR_PLATOS->parametros=mensaje;
+
+
+
+			//CONECTARME CON SINDICATO y MANDARLE EL MJ, RECIBIR RTA Y RESPONDER AL CLIENTE
+
+			int socket_CONSULTAR_PLATOS = conectar_con_sindicato();
+
+			t_mensaje * cliente_RTA_CONSULTAR_PLATOS = malloc(sizeof(t_mensaje));
+
+			if(socket_CONSULTAR_PLATOS==-1){
+
+			log_info(log_config_ini, "\tNo se pudo conectar con sindicato, se envia respuesta default \n");
+
+			//enviar al cliente un codigo de error
+			cliente_RTA_CONSULTAR_PLATOS=NULL;
+			enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
+
+			}else{
+
+			//ENVIO A SINDICATO
+			enviar_mensaje(sindicato_CONSULTAR_PLATOS,socket_CONSULTAR_PLATOS);
+
+			//RECIBO RESPUESTA DE SINDICATO
+			t_restaurante_y_plato* rta_sindicato_CONSULTAR_PLATOS= malloc(sizeof(t_restaurante_y_plato));
+
+			rta_sindicato_CONSULTAR_PLATOS= recibir_RTA_CONSULTAR_PLATOS(socket_CONSULTAR_PLATOS);
+
+
+			//ENVIAR RESPUESTA DE SINDICATO A CLIENTE
+
+			cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje=RTA_CONSULTAR_PLATOS;
+			cliente_RTA_CONSULTAR_PLATOS->parametros=rta_sindicato_CONSULTAR_PLATOS;
+
+
+			enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
+
+			log_info(log_config_ini,"\tSe envio el mj al cliente\n");
+
+			}
 
 
 			//free(buffer);
 			break;
 		case CREAR_PEDIDO:
 
-		log_info(log_config_ini ,"Se recibio el mj CREAR_PEDIDO: ",cod_op);
-		uint32_t* numero = malloc(sizeof(uint32_t));
+			log_info(log_config_ini ,"Se recibio el mj CREAR_PEDIDO: ",cod_op);
 
-		*numero = 1; //1 para OK, 0 para FAIL
+			//esta es la respuesta al cliente, pero el mj responde el id de pedido
+			//uint32_t* ok = malloc(sizeof(uint32_t));
+			//*ok = 1; //1 para OK, 0 para FAIL
 
-
-			//ENVIAR MJ A SINDICATO
-			//list_pedidos= list_create();
-			//list_add(list_pedidos,id_pedido);
-			//RECIBO RESPUESTA
-
-			//RESPONDO AL CLIENTE
-
-			t_mensaje* rta= malloc(sizeof(t_mensaje));
-			rta->tipo_mensaje=RTA_CREAR_PEDIDO;
-			rta->parametros=numero;
-
-			enviar_mensaje(rta, cliente_fd);
-			log_info(log_config_ini ,"Se envio la confirmacion: ",cod_op);
+			//CREAR ID PEDIDO
+			pthread_mutex_lock(&mutex_id_pedidos);
+			id_pedidos=id_pedidos+1;
+			pthread_mutex_unlock(&mutex_id_pedidos);
 
 
+			uint32_t* id_pedido = malloc(sizeof(uint32_t));
+			id_pedido=id_pedidos;
+
+			t_mensaje* cliente_rta_CREAR_PEDIDO= malloc(sizeof(t_mensaje));
+
+			//ENVIAR EL ID A SINDICADO PARA GUARDAR PEDIDO
+
+			t_nombre_y_id* mje_GUARDAR_PEDIDO=malloc(sizeof(t_nombre_y_id));
+			mje_GUARDAR_PEDIDO->id=id_pedido;
+			mje_GUARDAR_PEDIDO->nombre=cfg_nombre_restaurante;
+
+			t_mensaje* rta_GUARDAR_PEDIDO= malloc(sizeof(t_mensaje));
+			rta_GUARDAR_PEDIDO->tipo_mensaje=GUARDAR_PEDIDO;
+			rta_GUARDAR_PEDIDO->parametros=mje_GUARDAR_PEDIDO;
+
+			int socket_GUARDAR_PEDIDO = conectar_con_sindicato();
+			if(socket_GUARDAR_PEDIDO==-1){
+
+				log_info(log_config_ini, "\tNo se pudo conectar con sindicato, se envia respuesta default \n");
+
+				//enviar al cliente un codigo de error
+				cliente_rta_CREAR_PEDIDO=NULL;
+				enviar_mensaje(cliente_rta_CREAR_PEDIDO,cliente_fd);
+
+			}else{
+				enviar_mensaje(rta_GUARDAR_PEDIDO,socket_GUARDAR_PEDIDO);
 
 
+				//RECIBIR RESPUESTA DE SINDICATO
+				uint32_t rta_sindicato_GUARDAR_PEDIDO= malloc(sizeof(uint32_t));
+
+				rta_sindicato_GUARDAR_PEDIDO= recibir_RTA_GUARDAR_PEDIDO(socket_CONSULTAR_PLATOS);// TODO
+
+				//recibo un ok/fail pero al cliente le envio el id del pedido creado
+				//ENVIAR RESTA AL CLIENTE CON EL ID DEL PEDIDO CREADO
+
+				cliente_rta_CREAR_PEDIDO->tipo_mensaje=RTA_CREAR_PEDIDO;
+				cliente_rta_CREAR_PEDIDO->parametros=id_pedido;
+
+				enviar_mensaje(cliente_rta_CREAR_PEDIDO, cliente_fd);
+				log_info(log_config_ini ,"Se envio: RTA_CREAR_PEDIDO ",cod_op);
+
+			}
 		break;
 		case AGREGAR_PLATO:
 		log_info(log_config_ini ,"Se recibio el mj AGREGAR_PLATO: ",cod_op);
 
+
+		//A través del envío del mensaje Guardar Plato al Módulo Sindicato, agrega un plato correspondiente a un pedido específico, que se encontrará relacionado con el
+		//Restaurante que envió dicho mensaje. Solo se podrá crear platos sobre pedidos existentes.
+
 		//DESERIALIZO EL MJ
 
+		t_nombre_y_id* mj_agregar_plato = malloc(sizeof(t_nombre_y_id));
+		mj_agregar_plato = mensaje;
 
-		//ENVIAR MJ A SINDICATO
+		t_mensaje * sindicato_GUARDAR_PLATO = malloc(sizeof(t_mensaje));
+		sindicato_GUARDAR_PLATO->tipo_mensaje=GUARDAR_PLATO;
+		sindicato_GUARDAR_PLATO->parametros=mj_agregar_plato;
 
-		//RECIBO RESPUESTA
+		t_mensaje* cliente_rta_AGREGAR_PLATO= malloc(sizeof(t_mensaje));
 
-		//RESPONDO AL CLIENTE
+		//VALIDACION DE ID PEDIDO Y RESTAURANTE
+		if(mj_agregar_plato->id<=id_pedidos){
+
+
+			t_nombre* nombre_restaurante_GUARDAR_PLATO = malloc(sizeof(t_nombre));
+			nombre_restaurante_GUARDAR_PLATO=cfg_nombre_restaurante;
+			nombre_restaurante_GUARDAR_PLATO=length(cfg_nombre_restaurante);
+
+			t_nombre* nombre_plato_GUARDAR_PLATO = malloc(sizeof(t_nombre));
+			nombre_plato_GUARDAR_PLATO=mj_agregar_plato->nombre;
+			nombre_plato_GUARDAR_PLATO=length(mj_agregar_plato->nombre);
+
+			m_guardarPlato* sindicato_GUARDAR_PLATO = malloc(sizeof(m_guardarPlato));
+			sindicato_GUARDAR_PLATO->cantidad=1;
+			sindicato_GUARDAR_PLATO->comida=nombre_plato_GUARDAR_PLATO;
+			sindicato_GUARDAR_PLATO->idPedido=mj_agregar_plato->id;
+			sindicato_GUARDAR_PLATO->restaurante=nombre_restaurante_GUARDAR_PLATO;
+
+			t_mensaje* mje_sindicato_GUARDAR_PLATO= malloc(sizeof(t_mensaje));
+			mje_sindicato_GUARDAR_PLATO->tipo_mensaje=GUARDAR_PLATO;
+			mje_sindicato_GUARDAR_PLATO->parametros=sindicato_GUARDAR_PLATO;
+
+			//CONEXION CON SINDICATO
+			int socket_GUARDAR_PLATO = conectar_con_sindicato();
+
+			if(socket_GUARDAR_PLATO==-1){
+
+				log_info(log_config_ini, "\tNo se pudo conectar con sindicato, se envia respuesta default \n");
+
+				//enviar al cliente un codigo de error
+				cliente_rta_AGREGAR_PLATO=NULL;
+				enviar_mensaje(cliente_rta_AGREGAR_PLATO,cliente_fd);
+
+			}else{
+
+				enviar_mensaje(mje_sindicato_GUARDAR_PLATO,socket_GUARDAR_PLATO);
+
+				//RECIBIR RESPUESTA DE SINDICATO
+				uint32_t rta_sindicato_GUARDAR_PLATO= malloc(sizeof(uint32_t));
+
+				rta_sindicato_GUARDAR_PLATO= recibir_RTA_GUARDAR_PLATO(socket_GUARDAR_PLATO);// TODO
+
+				//recibo un ok/fail y al cliente le mando el mismo ok/fail
+				//ENVIAR RESTA AL CLIENTE CON EL ID DEL PEDIDO CREADO
+
+				cliente_rta_AGREGAR_PLATO->tipo_mensaje=RTA_AGREGAR_PLATO;
+				cliente_rta_AGREGAR_PLATO->parametros=rta_sindicato_GUARDAR_PLATO;
+
+				enviar_mensaje(cliente_rta_AGREGAR_PLATO, cliente_fd);
+				log_info(log_config_ini ,"Se envio: RTA_AGREGAR_PLATO ",cod_op);
+			}
+
+		}else{
+
+
+			log_info(log_config_ini ,"El id de pedido no corresponde a este restaurante");
+		}
+
+
+
+
+
 
 		break;
 
@@ -314,6 +477,62 @@ void process_request(int cod_op, int cliente_fd) {
 		log_info(log_config_ini ,"Se recibio el mj CONFIRMAR_PEDIDO: ",cod_op);
 
 		//DESERIALIZO EL MJ
+		int32_t* id_CONFIRMAR_PEDIDO = malloc(sizeof(uint32_t));
+
+		id_CONFIRMAR_PEDIDO=mensaje;
+
+		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
+		t_nombre* nombre_restaurante_OBTENER_PEDIDO = malloc(sizeof(t_nombre));
+		nombre_restaurante_OBTENER_PEDIDO=cfg_nombre_restaurante;
+		nombre_restaurante_OBTENER_PEDIDO=length(cfg_nombre_restaurante);
+
+
+		t_nombre_y_id* sindicato_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
+		sindicato_OBTENER_PEDIDO->id=id_CONFIRMAR_PEDIDO;
+		sindicato_OBTENER_PEDIDO->nombre=nombre_restaurante_OBTENER_PEDIDO;
+
+
+		t_mensaje* mje_sindicato_OBTENER_PEDIDO= malloc(sizeof(t_mensaje));
+		mje_sindicato_OBTENER_PEDIDO->tipo_mensaje=OBTENER_PEDIDO;
+		mje_sindicato_OBTENER_PEDIDO->parametros=sindicato_OBTENER_PEDIDO;
+
+		//estructura de respuesta al cliente
+		t_mensaje* cliente_rta_CONFIRMAR_PEDIDO= malloc(sizeof(t_mensaje));
+
+			//CONEXION CON SINDICATO
+
+
+			int socket_OBTENER_PEDIDO = conectar_con_sindicato();
+
+			if(socket_OBTENER_PEDIDO==-1){
+				log_info(log_config_ini, "\tNo se pudo conectar con sindicato, se envia respuesta default \n");
+
+				//enviar al cliente un codigo de error
+				cliente_rta_AGREGAR_PLATO=NULL;
+				enviar_mensaje(cliente_rta_AGREGAR_PLATO,cliente_fd);
+
+			}else{
+					enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
+
+					//RECIBIR RESPUESTA DE SINDICATO
+					rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO= malloc(sizeof(uint32_t));
+
+					rta_sindicato_RTA_OBTENER_PEDIDO= recibir_RTA_OBTENER_PEDIDO(socket_OBTENER_PEDIDO);// TODO
+					/*
+					typedef struct{
+						t_nombre comida;
+						uint32_t cantTotal;
+						uint32_t cantHecha;
+					}t_elemPedido;
+
+					typedef struct{
+						uint32_t cantPedidos;
+						t_list* infoPedidos; //lista de elemPedido
+					}rta_obtenerPedido;
+				*/
+			}
+		//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO
+
 
 		/*
 		Este mensaje permitirá confirmar un pedido creado previamente. Para esto se recibirá el ID de pedido destino.
@@ -383,7 +602,7 @@ return restaurante;
 }
 int  conectar_con_sindicato(){
 
-	int estado_conexion=-1;
+
 	int conexion_sindicato;
 
 
@@ -393,8 +612,8 @@ int  conectar_con_sindicato(){
 	conexion_sindicato = iniciar_cliente(cfg_ip_sindicato,cfg_puerto_sindicato);
 
 
-	estado_conexion= conexion_sindicato;
-	if(estado_conexion==-1){
+
+	if(conexion_sindicato==-1){
 
 		log_info(log_config_ini, "\tModulo sindicato no disponible \n");
 
@@ -402,9 +621,36 @@ int  conectar_con_sindicato(){
 	}else{
 
 		  log_info(log_config_ini,"\tLa reconexión con Sindicato fue exitosa \n");
-		  estado_conexion=1;
+
 		}
-return estado_conexion;
+return conexion_sindicato;
 
 }
+t_restaurante_y_plato*  recibir_RTA_CONSULTAR_PLATOS(int socket){
+		int rec;
+		int cod_op;
+		t_restaurante_y_plato* mensaje = NULL;
 
+			rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+			if(rec == -1 || rec == 0 ){
+				cod_op = -1;
+
+			}
+
+			if(cod_op==-1) {
+
+				//enviar error
+
+			}else{
+				int size = 0;
+
+
+				if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+					void* buffer = recibir_mensaje(socket, &size);
+					mensaje = deserializar_mensaje(buffer, cod_op);
+				}
+
+			}
+return mensaje;
+
+}
