@@ -144,6 +144,11 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
+	uint32_t id;
+	t_coordenadas posicion;
+}m_cliente;
+
+typedef struct{
 	t_list* nombres; //lista de t_nombre
 	uint32_t cantElementos; //element count de los nombres
 }t_restaurante_y_plato;

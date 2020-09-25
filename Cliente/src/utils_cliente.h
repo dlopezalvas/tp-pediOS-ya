@@ -42,6 +42,7 @@
 
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
+#define ID_CLIENTE "ID_CLIENTE"
 
 #define COMANDO_HELP "HELP"
 

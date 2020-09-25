@@ -40,7 +40,7 @@ t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido);
 rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer);
 t_buffer* buffer_rta_obtener_pedido(rta_obtenerPedido* obtenerPedido);
 rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer);
-t_buffer* buffer_posicion(t_coordenadas* posicion);
+t_buffer* buffer_posicion(m_cliente* cliente);
 t_coordenadas* deserializar_posicion(void* buffer);
 t_buffer* buffer_rta_obtener_receta(rta_obtenerReceta* obtenerReceta);
 rta_obtenerReceta* deserializar_rta_obtener_receta(void* buffer);

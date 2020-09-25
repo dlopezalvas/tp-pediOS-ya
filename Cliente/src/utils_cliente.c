@@ -218,12 +218,13 @@ void conexionEnvio(){
 		if(string_equals_ignore_case(proceso, APP)){
 			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
 			handshake_app->tipo_mensaje = POSICION_CLIENTE;
-			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+			m_cliente* cliente = malloc(sizeof(m_cliente));
 
-			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
-			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+			cliente->id = config_get_int_value(config_cliente, ID_CLIENTE);
+			cliente->posicion.x = config_get_int_value(config_cliente, POSICION_X);
+			cliente->posicion.y = config_get_int_value(config_cliente, POSICION_Y);
 
-			handshake_app->parametros = posicion_cliente;
+			handshake_app->parametros = cliente;
 
 			enviar_mensaje(handshake_app, socket);
 //			free_struct_mensaje(handshake_app->parametros, handshake_app->tipo_mensaje);

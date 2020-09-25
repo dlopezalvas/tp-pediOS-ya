@@ -640,16 +640,18 @@ rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 //posicion cliente
 
 
-t_buffer* buffer_posicion(t_coordenadas* posicion){
+t_buffer* buffer_posicion(m_cliente* cliente){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 
-	buffer -> size = sizeof(uint32_t)*2;
+	buffer -> size = sizeof(uint32_t)*3;
 	void* stream = malloc(buffer -> size);
 	uint32_t offset = 0;
-	memcpy(stream + offset, &posicion->x, sizeof(uint32_t));
+	memcpy(stream + offset, &cliente->id, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &posicion->y, sizeof(uint32_t));
+	memcpy(stream + offset, &cliente->posicion.x, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &cliente->posicion.y, sizeof(uint32_t));
 	buffer -> stream = stream;
 
 	return buffer;
@@ -657,12 +659,14 @@ t_buffer* buffer_posicion(t_coordenadas* posicion){
 
 t_coordenadas* deserializar_posicion(void* buffer){
 
-	t_coordenadas* posicion = malloc(sizeof(t_coordenadas));
-	memcpy(&posicion->x, buffer, sizeof(uint32_t));
+	m_cliente* cliente = malloc(sizeof(t_coordenadas));
+	memcpy(&cliente->id, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
-	memcpy(&posicion->y, buffer, sizeof(uint32_t));
+	memcpy(&cliente->posicion.x, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&cliente->posicion.y, buffer, sizeof(uint32_t));
 
-	return posicion;
+	return cliente;
 }
 
 //rta_obtenerReceta
