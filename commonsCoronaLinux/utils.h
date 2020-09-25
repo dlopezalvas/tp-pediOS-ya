@@ -48,6 +48,7 @@
 #define MENSAJE_FINALIZAR_PEDIDO "FINALIZAR_PEDIDO"
 #define MENSAJE_TERMINAR_PEDIDO "TERMINAR_PEDIDO"
 #define MENSAJE_GUARDAR_PLATO "GUARDAR_PLATO"
+#define MENSAJE_OBTENER_RECETA "OBTENER_RECETA"
 
 #define MENSAJE_RTA_CONSULTAR_RESTAURANTES "RTA_CONSULTAR_RESTAURANTES"
 #define MENSAJE_RTA_SELECCIONAR_RESTAURANTE "RTA_SELECCIONAR_RESTAURANTE"
@@ -63,6 +64,7 @@
 #define MENSAJE_RTA_FINALIZAR_PEDIDO "RTA_FINALIZAR_PEDIDO"
 #define MENSAJE_RTA_TERMINAR_PEDIDO "RTA_TERMINAR_PEDIDO"
 #define MENSAJE_RTA_GUARDAR_PLATO "RTA_GUARDAR_PLATO"
+#define MENSAJE_RTA_OBTENER_RECETA "RTA_OBTENER_RECETA"
 
 typedef enum{
 	CONSULTAR_RESTAURANTES = 1, //no recibe nada
@@ -94,6 +96,8 @@ typedef enum{
 	TERMINAR_PEDIDO = 27, //m_pedido,
 	RTA_TERMINAR_PEDIDO = 28, //Confirmacion Ok/Fail
 	POSICION_CLIENTE = 29,
+	OBTENER_RECETA = 30,
+	RTA_OBTENER_RECETA = 31,
 }op_code;
 
 typedef enum{ //son para saber el tipo de struct que usa cada mensaje
@@ -109,6 +113,7 @@ typedef enum{ //son para saber el tipo de struct que usa cada mensaje
 	STRC_RTA_OBTENER_PEDIDO =9,
 	STRC_GUARDAR_PLATO = 10,
 	STRC_POSICION = 11,
+	STRC_RTA_OBTENER_RECETA = 12,
 }struct_code;
 
 
@@ -139,6 +144,11 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
+	uint32_t id;
+	t_coordenadas posicion;
+}m_cliente;
+
+typedef struct{
 	t_list* nombres; //lista de t_nombre
 	uint32_t cantElementos; //element count de los nombres
 }t_restaurante_y_plato;
@@ -161,6 +171,11 @@ typedef struct{
 	t_list* recetas; //lista de t_nombre
 	uint32_t cantHornos;
 }rta_obtenerRestaurante;
+
+typedef struct{
+	t_nombre receta;
+	uint32_t precio;
+}t_receta;
 
 typedef struct{
 	t_nombre restaurante;
@@ -215,7 +230,15 @@ typedef struct{
 	t_list* infoPedidos; //lista de elemPedido
 }rta_obtenerPedido;
 
+typedef struct{
+	uint32_t cantPasos;
+	t_list* pasos;
+}rta_obtenerReceta;
 
+typedef struct{
+	t_nombre paso;
+	uint32_t duracion;
+}t_paso;
 
 t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
@@ -230,6 +253,7 @@ void free_seleccionar_restaurante(m_seleccionarRestaurante* mensaje);
 void free_id_o_confirmacion(uint32_t* mensaje);
 void free_nombre(t_nombre* mensaje);
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje);
+void free_receta(t_receta* receta);
 void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
 void free_nombre_y_id(t_nombre_y_id* mensaje);
 void free_plato_listo(m_platoListo* mensaje);
@@ -239,6 +263,8 @@ void free_rta_obtener_pedido(rta_obtenerPedido* mensaje);
 void free_infoPedidos(t_elemPedido* info_pedido);
 void free_guardar_plato(m_guardarPlato* mensaje);
 void free_posicion(t_coordenadas* mensaje);
+void free_rta_obtener_receta(rta_obtenerReceta* mensaje);
+void free_pasos(t_paso* paso);
 
 
 
