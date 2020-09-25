@@ -5,6 +5,9 @@ void iniciar_comanda(){
 	config_comanda = leer_config(PATH);
 	log_comanda = log_create("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/comanda.LOG","comanda",1,LOG_LEVEL_INFO);
 
+	if(string_equals_ignore_case(config_get_string_value(config_comanda, ALGORITMO_REEMPLAZO), "LRU")) algoritmo_reemplazo = LRU;
+	else if(string_equals_ignore_case(config_get_string_value(config_comanda, ALGORITMO_REEMPLAZO), "CLOCK_MEJ")) algoritmo_reemplazo = CLOCK_MEJORADO;
+
 	hilos_clientes = list_create();
 	pthread_mutex_init(&hilos_clientes_mtx, NULL);
 
@@ -15,40 +18,28 @@ void iniciar_comanda(){
 	pthread_mutex_init(&restaurantes_mtx, NULL);
 
 	memoria_principal = malloc(config_get_int_value(config_comanda, TAMANIO_MEMORIA));
+	pthread_mutex_init(&memoria_principal_mtx, NULL);
+
 	memoria_swap = malloc(config_get_int_value(config_comanda, TAMANIO_SWAP));
+	pthread_mutex_init(&memoria_swap_mtx, NULL);
 
 	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA) * sizeof(uint32_t);
 	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA) * sizeof(uint32_t);
 
 	frames_swap = malloc(cant_frames_swap);
+	pthread_mutex_init(&frames_swap_mtx, NULL);
+
 	frames_MP = malloc(cant_frames_MP);
+	pthread_mutex_init(&frames_MP_mtx, NULL);
 
 	for(int i=0; i<cant_frames_swap; i++){
 		frames_swap[i]=0;
 	}
 	for(int j=0; j<cant_frames_MP; j++){
 		frames_MP[j]=0;
-		}
-
+	}
 
 }
-
-//void iniciar_colas(){
-//
-//	guardar_pedido_queue = queue_create();
-//	pthread_mutex_init(&guardar_pedido_queue_mtx, NULL);
-//	guardar_plato_queue = queue_create();
-//	pthread_mutex_init(&guardar_plato_queue_mtx, NULL);
-//	obtener_pedido_queue = queue_create();
-//	pthread_mutex_init(&obtener_pedido_queue_mtx, NULL);
-//	confimar_pedido_queue = queue_create();
-//	pthread_mutex_init(&confimar_pedido_queue_mtx, NULL);
-//	plato_listo_queue = queue_create();
-//	pthread_mutex_init(&plato_listo_queue_mtx, NULL);
-//	finalizar_pedido_queue = queue_create();
-//	pthread_mutex_init(&finalizar_pedido_queue_mtx, NULL);
-//
-//}
 
 void process_request(int cod_op, int cliente_fd){
 	int size = 0;
@@ -164,30 +155,54 @@ void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 }
 
 void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
+	int frame_disponible_swap;
 	m_guardarPlato* mensaje = mensaje_a_procesar->mensaje;
 	uint32_t confirmacion;
 	t_segmento* pedido = buscarPedido(mensaje->idPedido, mensaje->restaurante.nombre);
+	pthread_mutex_t restaurante_mtx;
 	t_pagina* plato = NULL;
-	t_plato* plato_a_guardar = malloc(sizeof(t_plato));
-	plato_a_guardar->cant_pedida = mensaje->cantidad;
-	plato_a_guardar->cant_lista = 0;
-	strcpy(plato_a_guardar->nombre, mensaje->restaurante.nombre);
 
 	if(pedido != NULL){
+		restaurante_mtx = buscar_mutex_restaurante(mensaje->restaurante.nombre);
+
+		pthread_mutex_lock(&restaurante_mtx);
 		plato = buscarPlato(pedido->tabla_paginas, mensaje->comida.nombre);
+		pthread_mutex_unlock(&restaurante_mtx);
 		if(plato == NULL){
-			//ver si hay memoria
-			plato = malloc(sizeof(t_pagina));
-			plato->modificado = false;
-			plato->uso = true;
-			plato->ultimo_acceso = time(NULL);
-			//buscar frame
+
+			frame_disponible_swap = memoria_disponible_swap();
+
+			if(frame_disponible_swap != -1){
+
+				t_plato* plato_a_guardar = malloc(sizeof(t_plato));
+				plato_a_guardar->cant_pedida = mensaje->cantidad;
+				plato_a_guardar->cant_lista = 0;
+				strcpy(plato_a_guardar->nombre, mensaje->restaurante.nombre);
+
+				plato = malloc(sizeof(t_pagina));
+				plato->modificado = false;
+				plato->uso = true;
+				plato->ultimo_acceso = time(NULL);
+				plato->pagina_swap = frame_disponible_swap;
+
+				pthread_mutex_lock(&restaurante_mtx);
+				list_add(pedido->tabla_paginas, plato);
+				pthread_mutex_unlock(&restaurante_mtx);
+
+				guardar_en_swap(frame_disponible_swap, plato_a_guardar);
+				guardar_en_mp(plato_a_guardar);
+			}else{
+				//memoria swap llena
+				confirmacion = 0;
+			}
 		}else{
-			//buscar y traer de swap
-			//plato = derializar_pagina(void*)
-			//sumar plato deserializado a plato_a_guardar
+			if(!plato->presencia){
+				//traer de swap
+			}
+			pthread_mutex_lock(&restaurante_mtx);
+			actualizar_plato_mp(plato, mensaje->cantidad);
+			pthread_mutex_unlock(&restaurante_mtx);
 		}
-		//guardar en memoria
 		confirmacion = 1;
 	}else{
 		//no existe pedido o restaurante
@@ -197,8 +212,118 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PLATO);
 }
 
+void guardar_en_mp(t_plato* plato){
+	int frame = seleccionar_frame_mp();
+	void* pagina_serializada = serializar_pagina(plato);
+
+	int offset = frame * TAMANIO_PAGINA;
+
+	pthread_mutex_lock(&memoria_principal_mtx);
+	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
+	pthread_mutex_unlock(&memoria_principal_mtx);
+
+}
+
+int seleccionar_frame_mp(){
+
+	int frame_disponible = memoria_disponible_mp();
+
+	if(frame_disponible == -1){
+		switch(algoritmo_reemplazo){
+		case LRU:
+//			frame_disponible = eleccion_victima_LRU();
+			break;
+		case CLOCK_MEJORADO:
+//			frame_disponible = eleccion_victima_clock_mejorado();
+			break;
+		}
+	}
+
+	return frame_disponible;
+}
+
+void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida){
+
+	void* plato_a_deserializar = malloc(TAMANIO_PAGINA);
+	void* plato_serializado;
+
+	t_plato* plato;
+
+	int offset = pagina->frame * TAMANIO_PAGINA;
+
+	pagina->modificado = true;
+	pagina->ultimo_acceso = time(NULL);
+	pagina->uso = true;
+
+	pthread_mutex_lock(&memoria_principal_mtx);
+	memcpy(plato_a_deserializar, memoria_principal + offset, TAMANIO_PAGINA);
+
+	plato = deserializar_pagina(plato_a_deserializar);
+
+	plato->cant_pedida += cantidad_pedida;
+
+	//guardo en la mp
+	plato_serializado = serializar_pagina(plato);
+
+	memcpy(memoria_principal + offset, plato_serializado, TAMANIO_PAGINA);
+	pthread_mutex_unlock(&memoria_principal_mtx);
+
+	free(plato_a_deserializar);
+	free(plato);
+	free(plato_serializado);
+
+}
+
+void guardar_en_swap(int frame_destino_swap, t_plato* plato){
+	void* pagina = serializar_pagina(plato);
+
+	int offset = frame_destino_swap * TAMANIO_PAGINA;
+
+	pthread_mutex_lock(&memoria_swap_mtx);
+	memcpy(memoria_swap + offset, pagina, TAMANIO_PAGINA);
+	pthread_mutex_unlock(&memoria_swap_mtx);
+}
+
+int memoria_disponible_swap(){
+
+	int frame_disponible = -1;
+	int i = 0;
+
+	pthread_mutex_lock(&frames_swap_mtx);
+	while(frames_swap[i] != 0 && i < cant_frames_swap){
+		i++;
+	}
+
+	if(frames_swap[i] == 0){
+		frame_disponible = i;
+		frames_swap[i] = 1;
+	}
+	pthread_mutex_unlock(&frames_swap_mtx);
+
+	return frame_disponible;
+}
+
+int memoria_disponible_mp(){
+
+	int frame_disponible = -1;
+	int i = 0;
+
+	pthread_mutex_lock(&frames_MP_mtx);
+	while(frames_MP[i] != 0 && i < cant_frames_MP){
+		i++;
+	}
+
+	if(frames_MP[i] == 0){
+		frame_disponible = i;
+		frames_MP[i] = 1;
+	}
+	pthread_mutex_unlock(&frames_MP_mtx);
+
+	return frame_disponible;
+}
+
 void guardar_pagina(t_plato* plato){
-	void* pagina = serializar_pagina( plato);
+	void* pagina = serializar_pagina(plato);
 
 }
 
@@ -245,13 +370,18 @@ t_segmento* buscarPedido(uint32_t id_pedido, char* nombre){
 	}
 
 	if(restaurante != NULL){
-	pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
-	pedido = list_find(restaurante->tabla_segmentos, (void*)_mismoPedido);
-	pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+		pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+		pedido = list_find(restaurante->tabla_segmentos, (void*)_mismoPedido);
+		pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 	}else{
 		pedido = NULL;
 	}
 	return pedido;
+}
+
+pthread_mutex_t buscar_mutex_restaurante(char* nombre){
+	t_restaurante* restaurante = buscarRestaurante(nombre);
+	return restaurante->tabla_segmentos_mtx;
 }
 
 
@@ -291,6 +421,29 @@ t_plato* deserializar_pagina(void* stream){
 }
 
 t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
+
+	t_plato* plato;
+	t_pagina* pagina;
+	void* stream;
+
+	int offset;
+
+	for(int i = 0; i < list_size(tabla_paginas); i++){
+		stream = malloc(TAMANIO_PAGINA);
+		pagina = list_get(tabla_paginas, i);
+		offset = pagina->pagina_swap * TAMANIO_PAGINA;
+		pthread_mutex_lock(&memoria_swap_mtx);
+		memcpy(stream, memoria_swap + offset, TAMANIO_PAGINA);
+		pthread_mutex_unlock(&memoria_swap_mtx);
+		plato = deserializar_pagina(stream);
+		free(stream);
+		if(string_equals_ignore_case(plato->nombre, comida)){
+			free(plato); //TODO ver que no rompa
+			return pagina;
+		}
+		free(plato);
+	}
+
 	return NULL;
 
 }

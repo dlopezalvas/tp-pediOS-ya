@@ -49,6 +49,7 @@ typedef struct{
 
 typedef struct{
 	uint32_t frame;
+	uint32_t pagina_swap;
 	uint32_t ultimo_acceso; // time(NULL);
 	bool presencia;
 	bool uso; //se inicia en 1
@@ -61,6 +62,12 @@ typedef struct{
 	char nombre[24];
 }t_plato;
 
+typedef enum{
+	CLOCK_MEJORADO = 0,
+	LRU = 1,
+}t_algoritmo_reemplazo;
+
+t_algoritmo_reemplazo algoritmo_reemplazo;
 
 pthread_mutex_t restaurantes_mtx;
 t_list* restaurantes;
@@ -70,22 +77,14 @@ uint32_t cant_frames_MP;
 int* frames_swap;
 int* frames_MP;
 
-//pthread_t guardar_pedido_queue_mtx;
-//pthread_t guardar_plato_queue_mtx;
-//pthread_t obtener_pedido_queue_mtx;
-//pthread_t confimar_pedido_queue_mtx;
-//pthread_t plato_listo_queue_mtx;
-//pthread_t finalizar_pedido_queue_mtx;
-//
-//t_queue* guardar_pedido_queue;
-//t_queue* guardar_plato_queue;
-//t_queue* obtener_pedido_queue;
-//t_queue* confimar_pedido_queue;
-//t_queue* plato_listo_queue;
-//t_queue* finalizar_pedido_queue;
+pthread_mutex_t frames_swap_mtx;
+pthread_mutex_t frames_MP_mtx;
 
 void* memoria_principal;
 void* memoria_swap;
+
+pthread_mutex_t memoria_principal_mtx;
+pthread_mutex_t memoria_swap_mtx;
 
 void iniciar_comanda();
 void process_request(int cod_op, int cliente_fd);
@@ -104,5 +103,14 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
+
+int memoria_disponible_swap();
+pthread_mutex_t buscar_mutex_restaurante(char* nombre);
+t_plato* deserializar_pagina(void* stream);
+void guardar_en_swap(int frame_destino_swap, t_plato* plato);
+void guardar_en_mp(t_plato* plato);
+int seleccionar_frame_mp();
+void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida);
+int memoria_disponible_mp();
 
 #endif /* UTILS_COMANDA_H_ */
