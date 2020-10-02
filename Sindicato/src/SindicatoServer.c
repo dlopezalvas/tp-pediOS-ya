@@ -3,35 +3,57 @@
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
 void sindicato_process_request(int cod_op, int socket_client){
-	void* mensaje;
+	void* message;
+	void* buffer;
 	int size;
+
+	/* Response variables*/
+	int operationResult;
+	rta_obtenerRestaurante restaurante;
+	rta_obtenerReceta receta;
+	rta_obtenerPedido pedido;
+	t_restaurante_y_plato platos;
+
+	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+		buffer = recibir_mensaje(socket_client, &size);
+		message = deserializar_mensaje(buffer, cod_op);
+	}
 
 	switch(cod_op){
 		case CONSULTAR_PLATOS:
+			platos = sindicato_api_consultar_platos(message);
 			break;
 		case GUARDAR_PEDIDO:
+			operationResult = sindicato_api_guardar_pedido(message);
 			break;
 		case GUARDAR_PLATO:
+			operationResult = sindicato_api_guardar_plato(message);
 			break;
 		case CONFIRMAR_PEDIDO:
+			operationResult = sindicato_api_confirmar_pedido(message);
 			break;
 		case OBTENER_PEDIDO:
+			pedido = sindicato_api_obtener_pedido(message);
 			break;
 		case OBTENER_RESTAURANTE:
+			restaurante = sindicato_api_obtener_restaurante(message);
 			break;
 		case PLATO_LISTO:
+			operationResult = sindicato_api_plato_listo(message);
 			break;
 		case OBTENER_RECETA:
-			mensaje = recibir_mensaje(socket_client, &size);
-			log_info(sindicatoLog, "me llego algo!!!");
+			receta = sindicato_api_obtener_receta(message);
 			break;
 		case TERMINAR_PEDIDO:
+			operationResult = sindicato_api_terminar_pedido(message);
 			break;
 		case 0:
 			pthread_exit(NULL);
 		case -1:
 			pthread_exit(NULL);
 	}
+
+	sindicato_api_send_response_of_operation();
 }
 
 void sindicato_serve_client(int socket){

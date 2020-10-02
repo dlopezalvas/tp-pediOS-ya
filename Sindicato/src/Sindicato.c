@@ -16,9 +16,15 @@ void sindicato_initialize(){
 	//TODO: Inicializar el FS con punto de montaje
 	sindicato_afip_initialize();
 
-	sindicato_server_initialize();
+	/* Initialize the thread that listen conections */
+	pthread_t sindicatoServerThread;
+	pthread_create(&sindicatoServerThread, NULL, (void*)sindicato_server_initialize, NULL);
+	pthread_detach(sindicatoServerThread);
 
-	sindicato_console_initialize();
+	/* Initialize the thread that open the console */
+	pthread_t sindicatoConsoleThread;
+	pthread_create(&sindicatoConsoleThread, NULL, (void*)sindicato_console_initialize,NULL);
+	pthread_join(sindicatoConsoleThread, NULL);
 
 	config_destroy(sindicatoConfig);
 	log_destroy(sindicatoLog);
