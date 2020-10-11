@@ -56,6 +56,8 @@
 
 // restaurantes
     typedef struct {
+        pthread_mutex_t* mutex; // por ahora solo para el socket
+        int socket;
         int pos_x;
         int pos_y;
         char* nombre;
@@ -68,6 +70,7 @@
 
 // clientes
     typedef struct {
+        pthread_mutex_t* mutex; // por ahora solo para el socket
         int pos_x;
         int pos_y;
         int id;
@@ -116,11 +119,14 @@
         int pedido_id;
         t_estado pedido_estado;
         pthread_mutex_t* mutex_EXEC;
+        pthread_mutex_t* mutex_clock;
         pthread_t* hilo;
     } t_pedido;
 
     t_list* pedidos;
+    t_list* pedidosEXEC;
     pthread_mutex_t mutex_pedidos;
+    pthread_mutex_t mutex_pedidosEXEC;
     void* fhilo_pedido(void* pedido_sin_castear); // toma t_pedido* por param
     void consumir_ciclo(t_pedido* pedido);
     void pedido_repartidorLlegoARestaurante(t_pedido* pedido);

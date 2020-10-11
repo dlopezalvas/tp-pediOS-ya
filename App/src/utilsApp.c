@@ -243,6 +243,12 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
 
         log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando cola de READY...");
         pthread_mutex_unlock(&mutex_cola_READY);
+
+        // TODO: logging
+        pthread_mutex_lock(&mutex_pedidosEXEC);
+        pedido_seleccionado->pedido_estado = EXEC;
+        list_add(pedidosEXEC, pedido_seleccionado);
+        pthread_mutex_unlock(&mutex_pedidosEXEC);
         
         log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando EXEC de pedido %i", pedido_seleccionado->pedido_id);
         pthread_mutex_unlock(pedido_seleccionado->mutex_EXEC);
@@ -282,6 +288,11 @@ void planif_nuevoPedido(int id_pedido) {
     pedidoNuevo->restaurante = restaurante;
     pedidoNuevo->pedido_id = id_pedido;
 
+    pedidoNuevo->mutex_clock = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
+    pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado?
+    log_debug(logger_planificacion, "[PLANIF_NP] Mutex de clock inicializado");
+
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_EXEC, NULL);
     pthread_mutex_lock(pedidoNuevo->mutex_EXEC);
@@ -292,6 +303,24 @@ void planif_nuevoPedido(int id_pedido) {
     pthread_create(pedidoNuevo->hilo, NULL, fhilo_pedido, pedidoNuevo);
 
     planif_encolar_NEW(pedidoNuevo);
+}
+
+t_cliente* get_cliente_porSuID(int id_cliente) {
+    t_cliente* cliente;
+    pthread_mutex_lock(&mutex_lista_clientes);
+    for (
+        unsigned index_cli = 0;
+        index_cli < list_size(clientes);
+        index_cli++
+    ) {
+        cliente = list_get(clientes, index_cli);
+        if (cliente->id == id_cliente) {
+            pthread_mutex_unlock(&mutex_lista_clientes);
+            return cliente;
+        }
+    }
+    pthread_mutex_unlock(&mutex_lista_clientes);
+    return NULL;
 }
 
 t_cliente* get_cliente(int id_pedido) {
@@ -430,6 +459,7 @@ void* fhilo_pedido(void* pedido_sin_castear) { // toma t_pedido* por param
 //      > si se realiza un movimiento, devuelve true
 //      > si no se realiza un movimiento (porque llego a destino), devuelve false 
 bool repartidor_mover_hacia(t_repartidor* repartidor, int destino_x, int destino_y) {
+    // TODO: logging
     if (repartidor->pos_x > destino_x) {
         repartidor->pos_x--;
         return true;
@@ -500,7 +530,8 @@ void consumir_ciclo(t_pedido* pedido) {
         pedido->repartidor->frecuenciaDescanso_restante
     );
     if (pedido->repartidor->frecuenciaDescanso_restante) {
-        sleep(cfval_retardoCicloCPU);
+        // sleep(cfval_retardoCicloCPU);
+        pthread_mutex_lock(pedido->mutex_clock);
         return;
     }
     log_debug(
@@ -508,14 +539,20 @@ void consumir_ciclo(t_pedido* pedido) {
         "[PEDIDO_%2i] Bloqueando por descanso...",
         pedido->pedido_id
     );
+
+    pthread_mutex_lock(&mutex_pedidosEXEC);
+    search_remove_return(pedidosEXEC, pedido);
     pedido->pedido_estado = BLOCK;
+    pthread_mutex_unlock(&mutex_pedidosEXEC);
     sem_post(&semaforo_vacantesEXEC);
+
     for (
         pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
         pedido->repartidor->tiempoDescanso_restante > 0;
         pedido->repartidor->tiempoDescanso_restante--
     ) {
-        sleep(cfval_retardoCicloCPU);
+        // sleep(cfval_retardoCicloCPU);
+        pthread_mutex_lock(pedido->mutex_clock);
     }
     log_debug(
         logger_planificacion,
@@ -531,28 +568,14 @@ void consumir_ciclo(t_pedido* pedido) {
     pthread_mutex_lock(pedido->mutex_EXEC);
 }
 
-void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente) {
-    t_cliente* cliente = malloc(sizeof(t_cliente));
-
-    cliente->id = datos_cliente->id;
-    cliente->pos_x = datos_cliente->posicion.x;
-    cliente->pos_y = datos_cliente->posicion.y;
-    cliente->restaurante_seleccionado = NULL;
-    cliente->socket = socket_cliente;
-
-    pthread_mutex_lock(&mutex_lista_clientes);
-    list_add(clientes, cliente);
-    // TODO: logging
-    pthread_mutex_unlock(&mutex_lista_clientes);
-}
-
-
-void guardar_nuevoRest(char* nombre, int pos_x, int pos_y) {
-    // TODO: cambiar firma porque falta el mensaje handshake con rest
+void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commons
     t_restaurante* restaurante = malloc(sizeof(t_restaurante));
-    restaurante->nombre = nombre;
-    restaurante->pos_x = pos_x;
-    restaurante->pos_y = pos_y;
+    restaurante->nombre = mensaje_rest->nombre;
+    restaurante->pos_x = mensaje_rest->pos_x;
+    restaurante->pos_y = mensaje_rest->pos_y;
+    restaurante->socket = socket;
+    restaurante->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(restaurante->mutex, NULL);
     pthread_mutex_lock(&mutex_lista_restaurantes);
     list_add(restaurantes, restaurante);
     // TODO: logging
@@ -593,7 +616,7 @@ void guardar_seleccion(char* nombre_rest, int id_cliente) {
     pthread_mutex_unlock(&mutex_lista_clientes);
 }
 
-char** get_nombresRestConectados(void) {
+char** get_nombresRestConectados(void) { // TODO: devuelve t_list*
     char** nombresRestConectados;
     pthread_mutex_lock(&mutex_lista_restaurantes);
     if (list_is_empty(restaurantes) || modo_noRest) {
@@ -614,8 +637,36 @@ char** get_nombresRestConectados(void) {
     return nombresRestConectados;
 }
 
+void* fhilo_clock(void* __sin_uso__) {
+    while (true) {
+        pthread_mutex_lock(&mutex_pedidosEXEC);
+        for (
+            unsigned index_pedidos = 0;
+            index_pedidos < list_size(pedidosEXEC);
+            index_pedidos++
+        ) {
+            pthread_mutex_unlock(list_get(pedidosEXEC, index_pedidos)->mutex_clock);
+        }
+        pthread_mutex_unlock(&mutex_pedidosEXEC);
+        sleep(cfval_retardoCicloCPU);
+    }
+}
+
+void* search_remove_return(t_list* list, void* elem) {
+    for (
+        unsigned index_elem = 0;
+        index_elem < list_size(list);
+        index_elem++
+    ) {
+        if (elem == list_get(list, index_elem)) {
+            return list_remove(list, index_elem);
+        }
+    }
+    return NULL;
+}
+
 void liberar_memoria(void) {
-    // TODO
+    // TODO jajaj
 }
 
 
@@ -688,7 +739,6 @@ void* fhilo_servidor(void* arg) {
 }
 
 void esperar_cliente(int servidor){
-
 	struct sockaddr_in direccion_cliente;
 
 	unsigned int tam_direccion = sizeof(struct sockaddr_in);
@@ -724,9 +774,21 @@ void serve_client(int socket){
 }
 
 void process_request(int cod_op, int cliente_fd) {
-
     int size = 0;
     void* mensaje = NULL;
+    int rec;
+    uint32_t cliente_id;
+
+    // TODO: provisorio?
+    rec = recv(socket, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
+    if(rec == -1 || rec == 0 ){
+        cod_op = -1;
+        //			pthread_mutex_lock(&logger_mutex);
+        //			log_info(logger,"Se desconecto el proceso con id: %d",socket);
+        //			pthread_mutex_unlock(&logger_mutex);
+        pthread_exit(NULL);
+    }
+
     if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
         void* buffer = recibir_mensaje(cliente_fd, &size);
         mensaje = deserializar_mensaje(buffer, cod_op);
@@ -736,19 +798,63 @@ void process_request(int cod_op, int cliente_fd) {
 
     // TODO: switch con tipos de mensaje
     switch (cod_op) {
-        case POSICION_CLIENTE:
-            guardar_nuevoCliente(mensaje, cliente_fd);
-            break;
-        // TODO:
-        // case POSICION_RESTAURANTE:
-        //     guardar_nuevoRest(mensaje, cliente_fd); // TODO
-        //     break;
+
+        // de CLIENTE:
+            case POSICION_CLIENTE:
+                gestionar_POSICION_CLIENTE(mensaje, cliente_fd);
+                    // OK definicion
+                    // OK implementacion
+                break;
+            case CONSULTAR_RESTAURANTES:
+                gestionar_CONSULTAR_RESTAURANTES(cliente_fd);
+                    // OK definicion
+                    // OK implementacion
+                break;
+            case SELECCIONAR_RESTAURANTE:
+                gestionar_SELECCIONAR_RESTAURANTE(mensaje, cliente_fd);
+                    // OK definicion
+                    // OK implementacion
+                break;
+            case CONSULTAR_PLATOS:
+                gestionar_CONSULTAR_PLATOS(cliente_id, cliente_fd);
+                    // OK definicion
+                    // OK implementacion
+                break;
+            case CREAR_PEDIDO:
+                gestionar_CREAR_PEDIDO(cliente_id, cliente_fd);
+                    // OK definicion
+                    // TODO implementacion
+                break;
+            case AGREGAR_PLATO:
+                gestionar_AGREGAR_PLATO(mensaje, cliente_id, cliente_fd);
+                    // OK definicion
+                    // TODO implementacion
+                break;
+            case CONFIRMAR_PEDIDO:
+                gestionar_CONFIRMAR_PEDIDO(mensaje, cliente_fd);
+                    // OK definicion
+                    // TODO implementacion
+                break;
+
+        // de RESTAURANT:
+            case POSICION_RESTAURANTE: // TODO commons
+                guardar_nuevoRest(mensaje, cliente_fd);
+                    // OK definicion
+                    // TODO implementacion
+                break;
+
+            case PLATO_LISTO:
+                gestionar_PLATO_LISTO(mensaje);
+                    // OK definicion
+                    // TODO implementacion
+                break;
+
+        // TODO: liberar mensaje aca o dentro de cada f?
     }
 }
 
 
 void conexionRecepcion(){
-
 	int socket_servidor = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
 
 	int size = 0;
@@ -770,4 +876,140 @@ void conexionRecepcion(){
 	}
 
 	liberar_conexion(socket_servidor);
+}
+
+void gestionar_POSICION_CLIENTE(m_cliente* datos_cliente, int socket_cliente) {
+    t_cliente* cliente = malloc(sizeof(t_cliente));
+    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+    uint32_t* confirmacion = malloc(sizeof(uint32_t));
+
+    cliente->id = datos_cliente->id;
+    cliente->pos_x = datos_cliente->posicion.x;
+    cliente->pos_y = datos_cliente->posicion.y;
+    cliente->restaurante_seleccionado = NULL;
+    cliente->socket = socket_cliente;
+    cliente->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(cliente->mutex, NULL);
+    pthread_mutex_lock(cliente->mutex);
+
+    pthread_mutex_lock(&mutex_lista_clientes);
+    list_add(clientes, cliente);
+    // TODO: logging
+    pthread_mutex_unlock(&mutex_lista_clientes);
+
+    mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
+    *confirmacion = 1;
+    mensaje->parametros = confirmacion;
+    enviar_mensaje(mensaje, socket_cliente);
+
+    pthread_mutex_unlock(cliente->mutex);
+    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    free(mensaje);
+}
+
+void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
+    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+    t_restaurante_y_plato* restaurantes = malloc(sizeof(t_restaurante_y_plato));
+
+    mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
+    restaurantes->nombres = get_nombresRestConectados(); // TODO: redefinir a t_list*
+    restaurantes->cantElementos = list_size(restaurantes->nombres);
+    mensaje->parametros = restaurantes;
+    enviar_mensaje(mensaje, socket_cliente);
+    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    free(mensaje);
+}
+
+void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* mensaje, int socket_cliente) {
+    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+    uint32_t* confirmacion = malloc(sizeof(uint32_t));
+    t_cliente* cliente_seleccionante;
+
+    cliente_seleccionante = get_cliente_porSuID(mensaje->cliente);
+    cliente_seleccionante->restaurante_seleccionado = get_restaurante(mensaje->restaurante->nombre);
+
+    mensaje->tipo_mensaje = RTA_SELECCIONAR_RESTAURANTE;
+    *confirmacion = 1;
+    mensaje->parametros = confirmacion;
+    enviar_mensaje(mensaje, socket_cliente);
+    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    free(mensaje);
+}
+
+void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
+    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+    t_nombre* nombre_rest_consultado = malloc(sizeof(t_nombre));
+    t_restaurante* restaurante_consultado;
+    t_cliente* cliente_consultor;
+    op_code cod_op;
+    int id_recibida;
+    int _recv_op;
+    int _recv_id;
+    int size = 0;
+
+    cliente_consultor = get_cliente_porSuID(cliente_id);
+    restaurante_consultado = cliente_consultor->restaurante_seleccionado; // TODO: error handling si no selecciono restaurante
+
+    mensaje->tipo_mensaje = CONSULTAR_PLATOS;
+    nombre_rest_consultado->nombre="";
+    nombre_rest_consultado->largo_nombre=0;
+    mensaje->parametros = nombre_rest_consultado;
+
+    pthread_mutex_lock(restaurante_consultado->mutex);
+    enviar_mensaje(mensaje, restaurante_consultado->socket);
+    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    free(mensaje);
+
+    _recv_op = recv(restaurante_consultado->socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+    if (_recv_op != -1 && _recv_op != 0) {
+        // TODO: error handling
+    }
+
+    _recv_id = recv(restaurante_consultado->socket, &id_recibida, sizeof(op_code), MSG_WAITALL);
+    if (_recv_id != -1 && _recv_id != 0) {
+        // TODO: error handling
+    }
+
+    switch (cod_op) {
+        case ERROR:
+            // TODO: error handling
+            break;
+        case RTA_CONSULTAR_PLATOS:
+            mensaje = malloc(sizeof(t_mensaje));
+            mensaje->tipo_mensaje = cod_op;
+            mensaje->parametros = deserializar_mensaje(
+                recibir_mensaje(restaurante_consultado->socket, &size),
+                cod_op
+            );
+            enviar_mensaje(mensaje, socket_cliente);
+            free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+            free(mensaje);
+            break;
+    }
+}
+
+void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
+    // buscar rest de ese cliente
+    // mandarle el crear pedido
+    // esperar respuesta
+    // mandarle guardar pedido a comanda
+    // esperar respuesta
+    // responder a cliente ok
+}
+
+void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente) {
+    // buscar rest de ese cliente
+    // mandarle el agregar plato
+    // esperar respuesta
+    // mandarle guardar plato a comanda
+    // esperar respuesta
+    // responder a cliente ok
+}
+
+void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente) {
+    
+}
+
+void gestionar_PLATO_LISTO(m_platoListo* plato) {
+
 }
