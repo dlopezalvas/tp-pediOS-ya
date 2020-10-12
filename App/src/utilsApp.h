@@ -14,6 +14,12 @@
 #include "../../commonsCoronaLinux/socket.h"
 #include "../../commonsCoronaLinux/logs.h"
 
+//TODO: eliminar cuando se actualicen las commons
+#define m_restaurante t_restaurante
+#define POSICION_RESTAURANTE 400
+#define RTA_POSICION_CLIENTE 401
+#define ERROR 402
+
 // debug
     bool modo_noComanda;
     bool modo_noRest;
@@ -188,5 +194,13 @@ t_queue* mensajes_a_enviar;
 pthread_t hilo_conectarConComanda;
 pthread_t hilo_servidor;
 
+void gestionar_POSICION_CLIENTE(m_cliente* datos_cliente, int socket_cliente);
+void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente);
+void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int socket_cliente);
+void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);
+void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente);
+void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente);
+void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente);
+void gestionar_PLATO_LISTO(m_platoListo* plato);
 
 #endif // UTILSAPP_H_

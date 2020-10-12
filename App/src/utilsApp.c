@@ -138,6 +138,9 @@ void configuracionInicial(void) {
         cola_BLOCK = list_create();
         pthread_mutex_init(&mutex_cola_BLOCK, NULL);
 
+        pedidosEXEC = list_create();
+        pthread_mutex_init(&mutex_pedidosEXEC, NULL);
+
     // lista de pedidos
         pedidos = list_create();
         pthread_mutex_init(&mutex_pedidos, NULL);
