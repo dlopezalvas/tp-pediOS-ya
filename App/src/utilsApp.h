@@ -66,7 +66,8 @@
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
     t_restaurante* get_restaurante(char* nombre_restaurante);
-    void guardar_nuevoRest(char* nombre, int pos_x, int pos_y);
+    void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket);
+    t_list* get_nombresRestConectados(void);
 
 // clientes
     typedef struct {
@@ -81,7 +82,8 @@
 
     t_list* clientes;
     pthread_mutex_t mutex_lista_clientes;
-    t_cliente* get_cliente(int id_cliente);
+    t_cliente* get_cliente(int id_pedido);
+    t_cliente* get_cliente_porSuID(int id_cliente);
     void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente);
     void guardar_seleccion(char* nombre_rest, int id_cliente);
 
@@ -148,8 +150,10 @@
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
+    void* fhilo_clock(void* __sin_uso__);
     pthread_t hilo_planificador_cortoPlazo;
     pthread_t hilo_planificador_largoPlazo;
+    pthread_t hilo_clock;
     void planif_nuevoPedido(int id_pedido);
     t_pedido* planif_asignarRepartidor(void);
     t_pedido* planif_FIFO(void);
@@ -162,6 +166,9 @@
 
 // liberacion de memoria
     void liberar_memoria(void);
+
+// otras utilidades
+    void* search_remove_return(t_list* list, void* elem);
 
 /* CONEXIONES */
 

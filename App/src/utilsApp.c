@@ -616,22 +616,25 @@ void guardar_seleccion(char* nombre_rest, int id_cliente) {
     pthread_mutex_unlock(&mutex_lista_clientes);
 }
 
-char** get_nombresRestConectados(void) { // TODO: devuelve t_list*
-    char** nombresRestConectados;
+t_list* get_nombresRestConectados(void) {
+    t_list* nombresRestConectados;
+    t_nombre* restaurante;
+    nombresRestConectados = list_create();
     pthread_mutex_lock(&mutex_lista_restaurantes);
     if (list_is_empty(restaurantes) || modo_noRest) {
         pthread_mutex_unlock(&mutex_lista_restaurantes);
-        nombresRestConectados = malloc(sizeof(char*));
-        *nombresRestConectados = "Resto Default";
+        restaurante = malloc(sizeof(t_nombre));
+        restaurante->nombre = "Resto Default";
         return nombresRestConectados;
     }
-    nombresRestConectados = malloc(sizeof(char*) * list_size(restaurantes));
     for (
         unsigned index_rest = 0;
         index_rest < list_size(restaurantes);
         index_rest++
     ) {
-        nombresRestConectados[index_rest] = string_duplicate(((t_restaurante*)list_get(restaurantes, index_rest))->nombre);
+        restaurante = malloc(sizeof(t_nombre));
+        restaurante->nombre = string_duplicate(((t_restaurante*)list_get(restaurantes, index_rest))->nombre);
+        list_add(nombresRestConectados, restaurante);
     }
     pthread_mutex_unlock(&mutex_lista_restaurantes);
     return nombresRestConectados;
@@ -645,7 +648,7 @@ void* fhilo_clock(void* __sin_uso__) {
             index_pedidos < list_size(pedidosEXEC);
             index_pedidos++
         ) {
-            pthread_mutex_unlock(list_get(pedidosEXEC, index_pedidos)->mutex_clock);
+            pthread_mutex_unlock(((t_pedido*)list_get(pedidosEXEC, index_pedidos))->mutex_clock);
         }
         pthread_mutex_unlock(&mutex_pedidosEXEC);
         sleep(cfval_retardoCicloCPU);
@@ -920,13 +923,13 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
     free(mensaje);
 }
 
-void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* mensaje, int socket_cliente) {
+void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int socket_cliente) {
     t_mensaje* mensaje = malloc(sizeof(t_mensaje));
     uint32_t* confirmacion = malloc(sizeof(uint32_t));
     t_cliente* cliente_seleccionante;
 
-    cliente_seleccionante = get_cliente_porSuID(mensaje->cliente);
-    cliente_seleccionante->restaurante_seleccionado = get_restaurante(mensaje->restaurante->nombre);
+    cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
+    cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
 
     mensaje->tipo_mensaje = RTA_SELECCIONAR_RESTAURANTE;
     *confirmacion = 1;

@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
 	// inicializacion de hilos de planificacion
 		pthread_create(&hilo_planificador_cortoPlazo, NULL, fhilo_planificador_cortoPlazo, NULL);
 		pthread_create(&hilo_planificador_largoPlazo, NULL, fhilo_planificador_largoPlazo, NULL);
+		pthread_create(&hilo_clock, NULL, fhilo_clock, NULL);
 	
 	// Al momento de inicializar el proceso se realizarán las siguientes operaciones:
 		
