@@ -15,6 +15,7 @@ void configurar_ip_puerto(){
 	string_append_with_format(&ip_proceso,"IP_%s",proceso);
 	conexion->puerto = config_get_int_value(config_cliente, puerto_proceso);
 	conexion->ip = config_get_string_value(config_cliente, ip_proceso);
+	id_cliente = config_get_int_value(config_cliente, ID_CLIENTE);
 	free(puerto_proceso);
 	free(ip_proceso);
 }
@@ -38,6 +39,7 @@ void iniciar_consola(){
 				imprimir_mensajes_disponibles();
 			}else if(validar_mensaje(linea)){
 				t_mensaje* mensaje = llenarMensaje(linea);
+				mensaje->id = id_cliente;
 				queue_push(mensajes_a_enviar, mensaje);
 				sem_post(&sem_mensajes_a_enviar);
 			}else{
@@ -216,6 +218,7 @@ void conexionEnvio(){
 		if(string_equals_ignore_case(proceso, APP)){
 			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
 			handshake_app->tipo_mensaje = POSICION_CLIENTE;
+			handshake_app->id = id_cliente;
 			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
 
 			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
@@ -249,17 +252,21 @@ void conexionRecepcion(){
 
 	int size = 0;
 	op_code cod_op;
+	uint32_t id_proceso;
 	int _recv;
 	while(1){
 		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
 
+
 		if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+			recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 			void* buffer = recibir_mensaje(socket_servidor, &size);
 			void* mensaje = deserializar_mensaje(buffer, cod_op);
 			loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
 			free_struct_mensaje(mensaje, cod_op);
 			free(buffer);
 		}else{
+			recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 			loggear_mensaje_recibido(NULL, cod_op, log_cliente);
 		}
 	}

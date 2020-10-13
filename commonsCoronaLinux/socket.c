@@ -72,6 +72,8 @@ void enviar_mensaje(t_mensaje* mensaje, int socket){
 
 	paquete -> codigo_operacion = mensaje -> tipo_mensaje;
 
+	paquete->id = mensaje->id;
+
 	int bytes = 0;
 
 	void* a_enviar = serializar_paquete(paquete, &bytes);

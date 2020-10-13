@@ -44,6 +44,8 @@ t_buffer* buffer_posicion(t_coordenadas* posicion);
 t_coordenadas* deserializar_posicion(void* buffer);
 t_buffer* buffer_rta_obtener_receta(rta_obtenerReceta* obtenerReceta);
 rta_obtenerReceta* deserializar_rta_obtener_receta(void* buffer);
+t_buffer* buffer_posicion_restaurante(m_restaurante* restaurante);
+m_restaurante* deserializar_posicion_restaurante(void* buffer);
 
 
 

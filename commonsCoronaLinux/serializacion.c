@@ -2,16 +2,19 @@
 
 void* serializar_paquete(t_paquete* paquete, int *bytes){
 
-	int size = sizeof(uint32_t) + paquete->buffer->size + sizeof(op_code);
+	int size = sizeof(uint32_t)*2 + paquete->buffer->size + sizeof(op_code);
 
 	void* a_enviar = malloc (size);
 
 	memcpy(a_enviar + *bytes, &paquete-> codigo_operacion, sizeof(paquete->codigo_operacion));
 	*bytes += sizeof(paquete->codigo_operacion);
+	memcpy (a_enviar + *bytes, &paquete->id, sizeof(uint32_t));
+	*bytes += sizeof(uint32_t);
 	memcpy(a_enviar  + *bytes, &(paquete -> buffer -> size),sizeof(int));
 	*bytes += sizeof(int);
 	memcpy(a_enviar  + *bytes, paquete -> buffer -> stream, paquete -> buffer -> size);
 	*bytes += paquete->buffer->size;
+
 
 	return a_enviar;
 }
@@ -44,6 +47,8 @@ void* deserializar_mensaje(void* buffer, op_code tipo_mensaje){
 	case STRC_POSICION:return deserializar_posicion(buffer);
 
 	case STRC_RTA_OBTENER_RECETA: return deserializar_rta_obtener_receta(buffer);
+
+	case STRC_POSICION_RESTAUNTE : return deserializar_posicion_restaurante(buffer);
 	}
 	return NULL;
 }
@@ -79,6 +84,8 @@ t_buffer* cargar_buffer(t_mensaje* mensaje){
 	case STRC_POSICION:return buffer_posicion(parametros);
 
 	case STRC_RTA_OBTENER_RECETA: return buffer_rta_obtener_receta(parametros);
+
+	case STRC_POSICION_RESTAUNTE: return buffer_posicion_restaurante(parametros);
 	}
 	return NULL;
 
@@ -149,6 +156,47 @@ uint32_t* deserializar_id_o_confirmacion(void* buffer){
 	return numero;
 }
 
+//posicion_restaurante
+
+t_buffer* buffer_posicion_restaurante(m_restaurante* restaurante){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	restaurante->nombre.largo_nombre = strlen(restaurante->nombre.nombre);
+
+	buffer -> size = sizeof(uint32_t)*3 + restaurante->nombre.largo_nombre;
+	int offset = 0;
+	void* stream = malloc(buffer -> size);
+
+
+	memcpy(stream + offset, &restaurante->posicion.x, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &restaurante->posicion.y, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &restaurante->nombre.largo_nombre, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(stream + offset, restaurante->nombre.nombre, restaurante->nombre.largo_nombre);
+
+	buffer -> stream = stream;
+
+	return buffer;
+}
+
+m_restaurante* deserializar_posicion_restaurante(void* buffer){
+
+	m_restaurante* restaurante = malloc(sizeof(m_restaurante));
+	memcpy(&restaurante->posicion.x, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&restaurante->posicion.y, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&restaurante->nombre.largo_nombre, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	restaurante->nombre.nombre = malloc(restaurante->nombre.largo_nombre + 1);
+	memcpy(restaurante->nombre.nombre, buffer, restaurante->nombre.largo_nombre);
+	restaurante->nombre.nombre[restaurante->nombre.largo_nombre] = '\0';
+
+	return restaurante;
+}
+
 //nombre restaurante: OBTENER_RESTAURANTE - CONSULTAR_PLATOS - OBTENER_RECETA
 
 
@@ -210,7 +258,7 @@ t_buffer* buffer_nombre_y_id(t_nombre_y_id* nombre_y_id){
 
 t_nombre_y_id* deserializar_nombre_y_id(void* buffer){
 
-	t_nombre_y_id* nombre_y_id = malloc(sizeof(m_seleccionarRestaurante));
+	t_nombre_y_id* nombre_y_id = malloc(sizeof(t_nombre_y_id));
 	memcpy(&nombre_y_id->id, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(&nombre_y_id->nombre.largo_nombre, buffer, sizeof(uint32_t));
