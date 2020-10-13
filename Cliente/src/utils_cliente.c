@@ -222,21 +222,21 @@ void conexionEnvio(){
 		conexion_ok = true;
 		pthread_mutex_unlock(&iniciar_consola_mtx);
 
-		if(string_equals_ignore_case(proceso, APP)){
-			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
-			handshake_app->tipo_mensaje = POSICION_CLIENTE;
-			handshake_app->id = id_cliente;
-			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
-
-			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
-			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
-
-			handshake_app->parametros = posicion_cliente;
-
-			enviar_mensaje(handshake_app, socket);
+//		if(string_equals_ignore_case(proceso, APP)){
+//			t_mensaje* handshake = malloc(sizeof(t_mensaje));
+//			handshake->tipo_mensaje = POSICION_CLIENTE;
+//			handshake->id = id_cliente;
+//			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+//
+//			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
+//			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+//
+//			handshake->parametros = posicion_cliente;
+//
+//			enviar_mensaje(handshake, socket);
 //			free_struct_mensaje(handshake_app->parametros, handshake_app->tipo_mensaje);
 			//			loggear_mensaje_enviado(handshake_app->parametros, handshake_app->tipo_mensaje, log_cliente);
-		}
+//		}
 
 		while(1){ //buscar condicion de que siga ejecutando
 			sem_wait(&sem_mensajes_a_enviar);
@@ -255,13 +255,33 @@ void conexionEnvio(){
 
 void conexionRecepcion(){
 
-	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
-
 	int size = 0;
 	op_code cod_op;
 	uint32_t id_proceso;
 	int _recv;
-	while(1){
+	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
+	uint32_t rta_conexion = 0;
+
+	t_mensaje* handshake = malloc(sizeof(t_mensaje));
+	handshake->tipo_mensaje = POSICION_CLIENTE;
+	handshake->id = id_cliente;
+	t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+
+	posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
+	posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+
+	handshake->parametros = posicion_cliente;
+
+	enviar_mensaje(handshake, socket_servidor);
+	free_struct_mensaje(handshake->parametros, handshake->tipo_mensaje);
+
+	_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
+	if(_recv != 0){
+		void* mensaje = recibir_mensaje(socket_servidor, &size);
+		uint32_t rta_conexion = deserializar_mensaje(mensaje, cod_op);
+	}
+
+	while(rta_conexion == 1){
 		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
 
 
