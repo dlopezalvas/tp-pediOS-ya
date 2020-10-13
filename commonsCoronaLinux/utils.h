@@ -98,6 +98,9 @@ typedef enum{
 	POSICION_CLIENTE = 29,
 	OBTENER_RECETA = 30,
 	RTA_OBTENER_RECETA = 31,
+	ERROR = 32,
+	RTA_POSICION_CLIENTE = 33,
+	POSICION_RESTAUNTE = 34
 }op_code;
 
 typedef enum{ //son para saber el tipo de struct que usa cada mensaje
@@ -114,11 +117,14 @@ typedef enum{ //son para saber el tipo de struct que usa cada mensaje
 	STRC_GUARDAR_PLATO = 10,
 	STRC_POSICION = 11,
 	STRC_RTA_OBTENER_RECETA = 12,
+	STRC_POSICION_RESTAUNTE = 13
 }struct_code;
+
 
 
 typedef struct{
 	op_code tipo_mensaje;
+	uint32_t id;
 	void* parametros; //struct del tipo de mensaje
 }t_mensaje;
 
@@ -136,6 +142,7 @@ typedef struct{
 typedef struct{
 	op_code codigo_operacion;
 	t_buffer* buffer;
+	uint32_t id;
 } t_paquete;
 
 typedef struct{
@@ -144,9 +151,10 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
-	uint32_t id;
+
+	t_nombre nombre;
 	t_coordenadas posicion;
-}m_cliente;
+} m_restaurante;
 
 typedef struct{
 	t_list* nombres; //lista de t_nombre
@@ -163,12 +171,12 @@ typedef struct{
 	t_nombre afinidad;
 }t_cocineroAfinidad;
 
-typedef struct{
+typedef struct{ //TODO arreglar
 	uint32_t cantCocineroAfinidad;
 	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
 	t_coordenadas posicion;
 	uint32_t cantRecetas;
-	t_list* recetas; //lista de t_nombre
+	t_list* recetas; //lista de receta con precio
 	uint32_t cantHornos;
 }rta_obtenerRestaurante;
 
@@ -196,22 +204,21 @@ typedef enum{
 	TERMINADO = 3,
 }est_pedido;
 
-typedef enum{
-	LISTO = 1,
-	EN_PROCESO = 2,
-}est_plato;
+//typedef enum{
+//	LISTO = 1,
+//	EN_PROCESO = 2,
+//}est_plato;
 
-typedef struct{
-	t_nombre plato;
-	est_plato estadoPlato;
-}t_plato_con_estado;
+//typedef struct{
+//	t_nombre plato;
+//	est_plato estadoPlato;
+//}t_plato_con_estado;
 
 typedef struct{
 	t_nombre restaurante;
-	uint32_t idRepartidor;
 	est_pedido estadoPedido;
 	uint32_t cantPlatos;
-	t_list* platos; //ver si va con estado
+	t_list* platos; //lista elem pedido
 }rta_consultarPedido;
 
 typedef struct{    //mensajes obtener pedido, finalizar pedido, terminar pedido
@@ -226,6 +233,7 @@ typedef struct{
 }t_elemPedido;
 
 typedef struct{
+	est_pedido estadoPedido;
 	uint32_t cantPedidos;
 	t_list* infoPedidos; //lista de elemPedido
 }rta_obtenerPedido;
@@ -258,13 +266,14 @@ void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
 void free_nombre_y_id(t_nombre_y_id* mensaje);
 void free_plato_listo(m_platoListo* mensaje);
 void free_rta_consultar_pedido(rta_consultarPedido* mensaje);
-void free_platos(t_plato_con_estado* plato);
+
 void free_rta_obtener_pedido(rta_obtenerPedido* mensaje);
 void free_infoPedidos(t_elemPedido* info_pedido);
 void free_guardar_plato(m_guardarPlato* mensaje);
 void free_posicion(t_coordenadas* mensaje);
 void free_rta_obtener_receta(rta_obtenerReceta* mensaje);
 void free_pasos(t_paso* paso);
+void free_posicion_restaurante(m_restaurante* mensaje);
 
 
 
