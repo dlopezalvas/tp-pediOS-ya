@@ -151,6 +151,7 @@ typedef struct{
 }t_coordenadas;
 
 typedef struct{
+
 	t_nombre nombre;
 	t_coordenadas posicion;
 } m_restaurante;
