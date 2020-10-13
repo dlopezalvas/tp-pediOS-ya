@@ -5,6 +5,7 @@ int main(int argc, char* argv[]) {
 	// modos de debug
 		modo_noComanda = true;
 		modo_noRest = true;
+		modo_mock = true;
 
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;
@@ -49,10 +50,49 @@ int main(int argc, char* argv[]) {
 		pthread_join(hilo_conectarConComanda, NULL);
 	}
 
-	log_debug(logger_mensajes, "[MAIN] Joineando hilo de server...");
+	if (modo_mock) {
+		mock_mensajes();
+	}
+
+	log_debug(logger_mensajes, "[MAIN] Esperando join hilo de server...");
 	pthread_join(hilo_servidor, NULL);
+	log_debug(logger_mensajes, "[MAIN] Hilo de server joineado");
 
 	liberar_memoria();
 
 	return EXIT_SUCCESS;
+}
+
+void mock_mensajes(void) {
+	t_restaurante* restaurante = malloc(sizeof(t_restaurante));
+    restaurante->nombre = "MockDonalds";
+    restaurante->pos_x = 5;
+    restaurante->pos_y = 4;
+    restaurante->socket = 0;
+    restaurante->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(restaurante->mutex, NULL);
+    pthread_mutex_lock(&mutex_lista_restaurantes);
+    list_add(restaurantes, restaurante);
+    // TODO: logging
+    pthread_mutex_unlock(&mutex_lista_restaurantes);
+
+	t_cliente* cliente = malloc(sizeof(t_cliente));
+    cliente->id = 77;
+    cliente->pos_x = 10;
+    cliente->pos_y = 11;
+	cliente->pedido_id = 808;
+    cliente->restaurante_seleccionado = restaurante;
+    cliente->socket = 0;
+    cliente->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(cliente->mutex, NULL);
+    pthread_mutex_lock(cliente->mutex);
+
+    pthread_mutex_lock(&mutex_lista_clientes);
+    list_add(clientes, cliente);
+    // TODO: logging
+    pthread_mutex_unlock(&mutex_lista_clientes);
+
+	planif_nuevoPedido(808);
+
+	return;
 }

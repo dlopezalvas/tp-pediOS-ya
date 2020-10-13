@@ -87,6 +87,7 @@ void configuracionInicial(void) {
         ) {
             log_debug(logger_configuracion, "[CONFIG] |\t<%i>", index_repartidores);
             repartidor = malloc(sizeof(t_repartidor));
+            repartidor->id = index_repartidores;
             
             log_debug(logger_configuracion, "[CONFIG] |\t|\tPos. X: %i", atoi(string_split(posicionesRepartidores[index_repartidores], ",")[0])); //TODO: ojo separators para cuando corrijan el enunciado
             repartidor->pos_x = atoi(string_split(posicionesRepartidores[index_repartidores], ",")[0]); //TODO: ojo separators para cuando corrijan el enunciado
@@ -179,11 +180,16 @@ void planif_encolar_READY(t_pedido* pedido) {
 }
 
 void planif_encolar_BLOCK(t_pedido* pedido) {
+    pthread_mutex_lock(&mutex_pedidosEXEC);
     pthread_mutex_lock(&mutex_cola_BLOCK);
-    log_debug(logger_planificacion, "[PEDIDO_%2i] Encolando en BLOCK...", pedido->pedido_id);
+    log_debug(logger_planificacion, "[PEDIDO_%2i] Desencolando de EXEC...", pedido->pedido_id);
+    search_remove_return(pedidosEXEC, pedido);
     pedido->pedido_estado = BLOCK;
+    log_debug(logger_planificacion, "[PEDIDO_%2i] Encolando en BLOCK...", pedido->pedido_id);
     list_add(cola_BLOCK, pedido);
+    pthread_mutex_unlock(&mutex_pedidosEXEC);
     pthread_mutex_unlock(&mutex_cola_BLOCK);
+    sem_post(&semaforo_vacantesEXEC);
 }
 
 void* fhilo_planificador_largoPlazo(void* __sin_uso__) { // (de NEW a READY)
@@ -384,7 +390,7 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
         index_repartidor++
     ) {
         repartidor = list_get(repartidores, index_repartidor);
-        if (repartidor->tiene_pedido_asignado)
+        if (!(repartidor->tiene_pedido_asignado))
             list_add(repartidores_disponibles, repartidor);
     }
 
@@ -505,6 +511,9 @@ void pedido_repartidorLlegoACliente(t_pedido* pedido) {
     );
     repartidor_desocupar(pedido->repartidor);
     // TODO: envio de mensaje al cliente corresp.
+    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+    mensaje->tipo_mensaje = FINALIZAR_PEDIDO;
+    // TODO
 }
 
 void repartidor_desocupar(t_repartidor* repartidor) {
@@ -542,13 +551,7 @@ void consumir_ciclo(t_pedido* pedido) {
         "[PEDIDO_%2i] Bloqueando por descanso...",
         pedido->pedido_id
     );
-
-    pthread_mutex_lock(&mutex_pedidosEXEC);
-    search_remove_return(pedidosEXEC, pedido);
-    pedido->pedido_estado = BLOCK;
-    pthread_mutex_unlock(&mutex_pedidosEXEC);
-    sem_post(&semaforo_vacantesEXEC);
-
+    planif_encolar_BLOCK(pedido);
     for (
         pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
         pedido->repartidor->tiempoDescanso_restante > 0;
@@ -556,16 +559,23 @@ void consumir_ciclo(t_pedido* pedido) {
     ) {
         // sleep(cfval_retardoCicloCPU);
         pthread_mutex_lock(pedido->mutex_clock);
+        log_debug(
+        logger_planificacion,
+        "[PEDIDO_%2i] Ciclo descanso consumido (restan %i)",
+        pedido->pedido_id,
+        pedido->repartidor->tiempoDescanso_restante
+    );
     }
     log_debug(
         logger_planificacion,
         "[PEDIDO_%2i] Descanso terminado",
         pedido->pedido_id
     );
+    pedido->repartidor->frecuenciaDescanso_restante = pedido->repartidor->frecuenciaDescanso;
     planif_encolar_READY(pedido);
     log_debug(
         logger_planificacion,
-        "[PEDIDO_%2i] Unlockeando EXEC",
+        "[PEDIDO_%2i] Esperando unlock EXEC",
         pedido->pedido_id
     );
     pthread_mutex_lock(pedido->mutex_EXEC);
@@ -645,14 +655,23 @@ t_list* get_nombresRestConectados(void) {
 
 void* fhilo_clock(void* __sin_uso__) {
     while (true) {
+        pthread_mutex_lock(&mutex_cola_BLOCK);
         pthread_mutex_lock(&mutex_pedidosEXEC);
         for (
-            unsigned index_pedidos = 0;
-            index_pedidos < list_size(pedidosEXEC);
-            index_pedidos++
+            unsigned index_EXEC = 0;
+            index_EXEC < list_size(pedidosEXEC);
+            index_EXEC++
         ) {
-            pthread_mutex_unlock(((t_pedido*)list_get(pedidosEXEC, index_pedidos))->mutex_clock);
+            pthread_mutex_unlock(((t_pedido*)list_get(pedidosEXEC, index_EXEC))->mutex_clock);
         }
+        for (
+            unsigned index_BLOCK = 0;
+            index_BLOCK < list_size(cola_BLOCK);
+            index_BLOCK++
+        ) {
+            pthread_mutex_unlock(((t_pedido*)list_get(cola_BLOCK, index_BLOCK))->mutex_clock);
+        }
+        pthread_mutex_unlock(&mutex_cola_BLOCK);
         pthread_mutex_unlock(&mutex_pedidosEXEC);
         sleep(cfval_retardoCicloCPU);
     }

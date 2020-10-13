@@ -23,6 +23,7 @@
 // debug
     bool modo_noComanda;
     bool modo_noRest;
+    bool modo_mock;
 
 // logging
     t_log*  logger_obligatorio;
