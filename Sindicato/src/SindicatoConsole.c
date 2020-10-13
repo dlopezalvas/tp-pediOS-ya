@@ -2,7 +2,7 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
-bool sindicato_console_validate_arguments(char** arguments, command_type_id commandType){
+bool internal_console_validate_arguments(char** arguments, command_type_id commandType){
 
 	int position = 0;
 
@@ -19,7 +19,7 @@ bool sindicato_console_validate_arguments(char** arguments, command_type_id comm
 	return false;
 }
 
-void sindicato_console_execute_command(char** commandLine){
+void internal_console_execute_command(char** commandLine){
 
 	/* Validate if the commandLine is valid */
 	if(!string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RESTAURANTE)
@@ -30,8 +30,8 @@ void sindicato_console_execute_command(char** commandLine){
 	}
 
 	/* Validate if the arguments are valid */
-	if(!sindicato_console_validate_arguments(commandLine, TYPE_CREAR_RESTAURANTE)
-			&& !sindicato_console_validate_arguments(commandLine, TYPE_CREAR_RECETA)){
+	if(!internal_console_validate_arguments(commandLine, TYPE_CREAR_RESTAURANTE)
+			&& !internal_console_validate_arguments(commandLine, TYPE_CREAR_RECETA)){
 
 		printf("%s %s\n",ERROR_ARGUMENTS,commandLine[0]);
 		return;
@@ -51,7 +51,7 @@ void sindicato_console_execute_command(char** commandLine){
 	}
 }
 
-void sindicato_console_console_init(){
+void internal_console_init(){
 
 	char* read;
 
@@ -67,7 +67,7 @@ void sindicato_console_console_init(){
 			break;
 		}
 
-		sindicato_console_execute_command(splitted_command);
+		internal_console_execute_command(splitted_command);
 
 		free(read);
 	}
@@ -76,7 +76,7 @@ void sindicato_console_console_init(){
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 void sindicato_console_initialize(){
-	printf("Initializing\n");
+	printf("Initializing console\n");
 
-	sindicato_console_console_init();
+	internal_console_init();
 }

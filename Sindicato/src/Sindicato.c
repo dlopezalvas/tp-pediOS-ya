@@ -14,7 +14,7 @@ void sindicato_initialize(){
 	sindicatoLog = iniciar_logger(sindicatoConfig);
 
 	//TODO: Inicializar el FS con punto de montaje
-	sindicato_afip_initialize();
+	sindicato_api_afip_initialize();
 
 	/* Initialize the thread that listen conections */
 	pthread_t sindicatoServerThread;

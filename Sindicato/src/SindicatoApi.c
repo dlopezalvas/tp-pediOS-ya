@@ -1,5 +1,11 @@
 #include "SindicatoApi.h"
 
+/* ********************************** PRIVATE FUNCTIONS ********************************** */
+
+
+/* ********************************** PUBLIC  FUNCTIONS ********************************** */
+
+/* Console functions */
 void sindicato_api_crear_restaurante(char* nombre, int cantCocineros, int* posXY, char** afinidades, char** platos, int* precioPlatos, int cantHornos){
 	printf("Creo el restaurante\n");
 	printf("%s\n", nombre);
@@ -18,13 +24,18 @@ void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
 	printf("%s\n", tiempoPasos);
 }
 
-void sindicato_api_send_response_of_operation(){
+/* Server functions */
+void sindicato_api_send_response_of_operation(t_responseMessage response){
 	return;
 }
 
 t_restaurante_y_plato sindicato_api_consultar_platos(void* message){
 	t_nombre* restaurante = message;
 	t_restaurante_y_plato res;
+
+	//Validar si existe el restaurante
+
+
 	return res;
 
 }
@@ -73,9 +84,8 @@ int sindicato_api_terminar_pedido(void* pedido){
 	return 0;
 }
 
-/* ********************************** PUBLIC  FUNCTIONS ********************************** */
-
-void sindicato_afip_initialize(){
+/* Main functions */
+void sindicato_api_afip_initialize(){
 	char* mountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
 
 	//TODO: montar el FS

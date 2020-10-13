@@ -14,6 +14,11 @@
 
 #define SINDICATO_PATH_CONFIG "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/sindicato.config"
 
+typedef struct{
+	int socket;
+	t_mensaje message;
+}t_responseMessage;
+
 /* Global variables */
 t_log* sindicatoLog;
 t_config* sindicatoConfig;
