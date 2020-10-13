@@ -314,13 +314,8 @@ void free_plato_listo(m_platoListo* mensaje){
 }
 
 void free_rta_consultar_pedido(rta_consultarPedido* mensaje){
-	list_destroy_and_destroy_elements(mensaje->platos, (void*) free_platos);
+	list_destroy_and_destroy_elements(mensaje->platos, (void*) free_infoPedidos);
 	free(mensaje);
-}
-
-void free_platos(t_plato_con_estado* plato){
-	free(plato->plato.nombre);
-	free(plato);
 }
 
 void free_rta_obtener_pedido(rta_obtenerPedido* mensaje){
