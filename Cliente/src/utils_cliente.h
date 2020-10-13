@@ -43,6 +43,8 @@
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
 #define ID_CLIENTE "ID_CLIENTE"
+#define PUERTO "PUERTO"
+#define IP "IP"
 
 #define COMANDO_HELP "HELP"
 
@@ -70,7 +72,8 @@ bool validar_proceso_mensaje(char* tipo_mensaje);
 bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo);
 int cantidad_argumentos (char** mensaje_completo);
 bool validar_mensaje(char* linea);
-bool validar_proceso(int argc, char** argv);
+bool validar_proceso(char* proceso);
+void seleccionar_proceso();
 void configurar_ip_puerto();
 void conexionEnvio();
 void conexionRecepcion();

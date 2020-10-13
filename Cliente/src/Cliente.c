@@ -10,20 +10,20 @@
 
 #include "Cliente.h"
 
-int main(int argc, char* argv[]) {
+int main() {
 	config_cliente = leer_config(PATH);
 	log_cliente = iniciar_logger(config_cliente);
-	if(argc !=2 || !validar_proceso(argc, argv)){
-		puts("Por favor ingrese alguno de los siguiente parametros al ejecutar: \nComanda\nApp\nRestaurante\nSindicato");
-		return EXIT_SUCCESS;
-	}
+//	if(argc !=2 || !validar_proceso(argc, argv)){
+//		puts("Por favor ingrese alguno de los siguiente parametros al ejecutar: \nComanda\nApp\nRestaurante\nSindicato");
+//		return EXIT_SUCCESS;
+//	}
 
 	pthread_mutex_init(&iniciar_consola_mtx, NULL);
 	pthread_mutex_lock(&iniciar_consola_mtx);
 
-	proceso = string_duplicate(argv[1]);
+//	proceso = string_duplicate(argv[1]);
 //	proceso = COMANDA;
-	string_to_upper(proceso);
+//	string_to_upper(proceso);
 	configurar_ip_puerto();
 
 	mensajes_a_enviar = queue_create();

@@ -1,23 +1,18 @@
 #include "utils_cliente.h"
 
-bool validar_proceso(int argc, char** argv){
-	return string_equals_ignore_case(argv[1], APP) ||
-			string_equals_ignore_case(argv[1], COMANDA) ||
-			string_equals_ignore_case(argv[1], RESTAURANTE) ||
-			string_equals_ignore_case(argv[1], SINDICATO);
+bool validar_proceso(char* proceso){
+	return string_equals_ignore_case(proceso, APP) ||
+			string_equals_ignore_case(proceso, COMANDA) ||
+			string_equals_ignore_case(proceso, RESTAURANTE) ||
+			string_equals_ignore_case(proceso, SINDICATO);
 }
 
 void configurar_ip_puerto(){
 	conexion = malloc(sizeof(t_conexion));
-	char* puerto_proceso = string_new();
-	string_append_with_format(&puerto_proceso,"PUERTO_%s",proceso);
-	char* ip_proceso = string_new();
-	string_append_with_format(&ip_proceso,"IP_%s",proceso);
-	conexion->puerto = config_get_int_value(config_cliente, puerto_proceso);
-	conexion->ip = config_get_string_value(config_cliente, ip_proceso);
+
+	conexion->puerto = config_get_int_value(config_cliente, PUERTO);
+	conexion->ip = config_get_string_value(config_cliente, IP);
 	id_cliente = config_get_int_value(config_cliente, ID_CLIENTE);
-	free(puerto_proceso);
-	free(ip_proceso);
 }
 
 void iniciar_consola(){
@@ -25,7 +20,7 @@ void iniciar_consola(){
 	pthread_mutex_lock(&iniciar_consola_mtx);
 
 	if(conexion_ok){
-
+		seleccionar_proceso();
 		imprimir_mensajes_disponibles();
 
 		char* linea = readline(">");
@@ -53,6 +48,16 @@ void iniciar_consola(){
 	}
 
 	return;
+}
+
+void seleccionar_proceso(){
+	char* linea;
+	do {
+		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato: \n");
+		linea = readline(">");
+		string_to_upper(proceso);
+	}while (validar_proceso(proceso));
+	proceso = linea;
 }
 
 void imprimir_mensajes_disponibles(){
