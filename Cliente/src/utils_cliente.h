@@ -61,11 +61,9 @@ uint32_t id_cliente;
 
 pthread_mutex_t iniciar_consola_mtx;
 
-t_queue* mensajes_a_enviar;
-
-sem_t sem_mensajes_a_enviar;
-
 bool conexion_ok;
+
+t_list* mensajes_hilos;
 
 void iniciar_consola();
 bool validar_proceso_mensaje(char* tipo_mensaje);
@@ -75,7 +73,7 @@ bool validar_mensaje(char* linea);
 bool validar_proceso(char* proceso);
 void seleccionar_proceso();
 void configurar_ip_puerto();
-void conexionEnvio();
+void procesar_mensaje(t_mensaje* mensaje);
 void conexionRecepcion();
 
 void imprimir_mensajes_disponibles();
