@@ -31,7 +31,7 @@
 #define FORMATO_CREAR_PEDIDO "CREAR_PEDIDO"
 #define FORMATO_GUARDAR_PEDIDO "GUARDAR_PEDIDO [NOMBRE] [ID]"
 #define FORMATO_AGREGAR_PLATO "AGREGAR_PLATO [NOMBRE] [ID]"
-#define FORMATO_CONFIRMAR_PEDIDO "CONFIRMAR_PEDIDO [ID]"
+#define FORMATO_CONFIRMAR_PEDIDO "CONFIRMAR_PEDIDO [ID] [NOMBRE-.]"
 #define FORMATO_PLATO_LISTO "PLATO_LISTO [RESTAURANTE] [ID_PEDIDO] [COMIDA]"
 #define FORMATO_CONSULTAR_PEDIDO "CONSULTAR_PEDIDO [ID]"
 #define FORMATO_OBTENER_PEDIDO "OBTENER_PEDIDO [NOMBRE] [ID]"
@@ -43,6 +43,8 @@
 #define POSICION_X "POSICION_X"
 #define POSICION_Y "POSICION_Y"
 #define ID_CLIENTE "ID_CLIENTE"
+#define PUERTO "PUERTO"
+#define IP "IP"
 
 #define COMANDO_HELP "HELP"
 
@@ -55,23 +57,23 @@ t_config* config_cliente;
 t_log* log_cliente;
 t_conexion* conexion;
 char* proceso;
+uint32_t id_cliente;
 
 pthread_mutex_t iniciar_consola_mtx;
 
-t_queue* mensajes_a_enviar;
-
-sem_t sem_mensajes_a_enviar;
-
 bool conexion_ok;
+
+t_list* mensajes_hilos;
 
 void iniciar_consola();
 bool validar_proceso_mensaje(char* tipo_mensaje);
 bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo);
 int cantidad_argumentos (char** mensaje_completo);
 bool validar_mensaje(char* linea);
-bool validar_proceso(int argc, char** argv);
+bool validar_proceso(char* proceso);
+void seleccionar_proceso();
 void configurar_ip_puerto();
-void conexionEnvio();
+void procesar_mensaje(t_mensaje* mensaje);
 void conexionRecepcion();
 
 void imprimir_mensajes_disponibles();
