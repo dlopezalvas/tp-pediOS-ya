@@ -92,7 +92,7 @@ void serve_client(int socket);
 void esperar_cliente(int servidor);
 
 t_restaurante* buscarRestaurante(char* nombre);
-t_segmento* buscarPedido(uint32_t id_pedido, char* nombre);
+t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante);
 void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
 t_pagina* buscarPlato(t_list* tabla_paginas, char* comida);
 void* serializar_pagina(t_plato* plato);
@@ -105,12 +105,14 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 
 int memoria_disponible_swap();
-pthread_mutex_t buscar_mutex_restaurante(char* nombre);
 t_plato* deserializar_pagina(void* stream);
 void guardar_en_swap(int frame_destino_swap, t_plato* plato);
 void guardar_en_mp(t_plato* plato);
 int seleccionar_frame_mp();
 void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida);
 int memoria_disponible_mp();
+
+void liberar_pagina(t_pagina* pagina);
+void free_pagina(t_pagina* pagina);
 
 #endif /* UTILS_COMANDA_H_ */

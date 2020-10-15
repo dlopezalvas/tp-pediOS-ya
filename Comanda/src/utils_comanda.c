@@ -154,59 +154,58 @@ void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 }
 
+
 void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 	int frame_disponible_swap;
 	m_guardarPlato* mensaje = mensaje_a_procesar->mensaje;
-	uint32_t confirmacion;
-	t_segmento* pedido = buscarPedido(mensaje->idPedido, mensaje->restaurante.nombre);
-	pthread_mutex_t restaurante_mtx;
+	uint32_t confirmacion = 0;
+	t_restaurante* restaurante = buscarRestaurante(mensaje->restaurante.nombre);
+	t_segmento* pedido;
 	t_pagina* plato = NULL;
 
-	if(pedido != NULL){
-		restaurante_mtx = buscar_mutex_restaurante(mensaje->restaurante.nombre);
+	if(restaurante != NULL){
+		pedido = buscarPedido(mensaje->idPedido, restaurante);
 
-		pthread_mutex_lock(&restaurante_mtx);
-		plato = buscarPlato(pedido->tabla_paginas, mensaje->comida.nombre);
-		pthread_mutex_unlock(&restaurante_mtx);
-		if(plato == NULL){
+		if(pedido != NULL){
+			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+			plato = buscarPlato(pedido->tabla_paginas, mensaje->comida.nombre);
+			pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
-			frame_disponible_swap = memoria_disponible_swap();
+			if(plato == NULL){
+				frame_disponible_swap = memoria_disponible_swap();
 
-			if(frame_disponible_swap != -1){
+				if(frame_disponible_swap != -1){
 
-				t_plato* plato_a_guardar = malloc(sizeof(t_plato));
-				plato_a_guardar->cant_pedida = mensaje->cantidad;
-				plato_a_guardar->cant_lista = 0;
-				strcpy(plato_a_guardar->nombre, mensaje->restaurante.nombre);
+					t_plato* plato_a_guardar = malloc(sizeof(t_plato));
+					plato_a_guardar->cant_pedida = mensaje->cantidad;
+					plato_a_guardar->cant_lista = 0;
+					strcpy(plato_a_guardar->nombre, mensaje->restaurante.nombre);
 
-				plato = malloc(sizeof(t_pagina));
-				plato->modificado = false;
-				plato->uso = true;
-				plato->ultimo_acceso = time(NULL);
-				plato->pagina_swap = frame_disponible_swap;
+					plato = malloc(sizeof(t_pagina));
+					plato->modificado = false;
+					plato->uso = true;
+					plato->ultimo_acceso = time(NULL);
+					plato->pagina_swap = frame_disponible_swap;
 
-				pthread_mutex_lock(&restaurante_mtx);
-				list_add(pedido->tabla_paginas, plato);
-				pthread_mutex_unlock(&restaurante_mtx);
+					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+					list_add(pedido->tabla_paginas, plato);
+					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
-				guardar_en_swap(frame_disponible_swap, plato_a_guardar);
-				guardar_en_mp(plato_a_guardar);
+					guardar_en_swap(frame_disponible_swap, plato_a_guardar);
+					guardar_en_mp(plato_a_guardar);
+				}
 			}else{
-				//memoria swap llena
-				confirmacion = 0;
+
+				if(!plato->presencia){
+					//TODO traer de swap
+				}
+
+				pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+				actualizar_plato_mp(plato, mensaje->cantidad);
+				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 			}
-		}else{
-			if(!plato->presencia){
-				//traer de swap
-			}
-			pthread_mutex_lock(&restaurante_mtx);
-			actualizar_plato_mp(plato, mensaje->cantidad);
-			pthread_mutex_unlock(&restaurante_mtx);
+			confirmacion = 1;
 		}
-		confirmacion = 1;
-	}else{
-		//no existe pedido o restaurante
-		confirmacion = 0;
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PLATO);
@@ -231,16 +230,18 @@ int seleccionar_frame_mp(){
 	if(frame_disponible == -1){
 		switch(algoritmo_reemplazo){
 		case LRU:
-//			frame_disponible = eleccion_victima_LRU();
+			//			frame_disponible = eleccion_victima_LRU();
 			break;
 		case CLOCK_MEJORADO:
-//			frame_disponible = eleccion_victima_clock_mejorado();
+			//			frame_disponible = eleccion_victima_clock_mejorado();
 			break;
 		}
 	}
 
 	return frame_disponible;
 }
+
+
 
 void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida){
 
@@ -329,13 +330,41 @@ void guardar_pagina(t_plato* plato){
 
 void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
-	t_segmento* pedido = buscarPedido(mensaje->id, mensaje->nombre.nombre);
-	if(pedido != NULL){
+	t_restaurante* restaurante = buscarRestaurante(mensaje->nombre.nombre);
+	t_segmento* pedido;
+	uint32_t confirmacion = 0;
 
-
-
+	bool es_pedido(t_segmento* _pedido){
+		return _pedido->id_pedido == pedido->id_pedido;
 	}
 
+	if(restaurante != NULL){
+		pedido = buscarPedido(mensaje->id, restaurante);
+		if(pedido != NULL){
+			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+			pedido = list_remove_by_condition(restaurante->tabla_segmentos, (void*) es_pedido);
+			pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
+			list_iterate(pedido->tabla_paginas, (void*)liberar_pagina);
+			list_destroy_and_destroy_elements(pedido->tabla_paginas, (void*)free_pagina);
+
+			free(pedido);
+		}
+	}
+}
+
+void liberar_pagina(t_pagina* pagina){
+	pthread_mutex_lock(&frames_MP_mtx);
+	frames_MP[pagina->frame] = 0;
+	pthread_mutex_unlock(&frames_MP_mtx);
+
+	pthread_mutex_lock(&frames_swap_mtx);
+	frames_swap[pagina->pagina_swap] = 0;
+	pthread_mutex_unlock(&frames_swap_mtx);
+}
+
+void free_pagina(t_pagina* pagina){ //TODO fijarnos si list_destroy elimina los elementos o no :o
+	free(pagina);
 }
 
 void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
@@ -361,29 +390,18 @@ t_restaurante* buscarRestaurante(char* nombre){
 	return restaurante;
 }
 
-t_segmento* buscarPedido(uint32_t id_pedido, char* nombre){
-	t_restaurante* restaurante = buscarRestaurante(nombre);
+t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante){
 	t_segmento* pedido;
 
 	bool _mismoPedido(t_segmento* segmento){
 		return id_pedido == segmento->id_pedido;
 	}
+	pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+	pedido = list_find(restaurante->tabla_segmentos, (void*)_mismoPedido);
+	pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
-	if(restaurante != NULL){
-		pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
-		pedido = list_find(restaurante->tabla_segmentos, (void*)_mismoPedido);
-		pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
-	}else{
-		pedido = NULL;
-	}
 	return pedido;
 }
-
-pthread_mutex_t buscar_mutex_restaurante(char* nombre){
-	t_restaurante* restaurante = buscarRestaurante(nombre);
-	return restaurante->tabla_segmentos_mtx;
-}
-
 
 void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
 	t_mensaje* mensaje_a_enviar = malloc(sizeof(t_mensaje));
