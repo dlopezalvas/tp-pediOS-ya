@@ -26,6 +26,7 @@ void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
 
 /* Server functions */
 void sindicato_api_send_response_of_operation(t_responseMessage response){
+	log_info(sindicatoLog, "send response");
 	return;
 }
 

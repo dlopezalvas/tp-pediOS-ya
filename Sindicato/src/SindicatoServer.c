@@ -25,46 +25,55 @@ void internal_process_request(int cod_op, int socket_client){
 
 	switch(cod_op){
 		case CONSULTAR_PLATOS:
+			log_info(sindicatoLog, "CONSULTAR_PLATOS");
 			platos = sindicato_api_consultar_platos(message);
 			responseMessage->message->tipo_mensaje = RTA_CONSULTAR_PLATOS;
 			responseMessage->message->parametros = platos;
 			break;
 		case GUARDAR_PEDIDO:
+			log_info(sindicatoLog, "GUARDAR_PEDIDO");
 			operationResult = sindicato_api_guardar_pedido(message);
 			responseMessage->message->tipo_mensaje = RTA_GUARDAR_PEDIDO;
 			responseMessage->message->parametros = operationResult;
 			break;
 		case GUARDAR_PLATO:
+			log_info(sindicatoLog, "GUARDAR_PLATO");
 			operationResult = sindicato_api_guardar_plato(message);
 			responseMessage->message->tipo_mensaje = RTA_GUARDAR_PLATO;
 			responseMessage->message->parametros = operationResult;
 			break;
 		case CONFIRMAR_PEDIDO:
+			log_info(sindicatoLog, "CONFIRMAR_PEDIDO");
 			operationResult = sindicato_api_confirmar_pedido(message);
 			responseMessage->message->tipo_mensaje = RTA_CONFIRMAR_PEDIDO;
 			responseMessage->message->parametros = operationResult;
 			break;
 		case OBTENER_PEDIDO:
+			log_info(sindicatoLog, "OBTENER_PEDIDO");
 			pedido = sindicato_api_obtener_pedido(message);
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_PEDIDO;
 			responseMessage->message->parametros = pedido;
 			break;
 		case OBTENER_RESTAURANTE:
+			log_info(sindicatoLog, "OBTENER_RESTAURANTE");
 			restaurante = sindicato_api_obtener_restaurante(message);
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_RESTAURANTE;
 			responseMessage->message->parametros = restaurante;
 			break;
 		case PLATO_LISTO:
+			log_info(sindicatoLog, "PLATO_LISTO");
 			operationResult = sindicato_api_plato_listo(message);
 			responseMessage->message->tipo_mensaje = RTA_PLATO_LISTO;
 			responseMessage->message->parametros = operationResult;
 			break;
 		case OBTENER_RECETA:
+			log_info(sindicatoLog, "OBTENER_RECETA");
 			receta = sindicato_api_obtener_receta(message);
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_RECETA;
 			responseMessage->message->parametros = receta;
 			break;
 		case TERMINAR_PEDIDO:
+			log_info(sindicatoLog, "TERMINAR_PEDIDO");
 			operationResult = sindicato_api_terminar_pedido(message);
 			responseMessage->message->tipo_mensaje = RTA_TERMINAR_PEDIDO;
 			responseMessage->message->parametros = operationResult;
