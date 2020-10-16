@@ -1,31 +1,28 @@
 #include "utils_cliente.h"
 
-bool validar_proceso(int argc, char** argv){
-	return string_equals_ignore_case(argv[1], APP) ||
-			string_equals_ignore_case(argv[1], COMANDA) ||
-			string_equals_ignore_case(argv[1], RESTAURANTE) ||
-			string_equals_ignore_case(argv[1], SINDICATO);
+bool validar_proceso(char* proceso){
+	return string_equals_ignore_case(proceso, APP) ||
+			string_equals_ignore_case(proceso, COMANDA) ||
+			string_equals_ignore_case(proceso, RESTAURANTE) ||
+			string_equals_ignore_case(proceso, SINDICATO);
 }
 
 void configurar_ip_puerto(){
 	conexion = malloc(sizeof(t_conexion));
-	char* puerto_proceso = string_new();
-	string_append_with_format(&puerto_proceso,"PUERTO_%s",proceso);
-	char* ip_proceso = string_new();
-	string_append_with_format(&ip_proceso,"IP_%s",proceso);
-	conexion->puerto = config_get_int_value(config_cliente, puerto_proceso);
-	conexion->ip = config_get_string_value(config_cliente, ip_proceso);
+
+	conexion->puerto = config_get_int_value(config_cliente, PUERTO);
+	conexion->ip = config_get_string_value(config_cliente, IP);
 	id_cliente = config_get_int_value(config_cliente, ID_CLIENTE);
-	free(puerto_proceso);
-	free(ip_proceso);
 }
 
 void iniciar_consola(){
 
+	pthread_t mensaje_hilo;
+
 	pthread_mutex_lock(&iniciar_consola_mtx);
 
 	if(conexion_ok){
-
+		seleccionar_proceso();
 		imprimir_mensajes_disponibles();
 
 		char* linea = readline(">");
@@ -40,8 +37,8 @@ void iniciar_consola(){
 			}else if(validar_mensaje(linea)){
 				t_mensaje* mensaje = llenarMensaje(linea);
 				mensaje->id = id_cliente;
-				queue_push(mensajes_a_enviar, mensaje);
-				sem_post(&sem_mensajes_a_enviar);
+				pthread_create(&mensaje_hilo, NULL, (void*)procesar_mensaje, mensaje);
+				list_add(mensajes_hilos, mensaje_hilo);
 			}else{
 				puts("Por favor ingrese un mensaje valido");
 			}
@@ -53,6 +50,46 @@ void iniciar_consola(){
 	}
 
 	return;
+}
+
+void procesar_mensaje(t_mensaje* mensaje){
+	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
+	op_code cod_op;
+	int id_proceso;
+	int size;
+
+	enviar_mensaje(mensaje, socket);
+	loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
+	free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+	free(mensaje);
+
+	int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+
+
+	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+		recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+		void* buffer = recibir_mensaje(socket, &size);
+		void* mensaje = deserializar_mensaje(buffer, cod_op);
+		loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
+		free_struct_mensaje(mensaje, cod_op);
+		free(buffer);
+	}else{
+		recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+		loggear_mensaje_recibido(NULL, cod_op, log_cliente);
+	}
+
+	liberar_conexion(socket);
+
+}
+
+void seleccionar_proceso(){
+	char* linea;
+	do {
+		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato: \n");
+		linea = readline(">");
+		string_to_upper(linea);
+	}while (!validar_proceso(linea));
+	proceso = linea;
 }
 
 void imprimir_mensajes_disponibles(){
@@ -208,74 +245,103 @@ int cantidad_argumentos (char** mensaje_completo){
 	return cantidad - 1; //resto el proceso y el tipo de mensaje, quedan solo los argumentos
 }
 
-
-void conexionEnvio(){
-	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
-
-	if(socket != -1){
-
-		conexion_ok = true;
-		pthread_mutex_unlock(&iniciar_consola_mtx);
-
-		if(string_equals_ignore_case(proceso, APP)){
-			t_mensaje* handshake_app = malloc(sizeof(t_mensaje));
-			handshake_app->tipo_mensaje = POSICION_CLIENTE;
-			handshake_app->id = id_cliente;
-			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
-
-			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
-			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
-
-			handshake_app->parametros = posicion_cliente;
-
-			enviar_mensaje(handshake_app, socket);
-//			free_struct_mensaje(handshake_app->parametros, handshake_app->tipo_mensaje);
-			//			loggear_mensaje_enviado(handshake_app->parametros, handshake_app->tipo_mensaje, log_cliente);
-		}
-
-		while(1){ //buscar condicion de que siga ejecutando
-			sem_wait(&sem_mensajes_a_enviar);
-			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
-			enviar_mensaje(mensaje, socket);
-			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
-			free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-			free(mensaje);
-
-		}
-	}else{
-		conexion_ok = false;
-		pthread_mutex_unlock(&iniciar_consola_mtx);
-	}
-}
+//
+//void conexionEnvio(){
+//	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
+//
+//	if(socket != -1){
+//
+//		conexion_ok = true;
+//		pthread_mutex_unlock(&iniciar_consola_mtx);
+//
+//		//		if(string_equals_ignore_case(proceso, APP)){
+//		//			t_mensaje* handshake = malloc(sizeof(t_mensaje));
+//		//			handshake->tipo_mensaje = POSICION_CLIENTE;
+//		//			handshake->id = id_cliente;
+//		//			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+//		//
+//		//			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
+//		//			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+//		//
+//		//			handshake->parametros = posicion_cliente;
+//		//
+//		//			enviar_mensaje(handshake, socket);
+//		//			free_struct_mensaje(handshake_app->parametros, handshake_app->tipo_mensaje);
+//		//			loggear_mensaje_enviado(handshake_app->parametros, handshake_app->tipo_mensaje, log_cliente);
+//		//		}
+//
+//		while(1){ //buscar condicion de que siga ejecutando
+//			sem_wait(&sem_mensajes_a_enviar);
+//			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
+//			enviar_mensaje(mensaje, socket);
+//			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
+//			free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+//			free(mensaje);
+//
+//		}
+//	}else{
+//		conexion_ok = false;
+//		pthread_mutex_unlock(&iniciar_consola_mtx);
+//	}
+//}
 
 void conexionRecepcion(){
-
-	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
 
 	int size = 0;
 	op_code cod_op;
 	uint32_t id_proceso;
 	int _recv;
-	while(1){
+	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
+	uint32_t rta_conexion = 0;
+
+	if(socket_servidor != -1){
+
+		conexion_ok = true;
+		pthread_mutex_unlock(&iniciar_consola_mtx);
+
+		t_mensaje* handshake = malloc(sizeof(t_mensaje));
+		handshake->tipo_mensaje = POSICION_CLIENTE;
+		handshake->id = id_cliente;
+		t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
+
+		posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
+		posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+
+		handshake->parametros = posicion_cliente;
+
+		enviar_mensaje(handshake, socket_servidor);
+		free_struct_mensaje(handshake->parametros, handshake->tipo_mensaje);
+		free(handshake);
+
 		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
-
-
-		if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
-			recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-			void* buffer = recibir_mensaje(socket_servidor, &size);
-			void* mensaje = deserializar_mensaje(buffer, cod_op);
-			loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
-			free_struct_mensaje(mensaje, cod_op);
-			free(buffer);
-		}else{
-			recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-			loggear_mensaje_recibido(NULL, cod_op, log_cliente);
+		if(_recv != 0){
+			void* mensaje = recibir_mensaje(socket_servidor, &size);
+			uint32_t rta_conexion = deserializar_mensaje(mensaje, cod_op);
 		}
+
+		while(rta_conexion == 1){
+			_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
+
+
+			if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+				recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+				void* buffer = recibir_mensaje(socket_servidor, &size);
+				void* mensaje = deserializar_mensaje(buffer, cod_op);
+				loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
+				free_struct_mensaje(mensaje, cod_op);
+				free(buffer);
+			}else{
+				recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+				loggear_mensaje_recibido(NULL, cod_op, log_cliente);
+			}
+		}
+
+		liberar_conexion(socket_servidor);
+	}else{
+		conexion_ok = false;
+		pthread_mutex_unlock(&iniciar_consola_mtx);
 	}
-
-	liberar_conexion(socket_servidor);
 }
-
 t_mensaje* llenarMensaje(char* mensaje){
 
 	char** parametros = string_split(mensaje, " ");
