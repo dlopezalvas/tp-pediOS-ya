@@ -175,7 +175,13 @@ void inicio_de_listas_globales(){
 
 void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata){
 
-
+/*
+ * Creación de colas de planificación
+En base a los Hornos y los cocineros con sus afinidades que se obtuvieron, se deberán crear las distintas colas de ready y de entrada salida.
+De esta manera, si tengo dos cocineros que tienen como afinidad a Milanesa se deberá crear dos colas de Ready en las cuales todas las milanesas irán a dicha cola y los demás platos irán a otra. Un cocinero con afinidades solo podrá cocinar aquellas recetas a las cuales es afín.
+Por otro lado, durante la ejecución de un plato puede darse que se requiera enviarlo al horno, en estos casos existirá una cantidad de Hornos finitos dentro de cada restaurante que funcionarán como entradas salidas visto en la teoría.
+ *
+ */
 
 
 	log_info(log_config_ini, "Comienza proceso de colas");
@@ -414,11 +420,11 @@ void process_request(int cod_op, int cliente_fd) {
 
 			t_nombre* nombre_restaurante_GUARDAR_PLATO = malloc(sizeof(t_nombre));
 			nombre_restaurante_GUARDAR_PLATO=cfg_nombre_restaurante;
-			nombre_restaurante_GUARDAR_PLATO=length(cfg_nombre_restaurante);
+			nombre_restaurante_GUARDAR_PLATO=strlen(cfg_nombre_restaurante);
 
 			t_nombre* nombre_plato_GUARDAR_PLATO = malloc(sizeof(t_nombre));
 			nombre_plato_GUARDAR_PLATO=mj_agregar_plato->nombre;
-			nombre_plato_GUARDAR_PLATO=length(mj_agregar_plato->nombre);
+			nombre_plato_GUARDAR_PLATO=strlen(mj_agregar_plato->nombre);
 
 			m_guardarPlato* sindicato_GUARDAR_PLATO = malloc(sizeof(m_guardarPlato));
 			sindicato_GUARDAR_PLATO->cantidad=1;
@@ -484,7 +490,7 @@ void process_request(int cod_op, int cliente_fd) {
 		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
 		t_nombre* nombre_restaurante_OBTENER_PEDIDO = malloc(sizeof(t_nombre));
 		nombre_restaurante_OBTENER_PEDIDO=cfg_nombre_restaurante;
-		nombre_restaurante_OBTENER_PEDIDO=length(cfg_nombre_restaurante);
+		nombre_restaurante_OBTENER_PEDIDO=strlen(cfg_nombre_restaurante);
 
 
 		t_nombre_y_id* sindicato_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
@@ -498,6 +504,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		//estructura de respuesta al cliente
 		t_mensaje* cliente_rta_CONFIRMAR_PEDIDO= malloc(sizeof(t_mensaje));
+		rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO= malloc(sizeof(rta_obtenerPedido));
 
 			//CONEXION CON SINDICATO
 
@@ -515,23 +522,86 @@ void process_request(int cod_op, int cliente_fd) {
 					enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
 
 					//RECIBIR RESPUESTA DE SINDICATO
-					rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO= malloc(sizeof(uint32_t));
+
 
 					rta_sindicato_RTA_OBTENER_PEDIDO= recibir_RTA_OBTENER_PEDIDO(socket_OBTENER_PEDIDO);// TODO
-					/*
-					typedef struct{
-						t_nombre comida;
-						uint32_t cantTotal;
-						uint32_t cantHecha;
-					}t_elemPedido;
+					liberar_conexion( socket_OBTENER_PEDIDO);
 
-					typedef struct{
-						uint32_t cantPedidos;
-						t_list* infoPedidos; //lista de elemPedido
-					}rta_obtenerPedido;
-				*/
 			}
-		//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO
+
+			//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
+
+			pthread_t* hilo_plato;
+			t_elemPedido* pedido_n = malloc(sizeof(t_elemPedido));
+			t_nombre* sindicato_nombre_plato_receta = malloc(sizeof(t_nombre));
+
+			t_mensaje* mje_sindicato_OBTENER_RECETA= malloc(sizeof(t_mensaje));
+			mje_sindicato_OBTENER_RECETA->tipo_mensaje=OBTENER_RECETA;
+			rta_obtenerReceta* rta_sindicato_RTA_OBTENER_RECETA= malloc(sizeof(rta_obtenerReceta));
+			//t_plato_pcb* plato_pcb = malloc(sizeof(t_plato_pcb));//correccion
+			t_plato_pcb* plato_pcb;
+			//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
+			t_nombre* plato_pcb_nombre_plato;
+
+			 for (int inicio_plato = 0;
+					 inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos;
+					 inicio_plato++)
+			    {
+				 plato_pcb = malloc(sizeof(t_plato_pcb));
+				 plato_pcb_nombre_plato = malloc(sizeof(t_nombre));
+
+				 pedido_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
+				 //obtengo el nombre del plato
+				 sindicato_nombre_plato_receta=pedido_n->comida;
+				 sindicato_nombre_plato_receta=strlen(pedido_n->comida);
+
+				 //cargo el mj a enviar a sindicato para pedir receta
+				 mje_sindicato_OBTENER_PEDIDO->parametros=sindicato_nombre_plato_receta;
+
+				 //conexion sindicato - NO HAGO VALIDACION DE SINDICATO DISPONIBLE
+				 int socket_OBTENER_RECETA = conectar_con_sindicato();
+
+				enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
+
+				//RECIBIR RESPUESTA DE SINDICATO
+				rta_sindicato_RTA_OBTENER_RECETA= recibir_RTA_OBTENER_RECETA(socket_OBTENER_RECETA);// TODO
+				liberar_conexion( socket_OBTENER_RECETA);
+
+
+				//cargo el pcb
+				plato_pcb->id_pedido=sindicato_OBTENER_PEDIDO->id;
+				plato_pcb->comida.nombre=pedido_n->comida.nombre;
+				plato_pcb->comida.largo_nombre=pedido_n->comida.largo_nombre;
+				plato_pcb->cantTotal=pedido_n->cantTotal;
+				plato_pcb->cantHecha=pedido_n->cantHecha;
+				plato_pcb->cantPasos=rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
+				plato_pcb->pasos=rta_sindicato_RTA_OBTENER_RECETA->pasos;
+
+				//creo hilo pcb
+
+				hilo_plato= malloc(sizeof(pthread_t));
+
+				pthread_mutex_lock(&mutex_pcb);
+				list_add(hilos_pcb, hilo_plato);
+				pthread_mutex_unlock(&mutex_pcb);
+
+				pthread_create(hilo_plato,NULL,fhilo_plato,plato_pcb);
+				pthread_detach(hilo_plato);
+
+			    }
+			 //LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
+			 //plafinificar
+
+			//respondo al cliente -- consultar en que casos se debe mandar fail
+			//esta es la respuesta al cliente,
+			uint32_t* ok = malloc(sizeof(uint32_t));
+			*ok = 1; //1 para OK, 0 para FAIL
+
+
+			cliente_rta_CONFIRMAR_PEDIDO->parametros=ok;
+			cliente_rta_CONFIRMAR_PEDIDO->tipo_mensaje=RTA_CONFIRMAR_PEDIDO;
+			 enviar_mensaje(cliente_rta_CONFIRMAR_PEDIDO,cliente_fd);
+
 
 
 		/*
@@ -546,8 +616,7 @@ void process_request(int cod_op, int cliente_fd) {
 		 */
 
 
-		//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
-			//plafinificar
+
 
 		//RESPONDO AL CLIENTE
 			//OK o FAIL
@@ -557,13 +626,69 @@ void process_request(int cod_op, int cliente_fd) {
 		log_info(log_config_ini ,"Se recibio el mj CONSULTAR_PEDIDO: ",cod_op);
 
 		//DESERIALIZO EL MJ
+		int32_t* id_CONSULTAR_PEDIDO = malloc(sizeof(uint32_t));
+		id_CONSULTAR_PEDIDO=mensaje;
+
+		//respuesta cliente
+		typedef struct{
+			t_nombre restaurante;
+			uint32_t idRepartidor;
+			est_pedido estadoPedido;
+			uint32_t cantPlatos;
+			t_list* platos; //ver si va con estado
+		}rta_consultarPedido;
+		rta_consultarPedido* rta_CONSULTAR_PEDIDO = malloc(sizeof(rta_consultarPedido));
+		t_mensaje* cliente_rta_CONSULTAR_PEDIDO= malloc(sizeof(t_mensaje));
 
 
-		//ENVIAR MJ A SINDICATO
+		//ENVIAR MJ A SINDICATO - OBTNER PEDIDO
+		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
+				t_nombre* nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO = malloc(sizeof(t_nombre));
+				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO=cfg_nombre_restaurante;
+				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO=strlen(cfg_nombre_restaurante);
+
+
+				t_nombre_y_id* sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
+				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->id=id_CONSULTAR_PEDIDO;
+				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre=nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO;
+
+
+				t_mensaje* mje_sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO= malloc(sizeof(t_mensaje));
+				mje_sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->tipo_mensaje=OBTENER_PEDIDO;
+				mje_sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->parametros=sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO;
+
+				//CONEXION CON SINDICATO
+				int socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO = conectar_con_sindicato();
+
+				enviar_mensaje(mje_sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
+
+				//RECIBIR RESPUESTA DE SINDICATO
+				rta_obtenerPedido* rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO= malloc(sizeof(rta_obtenerPedido));
+				rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO= recibir_RTA_OBTENER_PEDIDO(socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);// TODO
+				liberar_conexion( socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);
+
+
+
 
 		//RECIBO RESPUESTA
 
 		//RESPONDO AL CLIENTE
+
+
+				rta_CONSULTAR_PEDIDO->restaurante = nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO;
+				rta_CONSULTAR_PEDIDO->cantPlatos=rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO->cantPedidos;
+				rta_CONSULTAR_PEDIDO->platos=rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO->infoPedidos;
+
+				cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje=RTA_CONSULTAR_PEDIDO;
+				cliente_rta_CONSULTAR_PEDIDO->parametros=rta_CONSULTAR_PEDIDO;
+				enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
+
+
+		/*
+		 * Se le enviará al Módulo Sindicato el mensaje Obtener Pedido especificando un pedido del Restaurante,
+		 * con la finalidad de obtener información actualizada del mismo,
+		 * como por ejemplo, la cantidad lista.
+		 */
 		break;
 		case 0:
 			pthread_exit(NULL);
@@ -575,7 +700,12 @@ void process_request(int cod_op, int cliente_fd) {
 
 }
 
+void* fhilo_plato (*t_plato_pcb){
 
+
+
+
+}
 
 
 

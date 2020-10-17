@@ -56,6 +56,20 @@ t_list *  hilos;
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
+pthread_mutex_t mutex_pcb;
+t_list *  hilos_pcb;
+
+//PCB - PLATOS
+typedef struct{
+			uint32_t id_pedido;
+			t_nombre comida;
+			uint32_t cantPasos;
+			t_list* pasos;//t_paso
+			uint32_t cantTotal;
+			uint32_t cantHecha;
+}t_plato_pcb;
+
+void* f_hilo_plato (t_plato_pcb);
 
 //FHILOS
 void* fhilo_planificador (void* v);
