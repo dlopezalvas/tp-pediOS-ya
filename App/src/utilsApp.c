@@ -748,26 +748,6 @@ void configuracionConexiones(void) {
     hilos = list_create();
 }
 
-
-// para enviar un mensaje
-    // queue_push(mensajes_a_enviar, mensaje);
-    // sem_post(&sem_mensajes_a_enviar);
-void* fhilo_conectarConComanda(void* arg) {
-    // TODO: corregir todo esto
-    int socket = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
-
-	if(socket != -1){
-
-		while(1){ //buscar condicion de que siga ejecutando
-			sem_wait(&sem_mensajes_a_enviar);
-			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
-			enviar_mensaje(mensaje, socket);
-			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, logger_mensajes);
-//			free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-		}
-    }
-}
-
 void* fhilo_servidor(void* arg) {
     int conexion_servidor;
     conexion_servidor = iniciar_servidor(cfval_puertoEscucha);
@@ -890,31 +870,6 @@ void process_request(int cod_op, int cliente_fd) {
 
         // TODO: liberar mensaje aca o dentro de cada f?
     }
-}
-
-
-void conexionRecepcion(){
-	int socket_servidor = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
-
-	int size = 0;
-	op_code cod_op;
-	int _recv;
-	while (1) {
-		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
-
-		if (_recv != -1 && _recv != 0) {
-			void* buffer = recibir_mensaje(socket_servidor, &size);
-			void* mensaje = deserializar_mensaje(buffer, cod_op);
-            // TODO: switch para mensajes comanda
-			loggear_mensaje_recibido(mensaje, cod_op, logger_mensajes);
-			free(buffer);
-		}
-        // else {
-		// 	loggear_mensaje_recibido(NULL, cod_op, logger_mensajes);
-		// }
-	}
-
-	liberar_conexion(socket_servidor);
 }
 
 void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int socket_cliente) {
@@ -1102,4 +1057,44 @@ void gestionar_PLATO_LISTO(m_platoListo* plato) {
         // mandar obtener pedido a comanda
         // esperar respuesta
         // gestionar respuesta (darle ok al pedido/repartidor?)
+}
+
+t_mensaje* mensajear_comanda(t_mensaje* mensaje, bool liberar_params) {
+    int socket;
+    op_code cod_op;
+    int id_recibida;
+    int _recv_op;
+    int _recv_id;
+    int size = 0;
+    
+    socket = iniciar_cliente(cfval_ipComanda, cfval_puertoComanda);
+
+	if (socket == -1) {
+        // TODO: error handling
+        return NULL;
+    }
+
+    enviar_mensaje(mensaje, socket);
+    if (liberar_params) {
+        free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    }
+    free(mensaje);
+
+    _recv_op = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+    if (_recv_op != -1 && _recv_op != 0) {
+        // TODO: error handling
+    }
+
+    _recv_id = recv(socket, &id_recibida, sizeof(op_code), MSG_WAITALL);
+    if (_recv_id != -1 && _recv_id != 0) {
+        // TODO: error handling
+    }
+
+    switch (cod_op) {
+        // TODO: empacar todo en un t_mensaje*
+        //       dependiendo del cod_op
+        //       y devolverlo.
+        case RTA_OBTENER_PEDIDO:
+            ;      
+    }
 }

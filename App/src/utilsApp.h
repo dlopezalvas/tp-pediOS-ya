@@ -183,12 +183,11 @@
 void configuracionConexiones(void);
 t_list* hilos;
 pthread_mutex_t mutex_hilos;
-void* fhilo_conectarConComanda(void* arg);
 void* fhilo_servidor(void* arg);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-void conexionRecepcion(void);
+t_mensaje* mensajear_comanda(t_mensaje* mensaje, bool liberar_params);
 
 sem_t sem_mensajes_a_enviar;
 t_queue* mensajes_a_enviar;
