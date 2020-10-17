@@ -14,11 +14,11 @@
 #include "../../commonsCoronaLinux/socket.h"
 #include "../../commonsCoronaLinux/logs.h"
 
-//TODO: eliminar cuando se actualicen las commons
-#define m_restaurante t_restaurante
-#define POSICION_RESTAURANTE 400
-#define RTA_POSICION_CLIENTE 401
-#define ERROR 402
+// //TODO: eliminar cuando se actualicen las commons
+// #define m_restaurante t_restaurante
+// #define POSICION_RESTAURANTE 400
+// #define RTA_POSICION_CLIENTE 401
+// #define ERROR 402
 
 // debug
     bool modo_noComanda;
@@ -60,6 +60,7 @@
     char** cfval_platosDefault;
     int cfval_posicionRestDefaultX;
     int cfval_posicionRestDefaultY;
+    t_restaurante_y_plato* platos_default_enviable;
 
 // restaurantes
     typedef struct {
@@ -72,6 +73,7 @@
 
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
+    t_restaurante* resto_default;
     t_restaurante* get_restaurante(char* nombre_restaurante);
     void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket);
     t_list* get_nombresRestConectados(void);
@@ -91,7 +93,6 @@
     pthread_mutex_t mutex_lista_clientes;
     t_cliente* get_cliente(int id_pedido);
     t_cliente* get_cliente_porSuID(int id_cliente);
-    void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente);
     void guardar_seleccion(char* nombre_rest, int id_cliente);
 
 // repartidores
@@ -195,7 +196,7 @@ t_queue* mensajes_a_enviar;
 pthread_t hilo_conectarConComanda;
 pthread_t hilo_servidor;
 
-void gestionar_POSICION_CLIENTE(m_cliente* datos_cliente, int socket_cliente);
+void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* coord, int socket_cliente);
 void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente);
 void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int socket_cliente);
 void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);

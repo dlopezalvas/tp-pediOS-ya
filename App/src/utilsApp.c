@@ -15,6 +15,7 @@ void configuracionInicial(void) {
         char* pathArchivoLog;
         char* algoritmoPlanificacion;
         t_repartidor* repartidor;
+        t_nombre* nombre_plato_default;
 
     // para los loggers
         char* program_name = "App";
@@ -112,12 +113,17 @@ void configuracionInicial(void) {
     // configuracion del restaurant default
         cfval_platosDefault = string_split(config_get_string_value(config, "PLATOS_DEFAULT"), "|"); //TODO: ojo separators para cuando corrijan el enunciado
         log_debug(logger_configuracion, "[CONFIG] Platos del restaurant default:");
+
+        platos_default_enviable = malloc(sizeof(t_restaurante_y_plato));
         
         for (
             unsigned index_platos = 0;
             cfval_platosDefault[index_platos];
             index_platos++
         ) {
+            nombre_plato_default = malloc(sizeof(t_nombre));
+            nombre_plato_default->nombre = cfval_platosDefault[index_platos];
+            list_add(platos_default_enviable, nombre_plato_default);
             log_debug(logger_configuracion, "[CONFIG] |\t%s", cfval_platosDefault[index_platos]);
         }
         
@@ -126,6 +132,11 @@ void configuracionInicial(void) {
         
         cfval_posicionRestDefaultY = config_get_int_value(config, "POSICION_REST_DEFAULT_Y");
         log_debug(logger_configuracion, "[CONFIG] Pos. Y restaurant default: %i", cfval_posicionRestDefaultY);
+
+        resto_default = malloc(sizeof(t_restaurante));
+        resto_default->nombre = "Resto Default";
+        resto_default->pos_x = cfval_posicionRestDefaultX;
+        resto_default->pos_y = cfval_posicionRestDefaultY;
 
     // inicializacion de colas
         cola_NEW = list_create();
@@ -353,6 +364,9 @@ t_cliente* get_cliente(int id_pedido) {
 t_restaurante* get_restaurante(char* nombre_restaurante) {
     t_restaurante* restaurante;
     pthread_mutex_lock(&mutex_lista_restaurantes);
+    if (list_is_empty(restaurantes)) {
+        return resto_default;
+    }
     for (
         unsigned index_rest = 0;
         index_rest < list_size(restaurantes);
@@ -583,9 +597,9 @@ void consumir_ciclo(t_pedido* pedido) {
 
 void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commons
     t_restaurante* restaurante = malloc(sizeof(t_restaurante));
-    restaurante->nombre = mensaje_rest->nombre;
-    restaurante->pos_x = mensaje_rest->pos_x;
-    restaurante->pos_y = mensaje_rest->pos_y;
+    restaurante->nombre = mensaje_rest->nombre.nombre;
+    restaurante->pos_x = mensaje_rest->posicion.x;
+    restaurante->pos_y = mensaje_rest->posicion.y;
     restaurante->socket = socket;
     restaurante->mutex = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(restaurante->mutex, NULL);
@@ -826,7 +840,7 @@ void process_request(int cod_op, int cliente_fd) {
 
         // de CLIENTE:
             case POSICION_CLIENTE:
-                gestionar_POSICION_CLIENTE(mensaje, cliente_fd);
+                gestionar_POSICION_CLIENTE(cliente_id, mensaje, cliente_fd);
                     // OK definicion
                     // OK implementacion
                 break;
@@ -862,7 +876,7 @@ void process_request(int cod_op, int cliente_fd) {
                 break;
 
         // de RESTAURANT:
-            case POSICION_RESTAURANTE: // TODO commons
+            case POSICION_RESTAUNTE:
                 guardar_nuevoRest(mensaje, cliente_fd);
                     // OK definicion
                     // TODO implementacion
@@ -903,14 +917,14 @@ void conexionRecepcion(){
 	liberar_conexion(socket_servidor);
 }
 
-void gestionar_POSICION_CLIENTE(m_cliente* datos_cliente, int socket_cliente) {
+void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int socket_cliente) {
     t_cliente* cliente = malloc(sizeof(t_cliente));
     t_mensaje* mensaje = malloc(sizeof(t_mensaje));
     uint32_t* confirmacion = malloc(sizeof(uint32_t));
 
-    cliente->id = datos_cliente->id;
-    cliente->pos_x = datos_cliente->posicion.x;
-    cliente->pos_y = datos_cliente->posicion.y;
+    cliente->id = cliente_id;
+    cliente->pos_x = posicion->x;
+    cliente->pos_y = posicion->y;
     cliente->restaurante_seleccionado = NULL;
     cliente->socket = socket_cliente;
     cliente->mutex = malloc(sizeof(pthread_mutex_t));
@@ -937,7 +951,7 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
     t_restaurante_y_plato* restaurantes = malloc(sizeof(t_restaurante_y_plato));
 
     mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
-    restaurantes->nombres = get_nombresRestConectados(); // TODO: redefinir a t_list*
+    restaurantes->nombres = get_nombresRestConectados();
     restaurantes->cantElementos = list_size(restaurantes->nombres);
     mensaje->parametros = restaurantes;
     enviar_mensaje(mensaje, socket_cliente);
@@ -973,7 +987,19 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
     int size = 0;
 
     cliente_consultor = get_cliente_porSuID(cliente_id);
-    restaurante_consultado = cliente_consultor->restaurante_seleccionado; // TODO: error handling si no selecciono restaurante
+    restaurante_consultado = cliente_consultor->restaurante_seleccionado;
+
+    if (!restaurante_consultado) {
+        // TODO: tambien agregarle null cuando se guarda el cliente al conectarse no?
+        return;
+    } else if (restaurante_consultado == resto_default) {
+        mensaje = malloc(sizeof(t_mensaje));
+        mensaje->tipo_mensaje = RTA_CONSULTAR_PLATOS;
+        mensaje->parametros = platos_default_enviable;
+        enviar_mensaje(mensaje, socket_cliente);
+        free(mensaje);
+        return;
+    }
 
     mensaje->tipo_mensaje = CONSULTAR_PLATOS;
     nombre_rest_consultado->nombre="";
@@ -1014,27 +1040,66 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
 }
 
 void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
+    t_cliente* cliente_en_cuestion;
+    t_restaurante* resto_en_cuestion;
+    
     // buscar rest de ese cliente
-    // mandarle el crear pedido
-    // esperar respuesta
-    // mandarle guardar pedido a comanda
+    cliente_en_cuestion = get_cliente_porSuID(cliente_id);
+    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: mutex transaccional?
+    
+    if (!resto_en_cuestion) {
+        // TODO: error handling
+        return;
+    } else if (resto_en_cuestion == resto_default) {
+        // TODO
+        // mandarle guardar pedido a comanda (1)
+    } else {
+        // TODO
+        // mandarle el crear pedido
+        // esperar respuesta
+        // mandarle guardar pedido a comanda (2)
+    }
     // esperar respuesta
     // responder a cliente ok
 }
 
 void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente) {
+    t_cliente* cliente_en_cuestion;
+    t_restaurante* resto_en_cuestion;
+    
     // buscar rest de ese cliente
-    // mandarle el agregar plato
-    // esperar respuesta
-    // mandarle guardar plato a comanda
+    cliente_en_cuestion = get_cliente_porSuID(cliente_id);
+    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: mutex transaccional?
+
+    if (!resto_en_cuestion) {
+        // TODO: error handling
+        return;
+    } else if (resto_en_cuestion == resto_default) {
+        // TODO
+            // mandarle guardar plato a comanda (1)
+    } else {
+        // TODO
+            // mandarle el agregar plato
+            // esperar respuesta
+            // mandarle guardar plato a comanda (2)
+    }
     // esperar respuesta
     // responder a cliente ok
 }
 
 void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente) {
-    
+    // TODO
+        // obtener pedido de comanda
+        // confirmar pedido a resto
+        // confirmar pedido a comanda
+        // ok a cliente
 }
 
 void gestionar_PLATO_LISTO(m_platoListo* plato) {
-
+    // TODO
+        // mandar plato listo a comanda
+        // esperar respuesta
+        // mandar obtener pedido a comanda
+        // esperar respuesta
+        // gestionar respuesta (darle ok al pedido/repartidor?)
 }
