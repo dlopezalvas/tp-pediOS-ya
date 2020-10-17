@@ -3,6 +3,9 @@
 
 #include "SindicatoApi.h"
 
+#define NO_ENVIAR_RESPUESTA 0
+#define ENVIAR_RESPUESTA 1
+
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 void sindicato_server_initialize();

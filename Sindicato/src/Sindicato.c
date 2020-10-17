@@ -12,6 +12,7 @@ int main(void) {
 void sindicato_initialize(){
 	sindicatoConfig = leer_config(SINDICATO_PATH_CONFIG);
 	sindicatoLog = iniciar_logger(sindicatoConfig);
+	sindicatoDebugLog = sindicato_utils_iniciar_debug_logger(sindicatoConfig);
 
 	//TODO: Inicializar el FS con punto de montaje
 	sindicato_api_afip_initialize();
@@ -28,6 +29,7 @@ void sindicato_initialize(){
 
 	config_destroy(sindicatoConfig);
 	log_destroy(sindicatoLog);
+	log_destroy(sindicatoDebugLog);
 }
 
 

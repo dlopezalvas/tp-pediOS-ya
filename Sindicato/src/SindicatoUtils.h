@@ -16,15 +16,16 @@
 
 typedef struct{
 	int socket;
-	t_mensaje message;
+	t_mensaje* message;
 }t_responseMessage;
 
 /* Global variables */
 t_log* sindicatoLog;
+t_log* sindicatoDebugLog;
 t_config* sindicatoConfig;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
-
+t_log* sindicato_utils_iniciar_debug_logger(t_config* config);
 
 #endif /* SINDICATOUTILS_H_ */
