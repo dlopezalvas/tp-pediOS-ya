@@ -877,6 +877,14 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
     t_mensaje* mensaje = malloc(sizeof(t_mensaje));
     uint32_t* confirmacion = malloc(sizeof(uint32_t));
 
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Llego pos. (%i, %i) del cliente %i.",
+        posicion->x,
+        posicion->y,
+        cliente_id
+    );
+
     cliente->id = cliente_id;
     cliente->pos_x = posicion->x;
     cliente->pos_y = posicion->y;
@@ -1007,12 +1015,12 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
         return;
     } else if (resto_en_cuestion == resto_default) {
         // TODO
-        // mandarle guardar pedido a comanda (1)
+            // mandarle guardar pedido a comanda (1)
     } else {
         // TODO
-        // mandarle el crear pedido
-        // esperar respuesta
-        // mandarle guardar pedido a comanda (2)
+            // mandarle el crear pedido
+            // esperar respuesta
+            // mandarle guardar pedido a comanda (2)
     }
     // esperar respuesta
     // responder a cliente ok
