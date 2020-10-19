@@ -36,15 +36,15 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	/* Initialize of pedido structure */
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
 	platos->nombres = list_create();
-
 	t_nombre* plato = malloc(sizeof(t_nombre));
-	plato->nombre = "Milanesa";
-	puts(plato->nombre);
-
-	/*t_nombre* restaurante = consultaPatos;
-	log_info(sindicatoLog, restaurante->nombre);*/
 
 	/* DELETE THIS: datos dummies solo para TEST */
+	plato->nombre = "Milanesa";
+	char* textoLog = string_new();
+	string_append(&textoLog, "Valor de plato->nombre ");
+	string_append(&textoLog, plato->nombre);
+	log_info(sindicatoDebugLog, textoLog);
+
 	list_add(platos->nombres, plato);
 	platos->cantElementos = 1;
 
@@ -106,22 +106,16 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	restauranteInfo->cocineroAfinidad = list_create();
 	restauranteInfo->recetas = list_create();
 
-	/* List  */
+	/* List */
 	t_receta* recetaPrecio = malloc(sizeof(t_receta));
-
 	t_cocineroAfinidad* afinidadCocinero = malloc(sizeof(t_cocineroAfinidad));
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	recetaPrecio->receta.nombre = malloc(strlen("Milanesa")+1);
 	recetaPrecio->receta.nombre = "Milanesa";
-
-	afinidadCocinero->afinidad.nombre = malloc(strlen("Empanadas")+1);
 	afinidadCocinero->afinidad.nombre = "Empanadas";
 
 	list_add(restauranteInfo->recetas,recetaPrecio);
 	list_add(restauranteInfo->cocineroAfinidad, afinidadCocinero);
-
-	puts(string_itoa(restauranteInfo->cocineroAfinidad->elements_count));
 
 	restauranteInfo->cantCocineroAfinidad = 1;
 	restauranteInfo->cantRecetas = 1;
@@ -142,6 +136,7 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 }
 
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
+	//t_nombre* asd;
 	rta_obtenerReceta* receta = malloc(sizeof(rta_obtenerReceta));
 	receta->pasos = list_create();
 
@@ -149,8 +144,6 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 	paso->duracion = 1;
 	paso->paso.nombre = "Milanesear";
 	puts(paso->paso.nombre);
-
-	//t_nombre* asd;
 
 	/* DELETE THIS: datos dummies solo para TEST */
 	list_add(receta->pasos,"Milanesa");
