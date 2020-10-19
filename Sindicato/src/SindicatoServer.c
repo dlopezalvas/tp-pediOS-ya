@@ -6,6 +6,7 @@ void internal_process_request(int cod_op, int socket_client){
 	void* message = NULL;
 	int size = 0;
 	int sendMessage = NO_ENVIAR_RESPUESTA;
+	uint32_t id_proceso;
 
 	/* Response variables */
 	int operationResult = 0;
@@ -16,9 +17,11 @@ void internal_process_request(int cod_op, int socket_client){
 
 	t_responseMessage* responseMessage = malloc(sizeof(t_responseMessage));
 	responseMessage->message = malloc(sizeof(t_mensaje));
+	//responseMessage->message->id=4;
 	responseMessage->socket = socket_client;
 
 	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+		recv(socket_client, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 		void* buffer = recibir_mensaje(socket_client, &size);
 		message = deserializar_mensaje(buffer, cod_op);
 		loggear_mensaje_recibido(message,cod_op, sindicatoLog);
@@ -30,6 +33,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 			responseMessage->message->tipo_mensaje = RTA_CONSULTAR_PLATOS;
 			responseMessage->message->parametros = platos;
+
 			sendMessage = ENVIAR_RESPUESTA;
 			break;
 		case GUARDAR_PEDIDO:
