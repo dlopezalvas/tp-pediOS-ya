@@ -1,4 +1,5 @@
 #include "utilsApp.h"
+#include <errno.h>
 
 // configuracionInicial() inicializa:
 //      > los loggers
@@ -751,7 +752,7 @@ void configuracionConexiones(void) {
 void* fhilo_servidor(void* arg) {
     int conexion_servidor;
     conexion_servidor = iniciar_servidor(cfval_puertoEscucha);
-    log_debug(logger_mensajes, "[MENSJS]: 1");
+    log_debug(logger_mensajes, "[MENSJS]: fhilo_servidor, pre esperar_cliente");
     while(1) {
         esperar_cliente(conexion_servidor);
     }
@@ -762,16 +763,19 @@ void esperar_cliente(int servidor){
 
 	unsigned int tam_direccion = sizeof(struct sockaddr_in);
 
+    log_debug(logger_mensajes, "[MENSJS]: arranca esperar cliente");
 	int cliente = accept (servidor, (void*) &direccion_cliente, &tam_direccion);
+
+    log_debug(logger_mensajes, "[MENSJS]: conexion aceptada");
+
 	pthread_t hilo;
-    log_debug(logger_mensajes, "[MENSJS]: 2");
 
 	pthread_mutex_lock(&mutex_hilos);
-    log_debug(logger_mensajes, "[MENSJS]: 3");
+    log_debug(logger_mensajes, "[MENSJS]: mtx hilos lockeado");
 	list_add(hilos, &hilo);
 	pthread_mutex_unlock(&mutex_hilos);
 
-    log_debug(logger_mensajes, "[MENSJS]: 4");
+    log_debug(logger_mensajes, "[MENSJS]: creando hilo serve_client");
 	pthread_create(&hilo,NULL,(void*)serve_client,cliente);
 	pthread_detach(hilo);
 
@@ -779,10 +783,16 @@ void esperar_cliente(int servidor){
 
 void serve_client(int socket){
 	int rec;
-	int cod_op;
+	int cod_op = -1;
 	while(1){
+        log_debug(logger_mensajes, "[MENSJS]: pre recibir op_code");
 		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
-        log_debug(logger_mensajes, "[MENSJS]: 5");
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: post recibir op_code: %i-%s",
+            cod_op,
+            op_code_to_string(cod_op)
+        );
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
 			//			pthread_mutex_lock(&logger_mutex);
@@ -790,9 +800,7 @@ void serve_client(int socket){
 			//			pthread_mutex_unlock(&logger_mutex);
 			pthread_exit(NULL);
 		}
-		puts("recibi un mensaje");
-		printf("codigo: %d\n", cod_op);
-        log_debug(logger_mensajes, "[MENSJS]: 6");
+        log_debug(logger_mensajes, "[MENSJS]: pre process_request");
 		process_request(cod_op, socket);
 	}
 }
@@ -804,8 +812,12 @@ void process_request(int cod_op, int cliente_fd) {
     uint32_t cliente_id;
 
     // TODO: provisorio?
+    log_debug(logger_mensajes, "[MENSJS]: en process_request, por hacer recv de id");
     rec = recv(socket, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
-    log_debug(logger_mensajes, "[MENSJS]: 7");
+    log_debug(logger_mensajes, "[MENSJS]: en process_request, post hacer recv de id");
+    
+    log_debug(logger_mensajes, "[MENSJS]: rec maldito: %i", rec);
+    perror("");
     if(rec == -1 || rec == 0 ){
         cod_op = -1;
         //			pthread_mutex_lock(&logger_mutex);
@@ -814,14 +826,18 @@ void process_request(int cod_op, int cliente_fd) {
         pthread_exit(NULL);
     }
 
+    log_debug(logger_mensajes, "[MENSJS]: pre comparacion sospechosa");
+    log_debug(logger_mensajes, "[MENSJS]: struct code: %i", op_code_to_struct_code(cod_op));
     if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+        log_debug(logger_mensajes, "[MENSJS]: entro en if porque el mje no es vacio");
         void* buffer = recibir_mensaje(cliente_fd, &size);
+        log_debug(logger_mensajes, "[MENSJS]: mje recibido");
         mensaje = deserializar_mensaje(buffer, cod_op);
+        log_debug(logger_mensajes, "[MENSJS]: mje deserializado");
     }
 
     // TODO loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
 
-    // TODO: switch con tipos de mensaje
     switch (cod_op) {
 
         // de CLIENTE:
@@ -905,14 +921,16 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_clientes);
 
-    mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
-    *confirmacion = 1;
-    mensaje->parametros = confirmacion;
-    enviar_mensaje(mensaje, socket_cliente);
+    /*
+        mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
+        *confirmacion = 1;
+        mensaje->parametros = confirmacion;
+        enviar_mensaje(mensaje, socket_cliente);
 
-    pthread_mutex_unlock(cliente->mutex);
-    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-    free(mensaje);
+        pthread_mutex_unlock(cliente->mutex);
+        free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+        free(mensaje);
+    */
 }
 
 void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
@@ -922,6 +940,7 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
     mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
     restaurantes->nombres = get_nombresRestConectados();
     restaurantes->cantElementos = list_size(restaurantes->nombres);
+    mensaje->id = 807;
     mensaje->parametros = restaurantes;
     enviar_mensaje(mensaje, socket_cliente);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
@@ -934,12 +953,17 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
     t_cliente* cliente_seleccionante;
 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
-    cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
+    log_debug(logger_mensajes, "[MENSJS]: encontro cliente %i", cliente_seleccionante->id);
+    //cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
+    //log_debug(logger_mensajes, "[MENSJS]: encontro rest %s", cliente_seleccionante->restaurante_seleccionado->nombre);
 
     mensaje->tipo_mensaje = RTA_SELECCIONAR_RESTAURANTE;
+    mensaje->id = 807;
     *confirmacion = 1;
     mensaje->parametros = confirmacion;
+    log_debug(logger_mensajes, "[MENSJS]: pre enviar msj");
     enviar_mensaje(mensaje, socket_cliente);
+    log_debug(logger_mensajes, "[MENSJS]: post enviar msj");
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }

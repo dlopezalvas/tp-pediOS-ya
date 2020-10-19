@@ -20,6 +20,8 @@
 // #define RTA_POSICION_CLIENTE 401
 // #define ERROR 402
 
+extern int errno;
+
 // debug
     bool modo_noComanda;
     bool modo_noRest;
