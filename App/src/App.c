@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 		logger_configuracion_consolaActiva = true;
 		logger_configuracion_path = "./configuracion.log";
 
-		logger_planificacion_consolaActiva = true;
+		logger_planificacion_consolaActiva = false;
 		logger_planificacion_path = "./planificacion.log";
 
 		logger_mensajes_consolaActiva = true;

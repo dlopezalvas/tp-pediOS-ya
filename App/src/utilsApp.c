@@ -751,7 +751,7 @@ void configuracionConexiones(void) {
 void* fhilo_servidor(void* arg) {
     int conexion_servidor;
     conexion_servidor = iniciar_servidor(cfval_puertoEscucha);
-    
+    log_debug(logger_mensajes, "[MENSJS]: 1");
     while(1) {
         esperar_cliente(conexion_servidor);
     }
@@ -764,11 +764,14 @@ void esperar_cliente(int servidor){
 
 	int cliente = accept (servidor, (void*) &direccion_cliente, &tam_direccion);
 	pthread_t hilo;
+    log_debug(logger_mensajes, "[MENSJS]: 2");
 
 	pthread_mutex_lock(&mutex_hilos);
+    log_debug(logger_mensajes, "[MENSJS]: 3");
 	list_add(hilos, &hilo);
 	pthread_mutex_unlock(&mutex_hilos);
 
+    log_debug(logger_mensajes, "[MENSJS]: 4");
 	pthread_create(&hilo,NULL,(void*)serve_client,cliente);
 	pthread_detach(hilo);
 
@@ -779,6 +782,7 @@ void serve_client(int socket){
 	int cod_op;
 	while(1){
 		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+        log_debug(logger_mensajes, "[MENSJS]: 5");
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
 			//			pthread_mutex_lock(&logger_mutex);
@@ -788,6 +792,7 @@ void serve_client(int socket){
 		}
 		puts("recibi un mensaje");
 		printf("codigo: %d\n", cod_op);
+        log_debug(logger_mensajes, "[MENSJS]: 6");
 		process_request(cod_op, socket);
 	}
 }
@@ -800,6 +805,7 @@ void process_request(int cod_op, int cliente_fd) {
 
     // TODO: provisorio?
     rec = recv(socket, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
+    log_debug(logger_mensajes, "[MENSJS]: 7");
     if(rec == -1 || rec == 0 ){
         cod_op = -1;
         //			pthread_mutex_lock(&logger_mutex);
