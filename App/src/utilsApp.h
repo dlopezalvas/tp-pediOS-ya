@@ -14,9 +14,16 @@
 #include "../../commonsCoronaLinux/socket.h"
 #include "../../commonsCoronaLinux/logs.h"
 
+// //TODO: eliminar cuando se actualicen las commons
+// #define m_restaurante t_restaurante
+// #define POSICION_RESTAURANTE 400
+// #define RTA_POSICION_CLIENTE 401
+// #define ERROR 402
+
 // debug
     bool modo_noComanda;
     bool modo_noRest;
+    bool modo_mock;
 
 // logging
     t_log*  logger_obligatorio;
@@ -53,9 +60,12 @@
     char** cfval_platosDefault;
     int cfval_posicionRestDefaultX;
     int cfval_posicionRestDefaultY;
+    t_restaurante_y_plato* platos_default_enviable;
 
 // restaurantes
     typedef struct {
+        pthread_mutex_t* mutex; // por ahora solo para el socket
+        int socket;
         int pos_x;
         int pos_y;
         char* nombre;
@@ -63,11 +73,14 @@
 
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
+    t_restaurante* resto_default;
     t_restaurante* get_restaurante(char* nombre_restaurante);
-    void guardar_nuevoRest(char* nombre, int pos_x, int pos_y);
+    void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket);
+    t_list* get_nombresRestConectados(void);
 
 // clientes
     typedef struct {
+        pthread_mutex_t* mutex; // por ahora solo para el socket
         int pos_x;
         int pos_y;
         int id;
@@ -78,8 +91,8 @@
 
     t_list* clientes;
     pthread_mutex_t mutex_lista_clientes;
-    t_cliente* get_cliente(int id_cliente);
-    void guardar_nuevoCliente(m_cliente* datos_cliente, int socket_cliente);
+    t_cliente* get_cliente(int id_pedido);
+    t_cliente* get_cliente_porSuID(int id_cliente);
     void guardar_seleccion(char* nombre_rest, int id_cliente);
 
 // repartidores
@@ -116,11 +129,14 @@
         int pedido_id;
         t_estado pedido_estado;
         pthread_mutex_t* mutex_EXEC;
+        pthread_mutex_t* mutex_clock;
         pthread_t* hilo;
     } t_pedido;
 
     t_list* pedidos;
+    t_list* pedidosEXEC;
     pthread_mutex_t mutex_pedidos;
+    pthread_mutex_t mutex_pedidosEXEC;
     void* fhilo_pedido(void* pedido_sin_castear); // toma t_pedido* por param
     void consumir_ciclo(t_pedido* pedido);
     void pedido_repartidorLlegoARestaurante(t_pedido* pedido);
@@ -142,8 +158,10 @@
 // planificadores
     void* fhilo_planificador_largoPlazo(void* __sin_uso__); // (de NEW a READY)
     void* fhilo_planificador_cortoPlazo(void* __sin_uso__); // (de READY a EXEC)
+    void* fhilo_clock(void* __sin_uso__);
     pthread_t hilo_planificador_cortoPlazo;
     pthread_t hilo_planificador_largoPlazo;
+    pthread_t hilo_clock;
     void planif_nuevoPedido(int id_pedido);
     t_pedido* planif_asignarRepartidor(void);
     t_pedido* planif_FIFO(void);
@@ -157,17 +175,19 @@
 // liberacion de memoria
     void liberar_memoria(void);
 
+// otras utilidades
+    void* search_remove_return(t_list* list, void* elem);
+
 /* CONEXIONES */
 
 void configuracionConexiones(void);
 t_list* hilos;
 pthread_mutex_t mutex_hilos;
-void* fhilo_conectarConComanda(void* arg);
 void* fhilo_servidor(void* arg);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-void conexionRecepcion(void);
+t_mensaje* mensajear_comanda(t_mensaje* mensaje, bool liberar_params);
 
 sem_t sem_mensajes_a_enviar;
 t_queue* mensajes_a_enviar;
@@ -175,5 +195,13 @@ t_queue* mensajes_a_enviar;
 pthread_t hilo_conectarConComanda;
 pthread_t hilo_servidor;
 
+void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* coord, int socket_cliente);
+void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente);
+void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int socket_cliente);
+void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);
+void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente);
+void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente);
+void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente);
+void gestionar_PLATO_LISTO(m_platoListo* plato);
 
 #endif // UTILSAPP_H_
