@@ -16,7 +16,7 @@ void internal_process_request(int cod_op, int socket_client){
 	t_restaurante_y_plato* platos;
 
 	t_responseMessage* responseMessage = malloc(sizeof(t_responseMessage));
-	responseMessage->messageReceived = malloc(sizeof(t_mensaje));
+	responseMessage->message = malloc(sizeof(t_mensaje));
 	//TODO: validar que hacer con el id del mensaje.
 	//responseMessage->message->id=4;
 	responseMessage->socket = socket_client;

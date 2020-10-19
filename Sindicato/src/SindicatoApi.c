@@ -26,7 +26,7 @@ void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
 
 /* Server functions */
 void sindicato_api_send_response_of_operation(t_responseMessage* response){
-	//loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
+	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
 	enviar_mensaje(response->message, response->socket);
 
 	//ya estoy habilitado para hacer los free();
@@ -39,14 +39,11 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_nombre* plato = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
+	plato->nombre=NULL;
 	plato->nombre = "Milanesa";
-	char* textoLog = string_new();
-	string_append(&textoLog, "Valor de plato->nombre ");
-	string_append(&textoLog, plato->nombre);
-	log_info(sindicatoDebugLog, textoLog);
+	log_info(sindicatoDebugLog, plato->nombre);
 
 	list_add(platos->nombres, plato);
-	platos->cantElementos = 1;
 
 	return platos;
 }
@@ -91,7 +88,7 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 	pedidoElem->cantHecha = 1;
 	pedidoElem->cantTotal = 1;
 	pedidoElem->comida.nombre = "Milanesa";
-	puts(pedidoElem->comida.nombre);
+	log_info(sindicatoDebugLog, pedidoElem->comida.nombre);
 
 	pedido->cantPedidos = 1;
 	pedido->estadoPedido = PENDIENTE;
