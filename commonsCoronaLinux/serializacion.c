@@ -444,29 +444,28 @@ t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer){
 t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante){ //TODO
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	obtenerRestaurante->cantCocineroAfinidad = obtenerRestaurante->cocineroAfinidad->elements_count;
+	obtenerRestaurante->afinidades = obtenerRestaurante->afinidades->elements_count;
 	obtenerRestaurante->cantRecetas = obtenerRestaurante->recetas->elements_count;
 
 	int size_recetas = tamanio_lista_recetas(obtenerRestaurante->recetas);
-	int size_cocineroAfinidad = tamanio_lista_cocineroAfinidad(obtenerRestaurante->recetas);
+	int size_cocineroAfinidad = tamanio_lista_nombre(obtenerRestaurante->recetas);
 
-	buffer -> size = size_recetas + size_cocineroAfinidad + sizeof(uint32_t) * 5;
+	buffer -> size = size_recetas + size_cocineroAfinidad + sizeof(uint32_t) * 6;
 
 	void* stream = malloc(buffer -> size);
 	int offset = 0;
 
-	memcpy(stream + offset, &obtenerRestaurante->cantCocineroAfinidad, sizeof(uint32_t));
+	memcpy(stream + offset, &obtenerRestaurante->cantAfinidades, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	t_cocineroAfinidad* cocineroAfinidad;
-	for(int i = 0; i < obtenerRestaurante->cantCocineroAfinidad; i++){
-		cocineroAfinidad = list_get(obtenerRestaurante->cocineroAfinidad, i);
-		memcpy(stream + offset, &cocineroAfinidad->idCocinero, sizeof(uint32_t));
+	t_nombre* afinidad;
+	for(int i = 0; i < obtenerRestaurante->cantAfinidades; i++){
+		afinidad = list_get(obtenerRestaurante->afinidades, i);
+
+		memcpy(stream + offset, &afinidad->largo_nombre, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
-		memcpy(stream + offset, &cocineroAfinidad->afinidad.largo_nombre, sizeof(uint32_t));
-		offset += sizeof(uint32_t);
-		memcpy(stream + offset, cocineroAfinidad->afinidad.nombre, cocineroAfinidad->afinidad.largo_nombre);
-		offset += cocineroAfinidad->afinidad.largo_nombre;
+		memcpy(stream + offset, afinidad->nombre, afinidad->largo_nombre);
+		offset += afinidad->largo_nombre;
 	}
 
 	memcpy(stream + offset, &obtenerRestaurante->cantRecetas, sizeof(uint32_t));
@@ -490,6 +489,8 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 	offset += sizeof(uint32_t);
 	memcpy(stream + offset, &obtenerRestaurante->posicion.y, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
+	memcpy(stream + offset, &obtenerRestaurante->cantCocineros, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
 
 	buffer->stream = stream;
 
@@ -499,24 +500,23 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 	rta_obtenerRestaurante* obtenerRestaurante = malloc(sizeof(rta_obtenerRestaurante));
 
-	obtenerRestaurante->cocineroAfinidad = list_create();
+	obtenerRestaurante->afinidades = list_create();
 	obtenerRestaurante->recetas = list_create();
 
-	memcpy(&obtenerRestaurante->cantCocineroAfinidad, buffer, sizeof(uint32_t));
+	memcpy(&obtenerRestaurante->cantAfinidades, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 
-	t_cocineroAfinidad* cocineroAfinidad;
+	t_nombre* afinidad;
 
-	for(int i = 0; i < obtenerRestaurante->cantCocineroAfinidad; i++){
-		memcpy(&cocineroAfinidad->idCocinero, buffer, sizeof(uint32_t));
+	for(int i = 0; i < obtenerRestaurante->cantAfinidades; i++){
+		afinidad = malloc(sizeof(t_nombre));
+		memcpy(&afinidad->largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
-		memcpy(&cocineroAfinidad->afinidad.largo_nombre, buffer, sizeof(uint32_t));
-		buffer += sizeof(uint32_t);
-		cocineroAfinidad->afinidad.nombre = malloc(cocineroAfinidad->afinidad.largo_nombre +1);
-		memcpy(cocineroAfinidad->afinidad.nombre, buffer, cocineroAfinidad->afinidad.largo_nombre);
-		cocineroAfinidad->afinidad.nombre[cocineroAfinidad->afinidad.largo_nombre] = '\0';
-		buffer += cocineroAfinidad->afinidad.largo_nombre;
-		list_add(obtenerRestaurante->cocineroAfinidad, cocineroAfinidad);
+		afinidad->nombre = malloc(afinidad->largo_nombre +1);
+		memcpy(afinidad->nombre, buffer, afinidad->largo_nombre);
+		afinidad->nombre[afinidad->largo_nombre] = '\0';
+		buffer += afinidad->largo_nombre;
+		list_add(obtenerRestaurante->afinidades, afinidad);
 	}
 
 	memcpy(&obtenerRestaurante->cantRecetas, buffer, sizeof(uint32_t));
@@ -524,6 +524,7 @@ rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 
 	t_receta* receta;
 	for(int i = 0; i < obtenerRestaurante->cantRecetas; i++){
+		receta = malloc(sizeof(t_receta));
 		memcpy(&receta->precio, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
 		memcpy(&receta->receta.largo_nombre, buffer, sizeof(uint32_t));
@@ -540,6 +541,8 @@ rta_obtenerRestaurante* deserializar_rta_obtener_restaurante(void* buffer){
 	memcpy(&obtenerRestaurante->posicion.x, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 	memcpy(&obtenerRestaurante->posicion.y, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+	memcpy(&obtenerRestaurante->cantCocineros, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
 
 
@@ -565,18 +568,18 @@ t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido){
 	offset += sizeof(uint32_t);
 
 	t_elemPedido* elemPedido;
-		for(int i = 0; i < consultarPedido->cantPlatos; i++){
-			elemPedido = list_get(consultarPedido->platos, i);
-			memcpy(stream + offset, &elemPedido->cantHecha, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-			memcpy(stream + offset, &elemPedido->cantTotal, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-			elemPedido->comida.largo_nombre = strlen(elemPedido->comida.nombre);
-			memcpy(stream + offset, &elemPedido->comida.largo_nombre, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-			memcpy(stream + offset, elemPedido->comida.nombre, elemPedido->comida.largo_nombre);
-			offset += elemPedido->comida.largo_nombre;
-		}
+	for(int i = 0; i < consultarPedido->cantPlatos; i++){
+		elemPedido = list_get(consultarPedido->platos, i);
+		memcpy(stream + offset, &elemPedido->cantHecha, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		memcpy(stream + offset, &elemPedido->cantTotal, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		elemPedido->comida.largo_nombre = strlen(elemPedido->comida.nombre);
+		memcpy(stream + offset, &elemPedido->comida.largo_nombre, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		memcpy(stream + offset, elemPedido->comida.nombre, elemPedido->comida.largo_nombre);
+		offset += elemPedido->comida.largo_nombre;
+	}
 
 	memcpy(stream + offset, &consultarPedido->estadoPedido, sizeof(est_pedido));
 	offset += sizeof(est_pedido);
@@ -796,22 +799,6 @@ int tamanio_lista_nombre(t_list* lista_de_strings){
 
 	return tamanio;
 }
-
-int tamanio_lista_cocineroAfinidad(t_list* lista_cocinerosAfinidades){
-	int tamanio = 0;
-
-	t_cocineroAfinidad* cocineroAfinidad;
-
-	for(int i = 0; i < lista_cocinerosAfinidades->elements_count; i++){
-		cocineroAfinidad = list_get(lista_cocinerosAfinidades, i);
-		cocineroAfinidad->afinidad.largo_nombre = strlen(cocineroAfinidad->afinidad.nombre);
-		tamanio += cocineroAfinidad->afinidad.largo_nombre + sizeof(uint32_t)*2;
-	}
-
-	return tamanio;
-}
-
-
 
 int tamanio_lista_pasos(t_list* lista_de_pasos){
 	int tamanio = 0;
