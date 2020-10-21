@@ -167,28 +167,14 @@ typedef struct{
 }m_seleccionarRestaurante;
 
 typedef struct{
-	uint32_t idCocinero;
-	t_nombre afinidad;
-}t_cocineroAfinidad;
-
-typedef struct{ //TODO arreglar
-	uint32_t cantCocineroAfinidad;
-	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
+	uint32_t cantAfinidades;
+	t_list* afinidades; //lista de t_nombre
 	t_coordenadas posicion;
 	uint32_t cantRecetas;
 	t_list* recetas; //lista de receta con precio
 	uint32_t cantHornos;
+	uint32_t cantCocineros;
 }rta_obtenerRestaurante;
-
-//typedef struct{
-//	uint32_t cantAfinidades;
-//	t_list* afinidades; //lista de t_cocineroAfinidad: cocinero n con afinidad n
-//	t_coordenadas posicion;
-//	uint32_t cantRecetas;
-//	t_list* recetas; //lista de receta con precio
-//	uint32_t cantHornos;
-//	uint32_t cantCocineros;
-//}rta_obtenerRestaurante;
 
 typedef struct{
 	t_nombre receta;
@@ -213,16 +199,6 @@ typedef enum{
 	CONFIRMADO = 2,
 	TERMINADO = 3,
 }est_pedido;
-
-//typedef enum{
-//	LISTO = 1,
-//	EN_PROCESO = 2,
-//}est_plato;
-
-//typedef struct{
-//	t_nombre plato;
-//	est_plato estadoPlato;
-//}t_plato_con_estado;
 
 typedef struct{
 	t_nombre restaurante;
@@ -272,11 +248,9 @@ void free_id_o_confirmacion(uint32_t* mensaje);
 void free_nombre(t_nombre* mensaje);
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje);
 void free_receta(t_receta* receta);
-void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
 void free_nombre_y_id(t_nombre_y_id* mensaje);
 void free_plato_listo(m_platoListo* mensaje);
 void free_rta_consultar_pedido(rta_consultarPedido* mensaje);
-
 void free_rta_obtener_pedido(rta_obtenerPedido* mensaje);
 void free_infoPedidos(t_elemPedido* info_pedido);
 void free_guardar_plato(m_guardarPlato* mensaje);
