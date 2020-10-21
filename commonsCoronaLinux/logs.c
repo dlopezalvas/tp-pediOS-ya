@@ -59,10 +59,10 @@ char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s", op_code_to_string(tipo_mensaje));
 
-	char* nombre;
+	t_nombre* nombre;
 	for(int i = 0; i<restaurante_plato->cantElementos; i++){
 		nombre = list_get(restaurante_plato->nombres, i);
-		string_append_with_format(&string_mensaje, " %s", nombre);
+		string_append_with_format(&string_mensaje, " %s", nombre->nombre);
 	}
 
 	return string_mensaje;

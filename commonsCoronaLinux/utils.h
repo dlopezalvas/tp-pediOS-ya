@@ -180,6 +180,16 @@ typedef struct{ //TODO arreglar
 	uint32_t cantHornos;
 }rta_obtenerRestaurante;
 
+//typedef struct{
+//	uint32_t cantAfinidades;
+//	t_list* afinidades; //lista de t_cocineroAfinidad: cocinero n con afinidad n
+//	t_coordenadas posicion;
+//	uint32_t cantRecetas;
+//	t_list* recetas; //lista de receta con precio
+//	uint32_t cantHornos;
+//	uint32_t cantCocineros;
+//}rta_obtenerRestaurante;
+
 typedef struct{
 	t_nombre receta;
 	uint32_t precio;
