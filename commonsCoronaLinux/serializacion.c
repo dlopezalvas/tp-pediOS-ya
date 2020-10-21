@@ -426,6 +426,7 @@ t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer){
 	t_nombre* nombre;
 
 	for(int i = 0; i < lista_nombres->cantElementos; i++){
+		nombre = malloc(sizeof(t_nombre));
 		memcpy(&nombre->largo_nombre, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
 		nombre->nombre = malloc(nombre->largo_nombre +1);
@@ -599,6 +600,7 @@ rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer){
 	t_elemPedido* elemPedido;
 
 	for(int i = 0; i < consultarPedido->cantPlatos; i++){
+		elemPedido = malloc(sizeof(t_elemPedido));
 		memcpy(&elemPedido->cantHecha, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
 		memcpy(&elemPedido->cantTotal, buffer, sizeof(uint32_t));
@@ -676,6 +678,7 @@ rta_obtenerPedido* deserializar_rta_obtener_pedido(void* buffer){
 	t_elemPedido* elemPedido;
 
 	for(int i = 0; i < obtenerPedido->cantPedidos; i++){
+		elemPedido = malloc(sizeof(t_elemPedido));
 		memcpy(&elemPedido->cantHecha, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
 		memcpy(&elemPedido->cantTotal, buffer, sizeof(uint32_t));
@@ -764,6 +767,7 @@ rta_obtenerReceta* deserializar_rta_obtener_receta(void* buffer){
 	t_paso* paso;
 
 	for(int i = 0; i < obtenerReceta->cantPasos; i++){
+		paso = malloc(sizeof(t_paso));
 		memcpy(&paso->duracion, buffer, sizeof(uint32_t));
 		buffer += sizeof(uint32_t);
 		memcpy(&paso->paso.largo_nombre, buffer, sizeof(uint32_t));
