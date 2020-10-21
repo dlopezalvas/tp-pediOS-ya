@@ -284,11 +284,44 @@ t_pedido* planif_FIFO(void) {
 }
 
 t_pedido* planif_SJF_SD(void) {
-    // TODO
+    unsigned index_pedido_min = 0;
+    double estimacion_min = estimar_rafaga(list_get(cola_READY, index_pedido_min));
+    for (
+        unsigned index_READY = 1;
+        index_READY < list_size(cola_READY);
+        index_READY++
+    ) {
+        if (estimar_rafaga(list_get(cola_READY, index_READY)) < estimacion_min) {
+            index_pedido_min = index_READY;
+        }
+    }
+    return list_remove(cola_READY, index_pedido_min);
+}
+
+double estimar_rafaga(t_pedido* pedido) {
+    // Tn+1 = ta + (1-a)Tn ... de donde sale estimacion inicial?
+    return (pedido->sjf_ultRafaga_real) * cfval_alpha
+        + (pedido->sjf_ultRafaga_est) * (1 - cfval_alpha);
 }
 
 t_pedido* planif_HRRN(void) {
-    // TODO
+    unsigned index_pedido_max = 0;
+    double respRatio_max = estimar_rafaga(list_get(cola_READY, index_pedido_max));
+    for (
+        unsigned index_READY = 1;
+        index_READY < list_size(cola_READY);
+        index_READY++
+    ) {
+        if (respRatio(list_get(cola_READY, index_READY)) > respRatio_max) {
+            index_pedido_max = index_READY;
+        }
+    }
+    return list_remove(cola_READY, index_pedido_max);
+}
+
+double respRatio(t_pedido* pedido) {
+    // Tn+1 = ta + (1-a)Tn ... de donde sale estimacion inicial?
+    return 1 + (pedido->hrrn_tiempoEsperaREADY) / estimar_rafaga(pedido);
 }
 
 void planif_nuevoPedido(int id_pedido) {
