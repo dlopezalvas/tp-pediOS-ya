@@ -435,9 +435,13 @@ t_mensaje* llenar_restaurante_y_plato(char** parametros){
 	t_restaurante_y_plato* restaurante_plato = malloc(sizeof(t_restaurante_y_plato));
 	restaurante_plato->cantElementos = atoi(parametros[1]);
 	restaurante_plato->nombres = list_create();
-	for(int i= 0; i<restaurante_plato->cantElementos; i++){
 
-		list_add(restaurante_plato->nombres, string_duplicate(parametros[i+2])); //ver si esto funciona
+	t_nombre nombre;
+
+	for(int i= 0; i<restaurante_plato->cantElementos; i++){
+		nombre = malloc(sizeof(t_nombre));
+		nombre.nombre = string_duplicate(parametros[i+2]);
+		list_add(restaurante_plato->nombres, nombre);
 	}
 	mensaje->parametros = restaurante_plato;
 	liberar_vector(parametros);

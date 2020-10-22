@@ -59,10 +59,10 @@ char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s", op_code_to_string(tipo_mensaje));
 
-	char* nombre;
+	t_nombre* nombre;
 	for(int i = 0; i<restaurante_plato->cantElementos; i++){
 		nombre = list_get(restaurante_plato->nombres, i);
-		string_append_with_format(&string_mensaje, " %s", nombre);
+		string_append_with_format(&string_mensaje, " %s", nombre->nombre);
 	}
 
 	return string_mensaje;
@@ -106,16 +106,17 @@ char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje){
 
 char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaurante, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d ", op_code_to_string(tipo_mensaje),
-			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x, obtener_restaurante->posicion.y);
-	char* afinidad;
-	for(int i = 0; i<obtener_restaurante->cantCocineroAfinidad; i++){
-		afinidad = list_get(obtener_restaurante->cocineroAfinidad, i);
-		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad);
+	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d cantCocineros: %d ", op_code_to_string(tipo_mensaje),
+			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x,
+			obtener_restaurante->posicion.y, obtener_restaurante->cantCocineros);
+	t_nombre* afinidad;
+	for(int i = 0; i<obtener_restaurante->cantAfinidades; i++){
+		afinidad = list_get(obtener_restaurante->afinidades, i);
+		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad->nombre);
 	}
 	string_append(&string_mensaje, "recetas: ");
 	t_receta* receta;
-	for(int j = 0; j<obtener_restaurante->recetas; j++){
+	for(int j = 0; j<obtener_restaurante->cantRecetas; j++){
 		receta = list_get(obtener_restaurante->recetas, j);
 		string_append_with_format(&string_mensaje, "%s - precio: %d", receta->receta.nombre, receta->precio);
 	}
