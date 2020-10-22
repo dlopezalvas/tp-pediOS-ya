@@ -436,11 +436,11 @@ t_mensaje* llenar_restaurante_y_plato(char** parametros){
 	restaurante_plato->cantElementos = atoi(parametros[1]);
 	restaurante_plato->nombres = list_create();
 
-	t_nombre nombre;
+	t_nombre* nombre;
 
 	for(int i= 0; i<restaurante_plato->cantElementos; i++){
 		nombre = malloc(sizeof(t_nombre));
-		nombre.nombre = string_duplicate(parametros[i+2]);
+		nombre->nombre = string_duplicate(parametros[i+2]);
 		list_add(restaurante_plato->nombres, nombre);
 	}
 	mensaje->parametros = restaurante_plato;
@@ -459,30 +459,7 @@ t_mensaje* llenar_seleccionar_restaurante(char** parametros){
 	return mensaje;
 }
 
-t_mensaje* llenar_rta_obtener_restaurante(char** parametros){
-	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
-	rta_obtenerRestaurante* obtenerRestaurante = malloc(sizeof(rta_obtenerRestaurante));
-	obtenerRestaurante->posicion.x = atoi(parametros[1]);
-	obtenerRestaurante->posicion.y = atoi(parametros[3]);
-	obtenerRestaurante->cantRecetas = atoi(parametros[4]);
-	obtenerRestaurante->recetas = list_create();
-	int offset = 5;
-	for(int i= 0; i<obtenerRestaurante->cantRecetas; i++){
-		list_add(obtenerRestaurante->recetas, string_duplicate(parametros[i+offset])); //ver si esto funciona
-	}
-	offset += obtenerRestaurante->cantRecetas; //ver si necesita +1
-	obtenerRestaurante->cantCocineroAfinidad =  atoi(parametros[offset]);
-	offset ++;
-	obtenerRestaurante->cocineroAfinidad = list_create();
-	for(int j= 0; j<obtenerRestaurante->cantCocineroAfinidad && parametros[j+offset]; j++){
 
-		list_add(obtenerRestaurante->cocineroAfinidad, string_duplicate(parametros[j+offset])); //ver si esto funciona
-	}
-	mensaje->parametros = obtenerRestaurante;
-	liberar_vector(parametros);
-	return mensaje;
-}
 
 
 t_mensaje* llenar_vacio(char** parametros){
