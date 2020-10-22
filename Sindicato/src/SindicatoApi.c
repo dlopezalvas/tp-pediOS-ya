@@ -39,11 +39,12 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_nombre* plato = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	plato->nombre=NULL;
 	plato->nombre = "Milanesa";
 	log_info(sindicatoDebugLog, plato->nombre);
 
+
 	list_add(platos->nombres, plato);
+	platos->cantElementos = platos->nombres->elements_count;
 
 	return platos;
 }
@@ -100,25 +101,28 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	/* Initialize of restaurante structure */
 	rta_obtenerRestaurante* restauranteInfo = malloc(sizeof(rta_obtenerRestaurante));
-	restauranteInfo->cocineroAfinidad = list_create();
+	restauranteInfo->afinidades = list_create();
 	restauranteInfo->recetas = list_create();
 
 	/* List */
 	t_receta* recetaPrecio = malloc(sizeof(t_receta));
-	t_cocineroAfinidad* afinidadCocinero = malloc(sizeof(t_cocineroAfinidad));
+	t_nombre* afinidadCocinero = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
 	recetaPrecio->receta.nombre = "Milanesa";
-	afinidadCocinero->afinidad.nombre = "Empanadas";
+	recetaPrecio->precio = 500;
+	afinidadCocinero->nombre = "Empanadas";
 
 	list_add(restauranteInfo->recetas,recetaPrecio);
-	list_add(restauranteInfo->cocineroAfinidad, afinidadCocinero);
+	list_add(restauranteInfo->afinidades, afinidadCocinero);
 
-	restauranteInfo->cantCocineroAfinidad = 1;
+	restauranteInfo->cantAfinidades = 1;
 	restauranteInfo->cantRecetas = 1;
 	restauranteInfo->cantHornos = 1;
 	restauranteInfo->posicion.x = 1;
 	restauranteInfo->posicion.y = 2;
+	restauranteInfo->cantCocineros = 2;
+
 
 	return restauranteInfo;
 }
