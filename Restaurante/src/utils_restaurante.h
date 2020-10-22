@@ -69,7 +69,7 @@ typedef struct{
 			uint32_t cantHecha;
 }t_plato_pcb;
 
-void* f_hilo_plato (t_plato_pcb);
+void* fhilo_plato (t_plato_pcb* v);
 
 //FHILOS
 void* fhilo_planificador (void* v);
@@ -79,7 +79,7 @@ void* fhilo_planificador (void* v);
 rta_obtenerRestaurante* metadata_rest;
 void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
 void delay (int number_of_seconds);
-int id_pedidos=5;
+int id_pedidos;
 
 
 //LISTAS
@@ -87,6 +87,11 @@ int id_pedidos=5;
 t_list *  list_pedidos;
 t_list *  status_platos;
 
+//MENSAJES
+uint32_t recibir_RTA_GUARDAR_PEDIDO(int socket);
+uint32_t recibir_RTA_GUARDAR_PLATO(int socket);
+rta_obtenerPedido* recibir_RTA_OBTENER_PEDIDO (int socket);
+rta_obtenerReceta* recibir_RTA_OBTENER_RECETA(int socket);
 
 //FUNCIONES
 t_restaurante_y_plato* recibir_RTA_CONSULTAR_PLATOS(int socket);

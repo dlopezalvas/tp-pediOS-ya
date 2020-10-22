@@ -178,6 +178,7 @@ typedef struct{ //TODO arreglar
 	uint32_t cantRecetas;
 	t_list* recetas; //lista de receta con precio
 	uint32_t cantHornos;
+
 }rta_obtenerRestaurante;
 
 typedef struct{

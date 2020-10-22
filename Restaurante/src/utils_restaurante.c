@@ -49,39 +49,44 @@ void cargar_configuracion(){
 void iniciar_restaurante(){
 	log_info(log_config_ini, "Iniciar restaurante \n");
 
-	int estado_conexion;
+	int conexion_sindicato;
 
 //CONEXION SINDICATO
 
-	estado_conexion= conectar_con_sindicato();
+	conexion_sindicato= conectar_con_sindicato();
 
 
 	//GET DE METADATA
+	metadata_rest = malloc(sizeof(rta_obtenerRestaurante));
 
-	if(estado_conexion==1){
+	if(conexion_sindicato != -1){
 		//GET DE METADATA A SINDICATO
 
 		//Enviar mje obtener restaurante
 
+
 		t_mensaje* tipomje = malloc(sizeof(t_mensaje));
 		tipomje->tipo_mensaje=OBTENER_RESTAURANTE;
 
+
 		t_nombre* nombre_restaurante=malloc(sizeof(t_nombre));
 		nombre_restaurante->nombre="uggis";
+		nombre_restaurante->largo_nombre=strlen(cfg_nombre_restaurante);
 
 		tipomje->parametros=nombre_restaurante;
 
-		//enviar_mensaje(tipomje, conexion_sindicato);
+		enviar_mensaje(tipomje, conexion_sindicato);
 
 		//Recibir respuesta obtener restaurante
-		metadata_rest = malloc(sizeof(rta_obtenerRestaurante));
 
-		//metadata_rest = metadata_restaurante(conexion_sindicato);
+
+		metadata_rest = metadata_restaurante(conexion_sindicato);
 	}else{
 
 		log_info(log_config_ini, "\tSe cargan los datos de default, Sindicato no sisponible \n");
 
-		metadata_rest = malloc(sizeof(rta_obtenerRestaurante));
+
+		printf("paso la creacion de var");
 
 		//obtengo los datos del restaurante de un archivo para hacer pruebas
 		config_sindicato = leer_config("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Restaurante/src/default_sindicato.config");
@@ -91,15 +96,35 @@ void iniciar_restaurante(){
 		int posx =config_get_int_value(config_sindicato,"POSX");
 		int posy =config_get_int_value(config_sindicato,"POSY");
 		int cant_recetas=config_get_int_value(config_sindicato,"CANTRECETAS");
-		char* receta1 =config_get_string_value(config_sindicato,"RECETA1");
-		char* receta2 =config_get_string_value(config_sindicato,"RECETA2");
-		char* receta3 =config_get_string_value(config_sindicato,"RECETA3");
+
+
+
+		t_nombre* nom_receta1=malloc(sizeof(t_mensaje));
+		nom_receta1->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA1"));
+		nom_receta1->nombre=config_get_string_value(config_sindicato,"RECETA1");
+		t_receta* receta1=malloc(sizeof(t_mensaje));
+		receta1->receta.nombre=nom_receta1;
+
+		t_nombre* nom_receta2=malloc(sizeof(t_mensaje));
+		nom_receta2->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA2"));
+		nom_receta2->nombre =config_get_string_value(config_sindicato,"RECETA2");
+		t_receta* receta2=malloc(sizeof(t_mensaje));
+		receta2->receta.nombre=nom_receta2;
+
+		t_nombre* nom_receta3=malloc(sizeof(t_mensaje));
+		nom_receta3->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA3"));
+		nom_receta3->nombre =config_get_string_value(config_sindicato,"RECETA3");
+		t_receta* receta3=malloc(sizeof(t_mensaje));
+		receta3->receta.nombre=nom_receta3;
+
 		int hornos= config_get_int_value(config_sindicato,"CANTIDAD_HORNOS");
 
 		log_info(log_config_ini, "\tTermino la lectura del archivo de datos default \n");
 
 
-		//Cargo los datos de prueba
+
+
+
 
 		metadata_rest->cantCocineroAfinidad=cantidad_cocineros;
 		log_info(log_config_ini, "\t\tcantidad de cocineros %d \n",metadata_rest->cantCocineroAfinidad);
@@ -121,8 +146,7 @@ void iniciar_restaurante(){
 		metadata_rest->cantRecetas=cant_recetas;
 		log_info(log_config_ini, "\t\tcantiad de recetas: %d \n",metadata_rest->cantRecetas);
 
-
-		metadata_rest->recetas = list_create();
+/*
 		list_add(metadata_rest->recetas, receta1);
 		log_info(log_config_ini, "\t\treceta1: %s \n",list_get(metadata_rest->recetas, 0));
 
@@ -136,7 +160,7 @@ void iniciar_restaurante(){
 
 		metadata_rest->cantHornos=hornos;
 		log_info(log_config_ini, "\t\tcantidad de hornos %d  \n", metadata_rest->cantHornos);
-
+*/
 		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
 
 
@@ -184,24 +208,38 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
  */
 
 
-	log_info(log_config_ini, "Comienza proceso de colas");
+log_info(log_config_ini, "Comienza proceso de colas");
+
+uint32_t cant_cocineros=metadata->cantCocineroAfinidad;
+log_info(log_config_ini, "\tcant_cocineros: %d \n",cant_cocineros);
+
+
+int cant_afinidades= metadata->cocineroAfinidad->elements_count;
+log_info(log_config_ini, "\tcant_afinidades: %d \n",cant_afinidades);
+
+t_receta* metadata_receta1 = malloc(sizeof(t_receta));
+printf("seg fault");
+metadata_receta1=list_get(metadata->recetas, 0);
+
+log_info(log_config_ini, "\treceta1: %s \n",metadata_receta1->receta);
+
+t_receta* metadata_receta2 = malloc(sizeof(t_receta));
+metadata_receta2=list_get(metadata->recetas, 1);
+log_info(log_config_ini, "\treceta2 %s \n",metadata_receta2->receta);
+
+uint32_t cant_hornos= metadata->cantHornos;
+log_info(log_config_ini, "\tcantidad de hornos %d  \n", cant_hornos);
+
+
+id_pedidos=5;
+log_info(log_config_ini, "\tcantidad de pedidos %d  \n", id_pedidos);
+//Logica de generacion de colas de ready y i/o
+//TODO
 
 
 
-	log_info(log_config_ini, "\treceta1: %s \n",list_get(metadata->recetas, 0));
 
-
-
-	log_info(log_config_ini, "\treceta2: %s \n",list_get(metadata->recetas, 1));
-
-
-
-	log_info(log_config_ini, "\treceta3: %s \n",list_get(metadata->recetas, 2));
-
-
-	log_info(log_config_ini, "\tcantidad de hornos %d  \n", metadata->cantHornos);
-
-	log_info(log_config_ini, "Fin inicializacion colas de ready \n");
+log_info(log_config_ini, "Fin inicializacion colas de ready \n");
 }
 
 void* fhilo_planificador(void* v){
@@ -361,7 +399,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 			t_nombre_y_id* mje_GUARDAR_PEDIDO=malloc(sizeof(t_nombre_y_id));
 			mje_GUARDAR_PEDIDO->id=id_pedido;
-			mje_GUARDAR_PEDIDO->nombre=cfg_nombre_restaurante;
+			mje_GUARDAR_PEDIDO->nombre.nombre=cfg_nombre_restaurante;
+			mje_GUARDAR_PEDIDO->nombre.largo_nombre=cfg_nombre_restaurante;
 
 			t_mensaje* rta_GUARDAR_PEDIDO= malloc(sizeof(t_mensaje));
 			rta_GUARDAR_PEDIDO->tipo_mensaje=GUARDAR_PEDIDO;
@@ -419,18 +458,20 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 			t_nombre* nombre_restaurante_GUARDAR_PLATO = malloc(sizeof(t_nombre));
-			nombre_restaurante_GUARDAR_PLATO=cfg_nombre_restaurante;
-			nombre_restaurante_GUARDAR_PLATO=strlen(cfg_nombre_restaurante);
+			nombre_restaurante_GUARDAR_PLATO->nombre=cfg_nombre_restaurante;
+			nombre_restaurante_GUARDAR_PLATO->largo_nombre=strlen(cfg_nombre_restaurante);
 
 			t_nombre* nombre_plato_GUARDAR_PLATO = malloc(sizeof(t_nombre));
-			nombre_plato_GUARDAR_PLATO=mj_agregar_plato->nombre;
-			nombre_plato_GUARDAR_PLATO=strlen(mj_agregar_plato->nombre);
+			nombre_plato_GUARDAR_PLATO->nombre=mj_agregar_plato->nombre.nombre;
+			nombre_plato_GUARDAR_PLATO=mj_agregar_plato->nombre.largo_nombre;
 
 			m_guardarPlato* sindicato_GUARDAR_PLATO = malloc(sizeof(m_guardarPlato));
 			sindicato_GUARDAR_PLATO->cantidad=1;
-			sindicato_GUARDAR_PLATO->comida=nombre_plato_GUARDAR_PLATO;
+			sindicato_GUARDAR_PLATO->comida.largo_nombre=nombre_plato_GUARDAR_PLATO->largo_nombre;
+			sindicato_GUARDAR_PLATO->comida.nombre=nombre_plato_GUARDAR_PLATO->nombre;
 			sindicato_GUARDAR_PLATO->idPedido=mj_agregar_plato->id;
-			sindicato_GUARDAR_PLATO->restaurante=nombre_restaurante_GUARDAR_PLATO;
+			sindicato_GUARDAR_PLATO->restaurante.largo_nombre=nombre_restaurante_GUARDAR_PLATO->largo_nombre;
+			sindicato_GUARDAR_PLATO->restaurante.nombre=nombre_restaurante_GUARDAR_PLATO->nombre;
 
 			t_mensaje* mje_sindicato_GUARDAR_PLATO= malloc(sizeof(t_mensaje));
 			mje_sindicato_GUARDAR_PLATO->tipo_mensaje=GUARDAR_PLATO;
@@ -489,13 +530,14 @@ void process_request(int cod_op, int cliente_fd) {
 
 		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
 		t_nombre* nombre_restaurante_OBTENER_PEDIDO = malloc(sizeof(t_nombre));
-		nombre_restaurante_OBTENER_PEDIDO=cfg_nombre_restaurante;
-		nombre_restaurante_OBTENER_PEDIDO=strlen(cfg_nombre_restaurante);
+		nombre_restaurante_OBTENER_PEDIDO->nombre=cfg_nombre_restaurante;
+		nombre_restaurante_OBTENER_PEDIDO->largo_nombre=strlen(cfg_nombre_restaurante);
 
 
 		t_nombre_y_id* sindicato_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
 		sindicato_OBTENER_PEDIDO->id=id_CONFIRMAR_PEDIDO;
-		sindicato_OBTENER_PEDIDO->nombre=nombre_restaurante_OBTENER_PEDIDO;
+		sindicato_OBTENER_PEDIDO->nombre.largo_nombre=nombre_restaurante_OBTENER_PEDIDO->largo_nombre;
+		sindicato_OBTENER_PEDIDO->nombre.nombre=nombre_restaurante_OBTENER_PEDIDO->nombre;
 
 
 		t_mensaje* mje_sindicato_OBTENER_PEDIDO= malloc(sizeof(t_mensaje));
@@ -552,8 +594,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 				 pedido_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
 				 //obtengo el nombre del plato
-				 sindicato_nombre_plato_receta=pedido_n->comida;
-				 sindicato_nombre_plato_receta=strlen(pedido_n->comida);
+				 sindicato_nombre_plato_receta->nombre=pedido_n->comida.nombre;
+				 sindicato_nombre_plato_receta->largo_nombre=pedido_n->comida.largo_nombre;
 
 				 //cargo el mj a enviar a sindicato para pedir receta
 				 mje_sindicato_OBTENER_PEDIDO->parametros=sindicato_nombre_plato_receta;
@@ -630,13 +672,7 @@ void process_request(int cod_op, int cliente_fd) {
 		id_CONSULTAR_PEDIDO=mensaje;
 
 		//respuesta cliente
-		typedef struct{
-			t_nombre restaurante;
-			uint32_t idRepartidor;
-			est_pedido estadoPedido;
-			uint32_t cantPlatos;
-			t_list* platos; //ver si va con estado
-		}rta_consultarPedido;
+
 		rta_consultarPedido* rta_CONSULTAR_PEDIDO = malloc(sizeof(rta_consultarPedido));
 		t_mensaje* cliente_rta_CONSULTAR_PEDIDO= malloc(sizeof(t_mensaje));
 
@@ -644,13 +680,14 @@ void process_request(int cod_op, int cliente_fd) {
 		//ENVIAR MJ A SINDICATO - OBTNER PEDIDO
 		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
 				t_nombre* nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO = malloc(sizeof(t_nombre));
-				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO=cfg_nombre_restaurante;
-				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO=strlen(cfg_nombre_restaurante);
+				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre=cfg_nombre_restaurante;
+				nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->largo_nombre=strlen(cfg_nombre_restaurante);
 
 
 				t_nombre_y_id* sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
 				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->id=id_CONSULTAR_PEDIDO;
-				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre=nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO;
+				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre.nombre=nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre;
+				sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre.largo_nombre=nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->largo_nombre;
 
 
 				t_mensaje* mje_sindicato_CONSULTAR_PEDIDO_OBTENER_PEDIDO= malloc(sizeof(t_mensaje));
@@ -675,7 +712,8 @@ void process_request(int cod_op, int cliente_fd) {
 		//RESPONDO AL CLIENTE
 
 
-				rta_CONSULTAR_PEDIDO->restaurante = nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO;
+				rta_CONSULTAR_PEDIDO->restaurante.nombre = nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->nombre;
+				rta_CONSULTAR_PEDIDO->restaurante.largo_nombre = nombre_restaurante_CONSULTAR_PEDIDO_OBTENER_PEDIDO->largo_nombre;
 				rta_CONSULTAR_PEDIDO->cantPlatos=rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO->cantPedidos;
 				rta_CONSULTAR_PEDIDO->platos=rta_sindicato_CONSULTAR_PEDIDO_RTA_OBTENER_PEDIDO->infoPedidos;
 
@@ -700,14 +738,26 @@ void process_request(int cod_op, int cliente_fd) {
 
 }
 
-void* fhilo_plato (*t_plato_pcb){
-
+void* fhilo_plato (t_plato_pcb* v){
 
 
 
 }
 
+uint32_t recibir_RTA_GUARDAR_PEDIDO(int socket){
 
+}
+uint32_t recibir_RTA_GUARDAR_PLATO(int socket){
+
+}
+rta_obtenerPedido* recibir_RTA_OBTENER_PEDIDO (int socket){
+
+
+}
+rta_obtenerReceta* recibir_RTA_OBTENER_RECETA(int socket){
+
+
+}
 
 
 void delay (int number_of_seconds){
@@ -719,14 +769,17 @@ void delay (int number_of_seconds){
 rta_obtenerRestaurante* metadata_restaurante(int socket){
 
 	int cod_op;
+	int id_proceso;
 	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL)==1);
 	cod_op=-1;
 
+	recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 	int size=0;
 	void* stream = recibir_mensaje(socket,&size);
 
 	rta_obtenerRestaurante* restaurante =malloc(sizeof(rta_obtenerRestaurante));
-	//restaurante = deserializar_mensaje(stream); //dudas
+
+	restaurante = deserializar_mensaje(stream,cod_op);
 
 return restaurante;
 }
