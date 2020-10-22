@@ -444,7 +444,7 @@ t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer){
 t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante){ //TODO
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	obtenerRestaurante->afinidades = obtenerRestaurante->afinidades->elements_count;
+	obtenerRestaurante->cantAfinidades = obtenerRestaurante->afinidades->elements_count;
 	obtenerRestaurante->cantRecetas = obtenerRestaurante->recetas->elements_count;
 
 	int size_recetas = tamanio_lista_recetas(obtenerRestaurante->recetas);
