@@ -73,13 +73,18 @@ void internal_console_init(){
 
 		if(read) add_history(read);
 
+		if(string_is_empty(read)){
+			free(read);
+			continue;
+		}
+
 		char** splitted_command = string_split(read," ");
 
 		if(string_equals_ignore_case(splitted_command[0],COMMAND_EXIT)){
 			free(read);
 			break;
 		}
-
+		
 		internal_console_execute_command(splitted_command);
 
 		free(read);

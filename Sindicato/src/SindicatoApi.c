@@ -143,7 +143,7 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 	puts(paso->paso.nombre);
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	list_add(receta->pasos,"Milanesa");
+	list_add(receta->pasos,paso);
 	receta->cantPasos = 1;
 
 	return receta;
