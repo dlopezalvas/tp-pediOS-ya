@@ -314,6 +314,7 @@ void conexionRecepcion(){
 		free(handshake);
 
 		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
+		_recv = recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 		if(_recv != 0){
 			void* mensaje = recibir_mensaje(socket_servidor, &size);
 			uint32_t rta_conexion = deserializar_mensaje(mensaje, cod_op);
