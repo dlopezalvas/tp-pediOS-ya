@@ -249,11 +249,9 @@ void free_id_o_confirmacion(uint32_t* mensaje);
 void free_nombre(t_nombre* mensaje);
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje);
 void free_receta(t_receta* receta);
-void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad);
 void free_nombre_y_id(t_nombre_y_id* mensaje);
 void free_plato_listo(m_platoListo* mensaje);
 void free_rta_consultar_pedido(rta_consultarPedido* mensaje);
-
 void free_rta_obtener_pedido(rta_obtenerPedido* mensaje);
 void free_infoPedidos(t_elemPedido* info_pedido);
 void free_guardar_plato(m_guardarPlato* mensaje);
