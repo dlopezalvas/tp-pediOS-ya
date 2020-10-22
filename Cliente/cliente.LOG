@@ -570,3 +570,14 @@
 [INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
 [INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
 [INFO] 17:24:42:828 cliente/(14629:14631): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:13:16:957 cliente/(12930:12937): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:19:06:424 cliente/(13202:13208): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:19:06:453 cliente/(13202:13208): Se recibio el mensaje RTA_CREAR_PEDIDO 0
+[INFO] 20:24:41:655 cliente/(13307:13320): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:24:41:669 cliente/(13307:13320): Se recibio el mensaje RTA_CREAR_PEDIDO 0
+[INFO] 20:39:44:187 cliente/(13382:13454): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:39:44:199 cliente/(13382:13454): Se recibio el mensaje RTA_CREAR_PEDIDO 0
+[INFO] 20:40:34:889 cliente/(13469:13475): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:40:34:923 cliente/(13469:13475): Se recibio el mensaje RTA_CREAR_PEDIDO 0
+[INFO] 20:44:18:963 cliente/(13571:13583): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:44:18:993 cliente/(13571:13583): Se recibio el mensaje RTA_CREAR_PEDIDO 0
