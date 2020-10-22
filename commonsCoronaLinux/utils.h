@@ -167,11 +167,6 @@ typedef struct{
 }m_seleccionarRestaurante;
 
 typedef struct{
-	uint32_t idCocinero;
-	t_nombre afinidad;
-}t_cocineroAfinidad;
-
-typedef struct{
 	uint32_t cantAfinidades;
 	t_list* afinidades; //lista de t_nombre
 	t_coordenadas posicion;
@@ -180,7 +175,6 @@ typedef struct{
 	uint32_t cantHornos;
 	uint32_t cantCocineros;
 }rta_obtenerRestaurante;
-
 
 typedef struct{
 	t_nombre receta;
@@ -205,16 +199,6 @@ typedef enum{
 	CONFIRMADO = 2,
 	TERMINADO = 3,
 }est_pedido;
-
-//typedef enum{
-//	LISTO = 1,
-//	EN_PROCESO = 2,
-//}est_plato;
-
-//typedef struct{
-//	t_nombre plato;
-//	est_plato estadoPlato;
-//}t_plato_con_estado;
 
 typedef struct{
 	t_nombre restaurante;
@@ -249,6 +233,7 @@ typedef struct{
 	t_nombre paso;
 	uint32_t duracion;
 }t_paso;
+
 
 t_log* iniciar_logger(t_config*);
 t_config* leer_config(char* proceso);
