@@ -55,13 +55,13 @@ void iniciar_restaurante(){
 
 	conexion_sindicato= conectar_con_sindicato();
 
-
+	log_info(log_config_ini, "ya me conecte \n");
 	//GET DE METADATA
 	metadata_rest = malloc(sizeof(rta_obtenerRestaurante));
 
 	if(conexion_sindicato != -1){
 		//GET DE METADATA A SINDICATO
-
+		log_info(log_config_ini, "entre al if \n");
 		//Enviar mje obtener restaurante
 
 
@@ -74,12 +74,12 @@ void iniciar_restaurante(){
 		nombre_restaurante->largo_nombre=strlen(cfg_nombre_restaurante);
 
 		tipomje->parametros=nombre_restaurante;
-
+		log_info(log_config_ini, "estoy por enviar el mj\n");
 		enviar_mensaje(tipomje, conexion_sindicato);
 
 		//Recibir respuesta obtener restaurante
 
-
+		log_info(log_config_ini, "estoy por recibir el mj\n");
 		metadata_rest = metadata_restaurante(conexion_sindicato);
 	}else{
 
@@ -200,11 +200,13 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
  */
 
 
-
 log_info(log_config_ini, "Comienza proceso de colas");
 
-uint32_t cant_cocineros=metadata->cantCocineros;
-log_info(log_config_ini, "\tcant_cocineros: %PRIu32  \n",cant_cocineros);
+uint32_t cant_cocineros= metadata->cantCocineros;
+log_info(log_config_ini, "Cargue la variable cant_cocineros");
+
+
+log_info(log_config_ini, "\tcant_cocineros: %d \n",cant_cocineros);
 
 
 uint32_t cant_afinidades= metadata->cantAfinidades;
@@ -761,22 +763,37 @@ void delay (int number_of_seconds){
 }
 
 rta_obtenerRestaurante* metadata_restaurante(int socket){
-
-	int cod_op;
+/*
+ * int size = 0;
 	int id_proceso;
-	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL)==1);
-	cod_op=-1;
+	    void* mensaje = NULL;
+	    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+	        void* buffer = recibir_mensaje(cliente_fd, &size);
+	        recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+	        mensaje = deserializar_mensaje(buffer, cod_op);
+	    }
+ */
 
-	recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+
+	int cod_op=0;
+	uint32_t id_proceso;
 	int size=0;
+	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL)==1)
+	cod_op=-1;
+	log_info(log_config_ini, "cod op: %d\n",cod_op);
+	recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+
 	void* stream = recibir_mensaje(socket,&size);
 
 	rta_obtenerRestaurante* restaurante =malloc(sizeof(rta_obtenerRestaurante));
 
 	restaurante = deserializar_mensaje(stream,cod_op);
-
+	log_info(log_config_ini, "estoy por devolver la deserealizacion\n");
 return restaurante;
 }
+
+
+
 int  conectar_con_sindicato(){
 
 
