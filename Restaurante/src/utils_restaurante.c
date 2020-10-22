@@ -80,7 +80,11 @@ void iniciar_restaurante(){
 		//Recibir respuesta obtener restaurante
 
 		log_info(log_config_ini, "estoy por recibir el mj\n");
+
 		metadata_rest = metadata_restaurante(conexion_sindicato);
+
+
+
 	}else{
 
 		log_info(log_config_ini, "\tSe cargan los datos de default, Sindicato no sisponible \n");
@@ -763,32 +767,57 @@ void delay (int number_of_seconds){
 }
 
 rta_obtenerRestaurante* metadata_restaurante(int socket){
+	op_code cod_op=999;
+	uint32_t id_proceso;
+	rta_obtenerRestaurante* restaurante;
+	int size=0;
+	int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+	log_info(log_config_ini, "cod op: %d\n",cod_op);
+
+		if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+			recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+			void* buffer = recibir_mensaje(socket, &size);
+			restaurante = deserializar_mensaje(buffer, cod_op);
+			loggear_mensaje_recibido(restaurante, cod_op, log_config_ini);
+
+		}else{
+			recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
+			loggear_mensaje_recibido(NULL, cod_op, log_config_ini);
+		}
+
+
+
+
+
+
+
+
+
+
+
 /*
- * int size = 0;
-	int id_proceso;
-	    void* mensaje = NULL;
-	    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
-	        void* buffer = recibir_mensaje(cliente_fd, &size);
-	        recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-	        mensaje = deserializar_mensaje(buffer, cod_op);
-	    }
- */
 
 
-	int cod_op=0;
+	op_code cod_op=999;
 	uint32_t id_proceso;
 	int size=0;
-	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL)==1)
-	cod_op=-1;
+	recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+	//if(recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL)==-1)cod_op=-1;
+perror("error");
+
 	log_info(log_config_ini, "cod op: %d\n",cod_op);
+
 	recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 
 	void* stream = recibir_mensaje(socket,&size);
 
-	rta_obtenerRestaurante* restaurante =malloc(sizeof(rta_obtenerRestaurante));
+	rta_obtenerRestaurante* restaurante;// =malloc(sizeof(rta_obtenerRestaurante));
 
 	restaurante = deserializar_mensaje(stream,cod_op);
+	loggear_mensaje_recibido(restaurante, cod_op,log_config_ini);
+
 	log_info(log_config_ini, "estoy por devolver la deserealizacion\n");
+*/
 return restaurante;
 }
 
