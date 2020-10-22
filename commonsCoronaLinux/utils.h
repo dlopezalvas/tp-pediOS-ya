@@ -171,15 +171,16 @@ typedef struct{
 	t_nombre afinidad;
 }t_cocineroAfinidad;
 
-typedef struct{ //TODO arreglar
-	uint32_t cantCocineroAfinidad;
-	t_list* cocineroAfinidad; //lista de t_cocineroAfinidad: cocinero n con afinidad n
+typedef struct{
+	uint32_t cantAfinidades;
+	t_list* afinidades; //lista de t_nombre
 	t_coordenadas posicion;
 	uint32_t cantRecetas;
 	t_list* recetas; //lista de receta con precio
 	uint32_t cantHornos;
-
+	uint32_t cantCocineros;
 }rta_obtenerRestaurante;
+
 
 typedef struct{
 	t_nombre receta;
