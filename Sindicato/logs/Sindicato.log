@@ -1,0 +1,54 @@
+[INFO] 01:56:25:776 Sindicato/(9253:9254): [SERVER] Conexion aceptada
+[INFO] 01:56:25:778 Sindicato/(9253:9259): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 01:56:25:778 Sindicato/(9253:9259): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 01:57:21:456 Sindicato/(9266:9267): [SERVER] Conexion aceptada
+[INFO] 01:57:21:466 Sindicato/(9266:9272): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 01:57:21:466 Sindicato/(9266:9272): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 01:59:26:46 Sindicato/(9329:9330): [SERVER] Conexion aceptada
+[INFO] 01:59:26:55 Sindicato/(9329:9335): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 01:59:26:55 Sindicato/(9329:9335): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:02:06:530 Sindicato/(9424:9425): [SERVER] Conexion aceptada
+[INFO] 02:02:06:554 Sindicato/(9424:9430): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:02:06:554 Sindicato/(9424:9430): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:08:39:931 Sindicato/(9529:9530): [SERVER] Conexion aceptada
+[INFO] 02:08:39:941 Sindicato/(9529:9535): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:08:39:941 Sindicato/(9529:9535): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:12:09:775 Sindicato/(9615:9616): [SERVER] Conexion aceptada
+[INFO] 02:12:09:784 Sindicato/(9615:9621): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:12:09:784 Sindicato/(9615:9621): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:19:58:823 Sindicato/(9753:9754): [SERVER] Conexion aceptada
+[INFO] 02:19:58:834 Sindicato/(9753:9758): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:19:58:834 Sindicato/(9753:9758): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:21:08:325 Sindicato/(9824:9825): [SERVER] Conexion aceptada
+[INFO] 02:21:08:334 Sindicato/(9824:9829): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:21:08:334 Sindicato/(9824:9829): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:22:17:70 Sindicato/(9878:9879): [SERVER] Conexion aceptada
+[INFO] 02:22:17:81 Sindicato/(9878:9883): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:22:17:81 Sindicato/(9878:9883): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:26:16:142 Sindicato/(10091:10092): [SERVER] Conexion aceptada
+[INFO] 02:26:16:151 Sindicato/(10091:10096): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:26:16:151 Sindicato/(10091:10096): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:27:53:897 Sindicato/(10173:10174): [SERVER] Conexion aceptada
+[INFO] 02:27:53:909 Sindicato/(10173:10178): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:27:53:909 Sindicato/(10173:10178): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:29:22:738 Sindicato/(10273:10274): [SERVER] Conexion aceptada
+[INFO] 02:29:22:748 Sindicato/(10273:10278): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:29:22:748 Sindicato/(10273:10278): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:43:44:211 Sindicato/(10577:10578): [SERVER] Conexion aceptada
+[INFO] 02:43:44:221 Sindicato/(10577:10582): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:43:44:221 Sindicato/(10577:10582): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:45:16:531 Sindicato/(10637:10638): [SERVER] Conexion aceptada
+[INFO] 02:45:16:541 Sindicato/(10637:10642): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:45:16:541 Sindicato/(10637:10642): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:57:54:854 Sindicato/(10804:10805): [SERVER] Conexion aceptada
+[INFO] 02:57:54:863 Sindicato/(10804:10809): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:57:54:863 Sindicato/(10804:10809): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 02:58:51:729 Sindicato/(10860:10861): [SERVER] Conexion aceptada
+[INFO] 02:58:51:738 Sindicato/(10860:10865): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 02:58:51:738 Sindicato/(10860:10865): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 03:00:06:74 Sindicato/(10921:10922): [SERVER] Conexion aceptada
+[INFO] 03:00:06:82 Sindicato/(10921:10926): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 03:00:06:82 Sindicato/(10921:10926): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 03:05:42:841 Sindicato/(11025:11026): [SERVER] Conexion aceptada
+[INFO] 03:05:42:849 Sindicato/(11025:11030): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 03:05:42:849 Sindicato/(11025:11030): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
