@@ -15,6 +15,7 @@
 #include<commons/config.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
+#include <inttypes.h>
 
 #include <pthread.h>
 #include <sys/socket.h>

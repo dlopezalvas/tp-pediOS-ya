@@ -91,30 +91,33 @@ void iniciar_restaurante(){
 		//obtengo los datos del restaurante de un archivo para hacer pruebas
 		config_sindicato = leer_config("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Restaurante/src/default_sindicato.config");
 		int cantidad_cocineros=config_get_int_value(config_sindicato,"CANTIDAD_COCINEROS");
-		char* afinidad1 =config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS1");
-		char* afinidad2 =config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS2");
+		t_nombre* afinidad1=malloc(sizeof(t_nombre));
+		afinidad1->nombre =config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS1");
+
+		t_nombre* afinidad2 =malloc(sizeof(t_nombre));
+		afinidad2->nombre=	config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS2");
 		int posx =config_get_int_value(config_sindicato,"POSX");
 		int posy =config_get_int_value(config_sindicato,"POSY");
 		int cant_recetas=config_get_int_value(config_sindicato,"CANTRECETAS");
 
 
 
-		t_nombre* nom_receta1=malloc(sizeof(t_mensaje));
+		t_nombre* nom_receta1=malloc(sizeof(t_nombre));
 		nom_receta1->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA1"));
 		nom_receta1->nombre=config_get_string_value(config_sindicato,"RECETA1");
-		t_receta* receta1=malloc(sizeof(t_mensaje));
+		t_receta* receta1=malloc(sizeof(t_nombre));
 		receta1->receta.nombre=nom_receta1;
 
-		t_nombre* nom_receta2=malloc(sizeof(t_mensaje));
+		t_nombre* nom_receta2=malloc(sizeof(t_nombre));
 		nom_receta2->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA2"));
 		nom_receta2->nombre =config_get_string_value(config_sindicato,"RECETA2");
 		t_receta* receta2=malloc(sizeof(t_mensaje));
 		receta2->receta.nombre=nom_receta2;
 
-		t_nombre* nom_receta3=malloc(sizeof(t_mensaje));
+		t_nombre* nom_receta3=malloc(sizeof(t_nombre));
 		nom_receta3->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA3"));
 		nom_receta3->nombre =config_get_string_value(config_sindicato,"RECETA3");
-		t_receta* receta3=malloc(sizeof(t_mensaje));
+		t_receta* receta3=malloc(sizeof(t_nombre));
 		receta3->receta.nombre=nom_receta3;
 
 		int hornos= config_get_int_value(config_sindicato,"CANTIDAD_HORNOS");
@@ -126,17 +129,20 @@ void iniciar_restaurante(){
 
 
 
-		metadata_rest->cantCocineroAfinidad=cantidad_cocineros;
-		log_info(log_config_ini, "\t\tcantidad de cocineros %d \n",metadata_rest->cantCocineroAfinidad);
 
-		metadata_rest->cocineroAfinidad = list_create();
-		list_add(metadata_rest->cocineroAfinidad, afinidad1);
-		char* afi1= list_get(metadata_rest->cocineroAfinidad, 0);
-		log_info(log_config_ini, "\t\tafinidad1: %s \n",afi1);
+		metadata_rest->cantCocineros=cantidad_cocineros;
+		log_info(log_config_ini, "\t\tcantidad de cocineros %d \n",metadata_rest->cantCocineros);
 
-		list_add(metadata_rest->cocineroAfinidad, afinidad2);
-		char* afi2= list_get(metadata_rest->cocineroAfinidad, 1);
-		log_info(log_config_ini, "\t\tafinidad2: %s \n",afi2);
+		metadata_rest->afinidades = list_create();
+		list_add(metadata_rest->afinidades, afinidad1);
+		t_nombre* afi1= malloc(sizeof(t_nombre));
+		afi1=list_get(metadata_rest->afinidades, 0);
+		log_info(log_config_ini, "\t\tafinidad1: %s \n",afi1->nombre);
+
+		list_add(metadata_rest->afinidades, afinidad2);
+		t_nombre* afi2= malloc(sizeof(t_nombre));
+		afi2=	list_get(metadata_rest->afinidades, 1);
+		log_info(log_config_ini, "\t\tafinidad2: %s \n",afi2->nombre);
 
 		metadata_rest->posicion.x=posx;
 		metadata_rest->posicion.y=posy;
@@ -146,21 +152,7 @@ void iniciar_restaurante(){
 		metadata_rest->cantRecetas=cant_recetas;
 		log_info(log_config_ini, "\t\tcantiad de recetas: %d \n",metadata_rest->cantRecetas);
 
-/*
-		list_add(metadata_rest->recetas, receta1);
-		log_info(log_config_ini, "\t\treceta1: %s \n",list_get(metadata_rest->recetas, 0));
 
-		list_add(metadata_rest->recetas, receta2);
-
-		log_info(log_config_ini, "\t\treceta2: %s \n",list_get(metadata_rest->recetas, 1));
-
-		list_add(metadata_rest->recetas, receta3);
-
-		log_info(log_config_ini, "\t\treceta3: %s \n",list_get(metadata_rest->recetas, 2));
-
-		metadata_rest->cantHornos=hornos;
-		log_info(log_config_ini, "\t\tcantidad de hornos %d  \n", metadata_rest->cantHornos);
-*/
 		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
 
 
@@ -208,28 +200,28 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
  */
 
 
+
 log_info(log_config_ini, "Comienza proceso de colas");
 
-uint32_t cant_cocineros=metadata->cantCocineroAfinidad;
-log_info(log_config_ini, "\tcant_cocineros: %d \n",cant_cocineros);
+uint32_t cant_cocineros=metadata->cantCocineros;
+log_info(log_config_ini, "\tcant_cocineros: %PRIu32  \n",cant_cocineros);
 
 
-int cant_afinidades= metadata->cocineroAfinidad->elements_count;
-log_info(log_config_ini, "\tcant_afinidades: %d \n",cant_afinidades);
+uint32_t cant_afinidades= metadata->cantAfinidades;
+log_info(log_config_ini, "\tcant_afinidades: %PRIu32  \n",cant_afinidades);
 
-t_receta* metadata_receta1 = malloc(sizeof(t_receta));
+//t_receta* metadata_receta1 = malloc(sizeof(t_receta));
 printf("seg fault");
-metadata_receta1=list_get(metadata->recetas, 0);
+//metadata_receta1=list_get(metadata->recetas, 0);
 
-log_info(log_config_ini, "\treceta1: %s \n",metadata_receta1->receta);
+//log_info(log_config_ini, "\treceta1: %s \n",metadata_receta1->receta);
 
-t_receta* metadata_receta2 = malloc(sizeof(t_receta));
-metadata_receta2=list_get(metadata->recetas, 1);
-log_info(log_config_ini, "\treceta2 %s \n",metadata_receta2->receta);
+//t_receta* metadata_receta2 = malloc(sizeof(t_receta));
+//metadata_receta2=list_get(metadata->recetas, 1);
+//log_info(log_config_ini, "\treceta2 %s \n",metadata_receta2->receta);
 
-uint32_t cant_hornos= metadata->cantHornos;
-log_info(log_config_ini, "\tcantidad de hornos %d  \n", cant_hornos);
-
+//uint32_t cant_hornos= metadata->cantHornos;
+//log_info(log_config_ini, "\tcantidad de hornos %d  \n", cant_hornos);
 
 id_pedidos=5;
 log_info(log_config_ini, "\tcantidad de pedidos %d  \n", id_pedidos);
@@ -309,9 +301,11 @@ void serve_client(int socket){
 
 void process_request(int cod_op, int cliente_fd) {
 	int size = 0;
+	int id_proceso;
 	    void* mensaje = NULL;
 	    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
 	        void* buffer = recibir_mensaje(cliente_fd, &size);
+	        recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 	        mensaje = deserializar_mensaje(buffer, cod_op);
 	    }
 
