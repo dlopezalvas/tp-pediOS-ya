@@ -2,6 +2,7 @@
 #define SINDICATOAPI_H_
 
 #include "SindicatoUtils.h"
+#include <sys/stat.h>
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
@@ -10,7 +11,7 @@ void sindicato_api_crear_restaurante(char* nombre, int cantCocineros, int* posXY
 void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos);
 
 /* Server functions */
-void sindicato_api_send_response_of_operation(t_responseMessage* response);
+void sindicato_api_send_response_of_operation(t_responseMessage* response, int socket_cliente);
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* message);
 uint32_t* sindicato_api_guardar_pedido(void* pedido);
 uint32_t* sindicato_api_guardar_plato(void* pedido);

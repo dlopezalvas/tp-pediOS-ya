@@ -1,13 +1,6 @@
 #ifndef SINDICATOUTILS_H_
 #define SINDICATOUTILS_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <commons/log.h>
-#include <commons/config.h>
-#include <commons/string.h>
-
 #include "../commonsCoronaLinux/logs.h"
 #include "../commonsCoronaLinux/socket.h"
 #include "../commonsCoronaLinux/utils.h"
@@ -23,6 +16,9 @@ typedef struct{
 t_log* sindicatoLog;
 t_log* sindicatoDebugLog;
 t_config* sindicatoConfig;
+uint32_t sindicatoProcessId;
+int sindicatoPort;
+char* sindicatoMountPoint;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 

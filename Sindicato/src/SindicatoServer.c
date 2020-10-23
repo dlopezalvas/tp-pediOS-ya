@@ -17,8 +17,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 	t_responseMessage* responseMessage = malloc(sizeof(t_responseMessage));
 	responseMessage->message = malloc(sizeof(t_mensaje));
-	//TODO: validar que hacer con el id del mensaje.
-	//responseMessage->message->id=4;
+	responseMessage->message->id = sindicatoProcessId;
 	responseMessage->socket = socket_client;
 
 	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
@@ -96,7 +95,7 @@ void internal_process_request(int cod_op, int socket_client){
 	}
 
 	if(sendMessageFlag == ENVIAR_RESPUESTA)
-		sindicato_api_send_response_of_operation(responseMessage);
+		sindicato_api_send_response_of_operation(responseMessage, socket_client);
 
 	//TODO: Liberar memoraia de todos los mensajes.
 }
@@ -139,7 +138,7 @@ void internal_wait_client(int server){
 
 void sindicato_server_initialize(){
 
-	int sindicatoServer = iniciar_servidor(config_get_int_value(sindicatoConfig,"PUERTO_ESCUCHA"));
+	int sindicatoServer = iniciar_servidor(sindicatoPort);
 	if(sindicatoServer == -1){
 		log_info(sindicatoDebugLog, "[SERVER] No se pudo crear el servidor");
 	} else{
