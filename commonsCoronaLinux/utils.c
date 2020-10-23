@@ -122,6 +122,8 @@ char* op_code_to_string(op_code tipo_mensaje){
 	case RTA_OBTENER_RECETA:
 		return MENSAJE_RTA_OBTENER_RECETA;
 		break;
+	case ERROR:
+		return MENSAJE_ERROR;
 	}
 	return NULL;
 }

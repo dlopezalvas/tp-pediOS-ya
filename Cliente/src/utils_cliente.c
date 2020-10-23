@@ -38,7 +38,7 @@ void iniciar_consola(){
 				t_mensaje* mensaje = llenarMensaje(linea);
 				mensaje->id = id_cliente;
 				pthread_create(&mensaje_hilo, NULL, (void*)procesar_mensaje, mensaje);
-				list_add(mensajes_hilos, mensaje_hilo);
+				list_add(mensajes_hilos, &mensaje_hilo);
 			}else{
 				puts("Por favor ingrese un mensaje valido");
 			}
@@ -52,16 +52,16 @@ void iniciar_consola(){
 	return;
 }
 
-void procesar_mensaje(t_mensaje* mensaje){
+void procesar_mensaje(t_mensaje* mensaje_recibido){
 	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
 	op_code cod_op;
 	int id_proceso;
 	int size;
 
-	enviar_mensaje(mensaje, socket);
-	loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
-	free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-	free(mensaje);
+	enviar_mensaje(mensaje_recibido, socket);
+	loggear_mensaje_enviado(mensaje_recibido->parametros, mensaje_recibido->tipo_mensaje, log_cliente);
+	free_struct_mensaje(mensaje_recibido->parametros, mensaje_recibido->tipo_mensaje);
+	free(mensaje_recibido);
 
 	int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
 
@@ -201,11 +201,10 @@ bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo){
 		return cant_argumentos_mensaje == cant_argumentos_formato;
 
 	case STRC_ID_CONFIRMACION:
-		formato = string_split(FORMATO_CONFIRMAR_PEDIDO, " ");
+		formato = string_split(FORMATO_CONSULTAR_PEDIDO, " ");
 		cant_argumentos_formato = cantidad_argumentos(formato);
 		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato; //como cuenta la cantidad de arg no importa cual mensaje sea
-
+		return cant_argumentos_mensaje == cant_argumentos_formato;
 	case STRC_NOMBRE:
 		formato = string_split(FORMATO_CONSULTAR_PLATOS, " ");
 		cant_argumentos_formato = cantidad_argumentos(formato);
@@ -229,10 +228,10 @@ bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo){
 		cant_argumentos_formato = cantidad_argumentos(formato);
 		liberar_vector(formato);
 		return cant_argumentos_mensaje == cant_argumentos_formato;
-
+	default: return false;
 	}
 
-	return false;
+
 
 }
 
@@ -245,46 +244,6 @@ int cantidad_argumentos (char** mensaje_completo){
 	return cantidad - 1; //resto el proceso y el tipo de mensaje, quedan solo los argumentos
 }
 
-//
-//void conexionEnvio(){
-//	int socket = iniciar_cliente(conexion->ip, conexion->puerto);
-//
-//	if(socket != -1){
-//
-//		conexion_ok = true;
-//		pthread_mutex_unlock(&iniciar_consola_mtx);
-//
-//		//		if(string_equals_ignore_case(proceso, APP)){
-//		//			t_mensaje* handshake = malloc(sizeof(t_mensaje));
-//		//			handshake->tipo_mensaje = POSICION_CLIENTE;
-//		//			handshake->id = id_cliente;
-//		//			t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
-//		//
-//		//			posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
-//		//			posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
-//		//
-//		//			handshake->parametros = posicion_cliente;
-//		//
-//		//			enviar_mensaje(handshake, socket);
-//		//			free_struct_mensaje(handshake_app->parametros, handshake_app->tipo_mensaje);
-//		//			loggear_mensaje_enviado(handshake_app->parametros, handshake_app->tipo_mensaje, log_cliente);
-//		//		}
-//
-//		while(1){ //buscar condicion de que siga ejecutando
-//			sem_wait(&sem_mensajes_a_enviar);
-//			t_mensaje* mensaje = queue_pop(mensajes_a_enviar);
-//			enviar_mensaje(mensaje, socket);
-//			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_cliente);
-//			free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-//			free(mensaje);
-//
-//		}
-//	}else{
-//		conexion_ok = false;
-//		pthread_mutex_unlock(&iniciar_consola_mtx);
-//	}
-//}
-
 void conexionRecepcion(){
 
 	int size = 0;
@@ -292,10 +251,11 @@ void conexionRecepcion(){
 	uint32_t id_proceso;
 	int _recv;
 	int socket_servidor = iniciar_cliente(conexion->ip,conexion->puerto);
-	uint32_t rta_conexion = 0;
+
 
 	if(socket_servidor != -1){
-
+		bool usar_socket = false;
+		uint32_t* rta_conexion;
 		conexion_ok = true;
 		pthread_mutex_unlock(&iniciar_consola_mtx);
 
@@ -315,25 +275,27 @@ void conexionRecepcion(){
 
 		_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
 		_recv = recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-		if(_recv != 0){
+		if(_recv != 0 && _recv != -1){
 			void* mensaje = recibir_mensaje(socket_servidor, &size);
-			uint32_t rta_conexion = deserializar_mensaje(mensaje, cod_op);
+			rta_conexion = deserializar_mensaje(mensaje, cod_op);
+			if((*rta_conexion)){
+				usar_socket = true;
+			}
+			free(mensaje);
+			free_struct_mensaje(rta_conexion, cod_op);
 		}
 
-		while(rta_conexion == 1){
+		while(usar_socket){
 			_recv = recv(socket_servidor, &cod_op, sizeof(op_code), MSG_WAITALL);
 
 
-			if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
+			if(_recv != 0 && _recv != -1){
 				recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 				void* buffer = recibir_mensaje(socket_servidor, &size);
 				void* mensaje = deserializar_mensaje(buffer, cod_op);
 				loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
 				free_struct_mensaje(mensaje, cod_op);
 				free(buffer);
-			}else{
-				recv(socket_servidor, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-				loggear_mensaje_recibido(NULL, cod_op, log_cliente);
 			}
 		}
 
@@ -366,8 +328,8 @@ t_mensaje* llenarMensaje(char* mensaje){
 
 	case STRC_GUARDAR_PLATO:return llenar_guardar_plato(parametros);
 
+	default: return NULL;
 	}
-	return NULL;
 
 }
 

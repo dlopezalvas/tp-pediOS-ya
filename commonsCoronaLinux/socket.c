@@ -55,8 +55,9 @@ void* recibir_mensaje(int socket_cliente, int* size)
 
 	recv(socket_cliente, &aux_size, sizeof(int), 0);
 	buffer = malloc(aux_size);
+	if(aux_size != 0){
 	recv(socket_cliente, buffer, aux_size, 0);
-
+	}
 	*size = aux_size;
 
 	return buffer;
@@ -81,7 +82,7 @@ void enviar_mensaje(t_mensaje* mensaje, int socket){
 	send(socket,a_enviar,bytes,0);
 
 	free(a_enviar);
-	free(paquete -> buffer->stream);
+	if(op_code_to_struct_code(mensaje->tipo_mensaje)!= STRC_MENSAJE_VACIO) free(paquete -> buffer->stream);
 	free(paquete->buffer);
 	free(paquete);
 
