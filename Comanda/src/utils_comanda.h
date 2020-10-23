@@ -20,6 +20,7 @@
 #define TAMANIO_MEMORIA "TAMANIO_MEMORIA"
 #define TAMANIO_SWAP "TAMANIO_SWAP"
 #define ALGORITMO_REEMPLAZO "ALGORITMO_REEMPLAZO"
+#define ID_COMANDA "ID_COMANDA"
 
 t_config* config_comanda;
 t_log* log_comanda;
@@ -30,6 +31,8 @@ pthread_mutex_t hilos_clientes_mtx;
 t_list* hilos_operaciones;
 pthread_mutex_t hilos_operaciones_mtx;
 
+t_list* paginas_swap;
+pthread_mutex_t paginas_swap_mtx;
 
 typedef struct{
 	char* nombre;
@@ -74,8 +77,8 @@ t_list* restaurantes;
 
 uint32_t cant_frames_swap;
 uint32_t cant_frames_MP;
-int* frames_swap;
-int* frames_MP;
+uint32_t* frames_swap;
+uint32_t* frames_MP;
 
 pthread_mutex_t frames_swap_mtx;
 pthread_mutex_t frames_MP_mtx;
@@ -103,6 +106,7 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar);
 void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar);
+void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar);
 
 int memoria_disponible_swap();
 t_plato* deserializar_pagina(void* stream);

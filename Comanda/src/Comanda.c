@@ -21,9 +21,9 @@ int main(void) {
 	iniciar_comanda();
 	int servidor = iniciar_servidor(config_get_int_value(config_comanda, PUERTO_ESCUCHA));
 
-//	while(1){
-//		esperar_cliente(servidor);
-//	}
+	while(1){
+		esperar_cliente(servidor);
+	}
 
 	return EXIT_SUCCESS;
 }

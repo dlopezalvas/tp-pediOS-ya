@@ -17,6 +17,9 @@ void iniciar_comanda(){
 	restaurantes = list_create();
 	pthread_mutex_init(&restaurantes_mtx, NULL);
 
+	paginas_swap = list_create();
+	pthread_mutex_init(&paginas_swap_mtx, NULL);
+
 	memoria_principal = malloc(config_get_int_value(config_comanda, TAMANIO_MEMORIA));
 	pthread_mutex_init(&memoria_principal_mtx, NULL);
 
@@ -26,10 +29,10 @@ void iniciar_comanda(){
 	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA) * sizeof(uint32_t);
 	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA) * sizeof(uint32_t);
 
-	frames_swap = malloc(cant_frames_swap);
+	frames_swap = malloc(cant_frames_swap*sizeof(uint32_t));
 	pthread_mutex_init(&frames_swap_mtx, NULL);
 
-	frames_MP = malloc(cant_frames_MP);
+	frames_MP = malloc(cant_frames_MP*sizeof(uint32_t));
 	pthread_mutex_init(&frames_MP_mtx, NULL);
 
 	for(int i=0; i<cant_frames_swap; i++){
@@ -41,13 +44,40 @@ void iniciar_comanda(){
 
 }
 
+void serve_client(int socket){
+
+	while(1){
+		int cod_op;
+		int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+		if(_recv == 0 || _recv == -1){
+			cod_op = -1;
+			//intento de reconexion
+			puts("error");
+			liberar_conexion(socket);
+			pthread_exit(NULL);
+		}else{
+			process_request(cod_op, socket);
+		}
+	}
+}
+
 void process_request(int cod_op, int cliente_fd){
 	int size = 0;
-	void* mensaje = NULL;
-	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
-		void* buffer = recibir_mensaje(cliente_fd, &size);
-		mensaje = deserializar_mensaje(buffer, cod_op);
+	void* mensaje;
+	uint32_t id_cliente;
+
+	int _recv = recv(cliente_fd, &id_cliente, sizeof(uint32_t), MSG_WAITALL);
+
+	if(_recv == 0 || _recv == -1){
+		//intento de reconexion
+		puts("error adentro process request");
+		liberar_conexion(cliente_fd);
+		pthread_exit(NULL);
 	}
+
+	void* buffer = recibir_mensaje(cliente_fd, &size);
+	mensaje = deserializar_mensaje(buffer, cod_op);
+
 
 	loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
 
@@ -85,24 +115,16 @@ void process_request(int cod_op, int cliente_fd){
 		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje_a_procesar);
 		pthread_detach(hilo_operacion);
 		break;
+	case POSICION_CLIENTE:
+		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_handshake_cliente, mensaje_a_procesar);
+		pthread_detach(hilo_operacion);
+		break;
 	default:
-		puts("error");
+		puts("erro en el switch??");
 	}
 }
 
-void serve_client(int socket){
 
-	while(1){
-		int cod_op;
-		if(recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL) == 0){
-			cod_op = -1;
-			//intento de reconexion
-			puts("error");
-		}else{
-			process_request(cod_op, socket);
-		}
-	}
-}
 
 void esperar_cliente(int servidor){
 
@@ -190,6 +212,10 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 					list_add(pedido->tabla_paginas, plato);
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
+					pthread_mutex_lock(&paginas_swap_mtx);
+					list_add(paginas_swap, plato);
+					pthread_mutex_unlock(&paginas_swap_mtx);
 
 					guardar_en_swap(frame_disponible_swap, plato_a_guardar);
 					guardar_en_mp(plato_a_guardar);
@@ -347,10 +373,11 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 			list_iterate(pedido->tabla_paginas, (void*)liberar_pagina);
 			list_destroy_and_destroy_elements(pedido->tabla_paginas, (void*)free_pagina);
-
+			confirmacion = 1;
 			free(pedido);
 		}
 	}
+	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_FINALIZAR_PEDIDO);
 }
 
 void liberar_pagina(t_pagina* pagina){
@@ -379,6 +406,14 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
 }
 
+void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar){
+	t_coordenadas* mensaje = mensaje_a_procesar->mensaje;
+	enviar_confirmacion(0, mensaje_a_procesar->socket_cliente, RTA_POSICION_CLIENTE);
+	free_struct_mensaje(mensaje, POSICION_CLIENTE);
+	free(mensaje_a_procesar);
+}
+
+
 
 t_restaurante* buscarRestaurante(char* nombre){
 	bool _mismoRestaurante(t_restaurante* restaurante){
@@ -406,10 +441,14 @@ t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante){
 void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
 	t_mensaje* mensaje_a_enviar = malloc(sizeof(t_mensaje));
 	mensaje_a_enviar->tipo_mensaje = cod_op;
+	mensaje_a_enviar->id = config_get_int_value(config_comanda, ID_COMANDA);
 	uint32_t* confirmacion = malloc(sizeof(uint32_t));
 	*confirmacion = _confirmacion;
 	mensaje_a_enviar->parametros = confirmacion;
 	enviar_mensaje(mensaje_a_enviar, cliente);
+	loggear_mensaje_enviado(confirmacion, cod_op, log_comanda);
+	free_struct_mensaje(confirmacion,cod_op);
+	free(mensaje_a_enviar);
 }
 
 
