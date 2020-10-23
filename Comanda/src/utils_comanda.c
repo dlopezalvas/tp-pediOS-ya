@@ -78,7 +78,7 @@ void process_request(int cod_op, int cliente_fd){
 	void* buffer = recibir_mensaje(cliente_fd, &size);
 	mensaje = deserializar_mensaje(buffer, cod_op);
 
-
+	free(buffer);
 	loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
 
 	pthread_t hilo_operacion;
@@ -147,14 +147,13 @@ void esperar_cliente(int servidor){
 
 //ejecuciones
 
-void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
+void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){ //listo ponele
 	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
 	t_restaurante* restaurante = buscarRestaurante(mensaje->nombre.nombre);;
 	uint32_t confirmacion;
-
-	//fijarse si esta llena la memoria
 	if(restaurante == NULL){
 		restaurante = malloc(sizeof(t_restaurante));
+		restaurante->nombre = malloc(mensaje->nombre.largo_nombre +1);
 		strcpy(restaurante->nombre, mensaje->nombre.nombre);
 		pthread_mutex_init(&(restaurante->tabla_segmentos_mtx), NULL);
 		restaurante->tabla_segmentos = list_create();
@@ -173,6 +172,8 @@ void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	confirmacion = 1;
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PEDIDO);
+	free_struct_mensaje(mensaje, GUARDAR_PEDIDO);
+	free(mensaje_a_procesar);
 
 }
 
@@ -201,7 +202,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					t_plato* plato_a_guardar = malloc(sizeof(t_plato));
 					plato_a_guardar->cant_pedida = mensaje->cantidad;
 					plato_a_guardar->cant_lista = 0;
-					strcpy(plato_a_guardar->nombre, mensaje->restaurante.nombre);
+					strncpy(plato_a_guardar->nombre, mensaje->restaurante.nombre, mensaje->restaurante.largo_nombre);//TODO ver si guardar '\0'
 
 					plato = malloc(sizeof(t_pagina));
 					plato->modificado = false;
@@ -218,10 +219,10 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					pthread_mutex_unlock(&paginas_swap_mtx);
 
 					guardar_en_swap(frame_disponible_swap, plato_a_guardar);
-					guardar_en_mp(plato_a_guardar);
+					plato->frame = guardar_en_mp(plato_a_guardar);
+					free(plato_a_guardar);
 				}
 			}else{
-
 				if(!plato->presencia){
 					//TODO traer de swap
 				}
@@ -235,18 +236,20 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PLATO);
+	free_struct_mensaje(mensaje, GUARDAR_PLATO);
+	free(mensaje_a_procesar);
 }
 
-void guardar_en_mp(t_plato* plato){
+int guardar_en_mp(t_plato* plato){
 	int frame = seleccionar_frame_mp();
 	void* pagina_serializada = serializar_pagina(plato);
-
 	int offset = frame * TAMANIO_PAGINA;
 
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
 	pthread_mutex_unlock(&memoria_principal_mtx);
-
+	free(pagina_serializada);
+	return frame;
 }
 
 int seleccionar_frame_mp(){
@@ -309,6 +312,7 @@ void guardar_en_swap(int frame_destino_swap, t_plato* plato){
 	pthread_mutex_lock(&memoria_swap_mtx);
 	memcpy(memoria_swap + offset, pagina, TAMANIO_PAGINA);
 	pthread_mutex_unlock(&memoria_swap_mtx);
+	free(pagina);
 }
 
 int memoria_disponible_swap(){
@@ -378,6 +382,8 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 		}
 	}
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_FINALIZAR_PEDIDO);
+	free_struct_mensaje(mensaje, FINALIZAR_PEDIDO);
+	free(mensaje_a_procesar);
 }
 
 void liberar_pagina(t_pagina* pagina){
