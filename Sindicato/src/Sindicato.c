@@ -11,8 +11,14 @@ int main(void) {
 
 void sindicato_initialize(){
 	sindicatoConfig = leer_config(SINDICATO_PATH_CONFIG);
+
 	sindicatoLog = iniciar_logger(sindicatoConfig);
 	sindicatoDebugLog = sindicato_utils_iniciar_debug_logger(sindicatoConfig);
+
+	sindicatoProcessId = (uint32_t)config_get_int_value(sindicatoConfig, "SINDICATO_ID");
+	sindicatoPort = config_get_int_value(sindicatoConfig,"PUERTO_ESCUCHA");
+	sindicatoMountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
+	
 
 	//TODO: Inicializar el FS con punto de montaje
 	sindicato_api_afip_initialize();

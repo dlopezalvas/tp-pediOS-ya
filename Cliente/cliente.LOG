@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [INFO] 00:52:51:350 cliente/(14411:14413): Se envio el mensaje CREAR_PEDIDO
 [INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
 [INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
@@ -581,3 +582,5 @@
 [INFO] 20:40:34:923 cliente/(13469:13475): Se recibio el mensaje RTA_CREAR_PEDIDO 0
 [INFO] 20:44:18:963 cliente/(13571:13583): Se envio el mensaje CREAR_PEDIDO
 [INFO] 20:44:18:993 cliente/(13571:13583): Se recibio el mensaje RTA_CREAR_PEDIDO 0
+=======
+>>>>>>> master
