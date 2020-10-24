@@ -202,7 +202,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					t_plato* plato_a_guardar = malloc(sizeof(t_plato));
 					plato_a_guardar->cant_pedida = mensaje->cantidad;
 					plato_a_guardar->cant_lista = 0;
-					strncpy(plato_a_guardar->nombre, mensaje->restaurante.nombre, mensaje->restaurante.largo_nombre);//TODO ver si guardar '\0'
+					strncpy(plato_a_guardar->nombre, mensaje->restaurante.nombre, mensaje->restaurante.largo_nombre +1);//TODO ver si guardar '\0'
 
 					plato = malloc(sizeof(t_pagina));
 					plato->modificado = false;
@@ -410,6 +410,7 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 
 void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
+	
 }
 
 void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar){
@@ -480,7 +481,7 @@ t_plato* deserializar_pagina(void* stream){
 	offset += sizeof(uint32_t);
 	memcpy(plato->nombre, stream + offset, TAMANIO_NOMBRE);
 
-	return stream;
+	return plato;
 }
 
 t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
@@ -501,13 +502,12 @@ t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
 		plato = deserializar_pagina(stream);
 		free(stream);
 		if(string_equals_ignore_case(plato->nombre, comida)){
-			free(plato); //TODO ver que no rompa
+			free(plato);
 			return pagina;
+		}else{
+			free(plato);
 		}
-		free(plato);
 	}
-
 	return NULL;
-
 }
 
