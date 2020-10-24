@@ -472,12 +472,87 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 
 
 void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
-	t_nombre_y_id* mensaje = mensaje_a_procesar->mensaje;
+	t_nombre_y_id* obtener_pedido = mensaje_a_procesar->mensaje;
 
+	t_restaurante* restaurante = buscarRestaurante(obtener_pedido->nombre.nombre);
+	t_segmento* pedido;
 
+	t_mensaje* mensaje_a_enviar;
 
+	obtener_pedido->id = config_get_int_value(config_comanda, ID_COMANDA);
 
+	if(restaurante != NULL){
+		pedido = buscarPedido(obtener_pedido->id, restaurante);
 
+		if(pedido != NULL){
+
+			t_pagina* pagina;
+			rta_obtenerPedido* rtaObtenerPedido = malloc(sizeof(rta_obtenerPedido));
+
+			rtaObtenerPedido->estadoPedido = pedido->estado;
+			rtaObtenerPedido->infoPedidos = list_create();
+
+			t_elemPedido* elemPedido;
+			int offset;
+
+			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+			int cantidad_platos = pedido->tabla_paginas->elements_count;
+			pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
+			for(int i = 0; i < cantidad_platos; i++){
+
+				void* plato_a_deserializar = malloc(TAMANIO_PAGINA);
+
+				t_plato* plato;
+
+				pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+				pagina = list_get(pedido->tabla_paginas, i);
+
+				offset = pagina->frame * TAMANIO_PAGINA;
+
+				pagina->ultimo_acceso = time(NULL);
+				pagina->uso = true;
+
+				if(!pagina->presencia){
+					//TODO traer de swap
+				}
+
+				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
+				pthread_mutex_lock(&memoria_principal_mtx);
+				memcpy(plato_a_deserializar, memoria_principal + offset, TAMANIO_PAGINA);
+				pthread_mutex_unlock(&memoria_principal_mtx);
+
+				plato = deserializar_pagina(plato_a_deserializar);
+
+				elemPedido = malloc(sizeof(t_elemPedido));
+				elemPedido->cantHecha = plato->cant_lista;
+				elemPedido->cantTotal = plato->cant_pedida;
+				elemPedido->comida.nombre = malloc(strlen(plato->nombre) + 1);
+				strcpy(elemPedido->comida.nombre, plato->nombre);
+
+				list_add(rtaObtenerPedido->infoPedidos, elemPedido);
+
+				free(plato_a_deserializar);
+				free(plato);
+
+			}
+
+			mensaje_a_enviar->tipo_mensaje = RTA_OBTENER_PEDIDO;
+			mensaje_a_enviar->parametros = rtaObtenerPedido;
+
+		}else{
+			mensaje_a_enviar->tipo_mensaje = ERROR;
+		}
+	}else{
+		mensaje_a_enviar->tipo_mensaje = ERROR;
+	}
+
+	enviar_mensaje(mensaje_a_enviar, mensaje_a_procesar->socket_cliente);
+	free_struct_mensaje(mensaje_a_enviar->parametros, mensaje_a_enviar->tipo_mensaje);
+	free(mensaje_a_enviar);
+	free_struct_mensaje(obtener_pedido, OBTENER_PEDIDO);
+	free(mensaje_a_procesar);
 }
 
 void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar){
@@ -486,7 +561,6 @@ void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar){
 	free_struct_mensaje(mensaje, POSICION_CLIENTE);
 	free(mensaje_a_procesar);
 }
-
 
 
 t_restaurante* buscarRestaurante(char* nombre){
