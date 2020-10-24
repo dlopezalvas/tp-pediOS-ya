@@ -542,11 +542,9 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			mensaje_a_enviar->parametros = rtaObtenerPedido;
 
 		}else{
-			puts("no existe pedido");
 			mensaje_a_enviar->tipo_mensaje = ERROR;
 		}
 	}else{
-		puts("no existe restaurante");
 		mensaje_a_enviar->tipo_mensaje = ERROR;
 	}
 
@@ -580,12 +578,7 @@ t_restaurante* buscarRestaurante(char* nombre){
 t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante){
 	t_segmento* pedido;
 
-	puts("id pedido");
-	puts(string_itoa(id_pedido));
-
 	bool _mismoPedido(t_segmento* segmento){
-		puts("buscando en lista");
-		puts(string_itoa(segmento->id_pedido));
 		return id_pedido == segmento->id_pedido;
 	}
 	pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
