@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 		logger_configuracion_consolaActiva = true;
 		logger_configuracion_path = "./configuracion.log";
 
-		logger_planificacion_consolaActiva = true;
+		logger_planificacion_consolaActiva = false;
 		logger_planificacion_path = "./planificacion.log";
 
 		logger_mensajes_consolaActiva = true;
@@ -39,8 +39,7 @@ int main(int argc, char* argv[]) {
 			// 	pthread_create(&hilo_conectarConComanda, NULL, fhilo_conectarConComanda, NULL);
 			// }
 		
-		// Abrirá un puerto de escucha para que los distintos Restaurantes se puedan conectar a él.	
-		log_debug(logger_mensajes, "[MAIN] Modo no-Comanda: Lanzando hilo de server...");
+		// Abrirá un puerto de escucha para que los distintos Restaurantes se puedan conectar a él.
 		pthread_create(&hilo_servidor, NULL, fhilo_servidor, NULL);
 		
 

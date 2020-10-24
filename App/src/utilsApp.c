@@ -696,9 +696,14 @@ t_list* get_nombresRestConectados(void) {
     nombresRestConectados = list_create();
     pthread_mutex_lock(&mutex_lista_restaurantes);
     if (list_is_empty(restaurantes) || modo_noRest) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: RESTO DEFAULT"
+        );
         pthread_mutex_unlock(&mutex_lista_restaurantes);
         restaurante = malloc(sizeof(t_nombre));
         restaurante->nombre = "Resto Default";
+        list_add(nombresRestConectados, restaurante);
         return nombresRestConectados;
     }
     for (
@@ -850,6 +855,7 @@ void serve_client(int socket){
         );
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
+            log_debug(logger_mensajes, "[MENSJS]: Fin de conexion: recv = %i", rec);
 			//			pthread_mutex_lock(&logger_mutex);
 			//			log_info(logger,"Se desconecto el proceso con id: %d",socket);
 			//			pthread_mutex_unlock(&logger_mutex);
@@ -868,28 +874,30 @@ void process_request(int cod_op, int cliente_fd) {
 
     // TODO: provisorio?
     log_debug(logger_mensajes, "[MENSJS]: en process_request, por hacer recv de id");
-    rec = recv(socket, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
-    log_debug(logger_mensajes, "[MENSJS]: en process_request, post hacer recv de id");
+    rec = recv(cliente_fd, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
+    log_debug(logger_mensajes, "[MENSJS]: en process_request, post hacer recv de id: %i", cliente_id);
     
-    log_debug(logger_mensajes, "[MENSJS]: rec maldito: %i", rec);
-    perror("");
     if(rec == -1 || rec == 0 ){
         cod_op = -1;
         //			pthread_mutex_lock(&logger_mutex);
         //			log_info(logger,"Se desconecto el proceso con id: %d",socket);
         //			pthread_mutex_unlock(&logger_mutex);
+        log_debug(logger_mensajes, "[MENSJS]: Al hacer recv, hubo un error o la conexion ya se cerro", rec);
         pthread_exit(NULL);
     }
 
-    log_debug(logger_mensajes, "[MENSJS]: pre comparacion sospechosa");
-    log_debug(logger_mensajes, "[MENSJS]: struct code: %i", op_code_to_struct_code(cod_op));
-    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
-        log_debug(logger_mensajes, "[MENSJS]: entro en if porque el mje no es vacio");
-        void* buffer = recibir_mensaje(cliente_fd, &size);
-        log_debug(logger_mensajes, "[MENSJS]: mje recibido");
-        mensaje = deserializar_mensaje(buffer, cod_op);
-        log_debug(logger_mensajes, "[MENSJS]: mje deserializado");
-    }
+    // log_debug(logger_mensajes, "[MENSJS]: pre comparacion sospechosa");
+    // log_debug(logger_mensajes, "[MENSJS]: struct code: %i", op_code_to_struct_code(cod_op));
+
+    // if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+
+    // log_debug(logger_mensajes, "[MENSJS]: entro en if porque el mje no es vacio");
+    void* buffer = recibir_mensaje(cliente_fd, &size);
+    log_debug(logger_mensajes, "[MENSJS]: mje recibido");
+    mensaje = deserializar_mensaje(buffer, cod_op);
+    log_debug(logger_mensajes, "[MENSJS]: mje deserializado");
+
+    // }
 
     // TODO loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
 
@@ -976,28 +984,68 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_clientes);
 
-    /*
-        mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
-        *confirmacion = 1;
-        mensaje->parametros = confirmacion;
-        enviar_mensaje(mensaje, socket_cliente);
+    mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
+    mensaje->id = 807;
+    *confirmacion = 1;
+    mensaje->parametros = confirmacion;
 
-        pthread_mutex_unlock(cliente->mutex);
-        free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-        free(mensaje);
-    */
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Contestando handshake..."
+    );
+
+    enviar_mensaje(mensaje, socket_cliente);
+
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Handshake contestado"
+    );
+
+    pthread_mutex_unlock(cliente->mutex);
+    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
+    free(mensaje);
 }
 
 void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
     t_mensaje* mensaje = malloc(sizeof(t_mensaje));
     t_restaurante_y_plato* restaurantes = malloc(sizeof(t_restaurante_y_plato));
 
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Gestionando CONSULTAR_RESTAURANTES:"
+    );
+
     mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
     restaurantes->nombres = get_nombresRestConectados();
+    for (
+        unsigned index_rests = 0;
+        index_rests < list_size(restaurantes->nombres);
+        index_rests++
+    ) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: \t%i: %s",
+            index_rests,
+            ((t_nombre*)list_get(restaurantes->nombres, index_rests))->nombre
+        );
+    }
     restaurantes->cantElementos = list_size(restaurantes->nombres);
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Cant. de elems.: %i",
+        list_size(restaurantes->nombres)
+    );
     mensaje->id = 807;
     mensaje->parametros = restaurantes;
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Enviando mensaje..."
+    );
     enviar_mensaje(mensaje, socket_cliente);
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Mensaje enviado"
+    );
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }
@@ -1008,9 +1056,28 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
     t_cliente* cliente_seleccionante;
 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
-    log_debug(logger_mensajes, "[MENSJS]: encontro cliente %i", cliente_seleccionante->id);
-    //cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
-    //log_debug(logger_mensajes, "[MENSJS]: encontro rest %s", cliente_seleccionante->restaurante_seleccionado->nombre);
+    log_debug(logger_mensajes, "[MENSJS]: Se encontro el puntero del cliente %i", cliente_seleccionante->id);
+    cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
+
+    if (!(cliente_seleccionante->restaurante_seleccionado)) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: No se encontro el restaurante %s; se responde ERROR",
+            seleccion->restaurante.nombre
+        );
+        mensaje = malloc(sizeof(t_mensaje));
+        mensaje->tipo_mensaje=ERROR;
+        mensaje->id = 807;
+        enviar_mensaje(mensaje, socket_cliente);
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: ERROR enviado"
+        );
+        free(mensaje);
+        return;
+    }
+    
+    log_debug(logger_mensajes, "[MENSJS]: encontro rest %s", cliente_seleccionante->restaurante_seleccionado->nombre);
 
     mensaje->tipo_mensaje = RTA_SELECCIONAR_RESTAURANTE;
     mensaje->id = 807;
@@ -1028,17 +1095,36 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
     t_nombre* nombre_rest_consultado = malloc(sizeof(t_nombre));
     t_restaurante* restaurante_consultado;
     t_cliente* cliente_consultor;
+    uint32_t* confirmacion;
     op_code cod_op;
     int id_recibida;
     int _recv_op;
     int _recv_id;
     int size = 0;
 
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Gestionando CONSULTAR_PLATOS:"
+    );
+
     cliente_consultor = get_cliente_porSuID(cliente_id);
     restaurante_consultado = cliente_consultor->restaurante_seleccionado;
 
     if (!restaurante_consultado) {
         // TODO: tambien agregarle null cuando se guarda el cliente al conectarse no?
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: El cliente no tiene restaurante seleccionado, se contesta ERROR"
+        );
+        mensaje = malloc(sizeof(t_mensaje));
+        mensaje->tipo_mensaje=ERROR;
+        mensaje->id = 807;
+        enviar_mensaje(mensaje, socket_cliente);
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: ERROR enviado"
+        );
+        free(mensaje);
         return;
     } else if (restaurante_consultado == resto_default) {
         mensaje = malloc(sizeof(t_mensaje));
