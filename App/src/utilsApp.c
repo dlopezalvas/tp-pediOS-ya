@@ -260,6 +260,10 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
                 pedido_seleccionado = planif_HRRN();
         }
 
+        if (SJF_o_HRRN()) {
+            pedido_seleccionado->sjf_ultRafaga_real = 0;
+        }
+
         log_debug(logger_planificacion, "[PLANIF_CP] Pedido seleccionado: %i", pedido_seleccionado->pedido_id);
 
         log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando cola de READY...");
@@ -276,6 +280,10 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
 
         log_debug(logger_planificacion, "[PLANIF_CP] Recomenzando ciclo...");
     }
+}
+
+bool SJF_o_HRRN(void) {
+    return ((cfval_algoritmoPlanificacion == SJF_SD) || (cfval_algoritmoPlanificacion == HRRN));
 }
 
 t_pedido* planif_FIFO(void) {
@@ -342,6 +350,10 @@ void planif_nuevoPedido(int id_pedido) {
     pedidoNuevo->restaurante = restaurante;
     pedidoNuevo->pedido_id = id_pedido;
 
+    pedidoNuevo->sjf_ultRafaga_est = cfval_estimacionInicial;
+    pedidoNuevo->sjf_ultRafaga_real = 0; // TODO: esto esta ok? hmmmmmm
+    pedidoNuevo->hrrn_tiempoEsperaREADY = 0;
+
     pedidoNuevo->mutex_clock = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
     pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado?
@@ -377,7 +389,7 @@ t_cliente* get_cliente_porSuID(int id_cliente) {
     return NULL;
 }
 
-t_cliente* get_cliente(int id_pedido) {
+t_cliente* get_cliente(int id_pedido) { // TODO: redo esto, el id no es univoco
     t_cliente* cliente;
     pthread_mutex_lock(&mutex_lista_clientes);
     for (
@@ -576,6 +588,7 @@ void repartidor_desocupar(t_repartidor* repartidor) {
 
 void consumir_ciclo(t_pedido* pedido) {
     pedido->repartidor->frecuenciaDescanso_restante--;
+    pedido->sjf_ultRafaga_real++;
     log_debug(
         logger_planificacion,
         "[PEDIDO_%2i] Movido a posicion (%i;%i)",
@@ -705,6 +718,7 @@ void* fhilo_clock(void* __sin_uso__) {
     while (true) {
         pthread_mutex_lock(&mutex_cola_BLOCK);
         pthread_mutex_lock(&mutex_pedidosEXEC);
+        pthread_mutex_lock(&mutex_cola_READY);
         for (
             unsigned index_EXEC = 0;
             index_EXEC < list_size(pedidosEXEC);
@@ -719,8 +733,16 @@ void* fhilo_clock(void* __sin_uso__) {
         ) {
             pthread_mutex_unlock(((t_pedido*)list_get(cola_BLOCK, index_BLOCK))->mutex_clock);
         }
+        for (
+            unsigned index_READY = 0;
+            index_READY < list_size(cola_READY);
+            index_READY++
+        ) {
+            ((t_pedido*)list_get(cola_READY, index_READY))->hrrn_tiempoEsperaREADY++;
+        }
         pthread_mutex_unlock(&mutex_cola_BLOCK);
         pthread_mutex_unlock(&mutex_pedidosEXEC);
+        pthread_mutex_unlock(&mutex_cola_READY);
         sleep(cfval_retardoCicloCPU);
     }
 }

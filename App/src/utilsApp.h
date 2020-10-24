@@ -129,6 +129,9 @@ extern int errno;
         t_restaurante* restaurante;
         t_repartidor* repartidor;
         int pedido_id;
+        unsigned sjf_ultRafaga_real; // TODO: valor inicial? hmmmmmmmm
+        unsigned sjf_ultRafaga_est;
+        unsigned hrrn_tiempoEsperaREADY;
         t_estado pedido_estado;
         pthread_mutex_t* mutex_EXEC;
         pthread_mutex_t* mutex_clock;
@@ -172,6 +175,9 @@ extern int errno;
     sem_t semaforo_pedidos_NEW;
     sem_t semaforo_pedidos_READY;
     sem_t semaforo_vacantesEXEC;
+    double estimar_rafaga(t_pedido* pedido);
+    double respRatio(t_pedido* pedido);
+    bool SJF_o_HRRN(void);
     unsigned distancia_entre(int ax, int ay, int bx, int by);
 
 // liberacion de memoria
