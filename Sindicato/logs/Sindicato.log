@@ -1,0 +1,46 @@
+[INFO] 21:02:06:491 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:02:06:492 Sindicato/(5152:5158): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 21:02:06:492 Sindicato/(5152:5158): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 21:03:59:683 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:03:59:683 Sindicato/(5152:5220): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 21:03:59:683 Sindicato/(5152:5220): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 21:04:19:200 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:04:19:200 Sindicato/(5152:5225): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 21:04:19:200 Sindicato/(5152:5225): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 21:04:39:771 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:26:15:239 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:26:15:240 Sindicato/(5152:5900): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 21:26:15:240 Sindicato/(5152:5900): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 21:26:26:250 Sindicato/(5152:5153): [SERVER] Conexion aceptada
+[INFO] 21:26:26:251 Sindicato/(5152:5915): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 21:26:26:251 Sindicato/(5152:5915): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 22:44:06:417 Sindicato/(8228:8229): [SERVER] Conexion aceptada
+[INFO] 22:44:06:425 Sindicato/(8228:8234): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:44:06:425 Sindicato/(8228:8234): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 22:47:06:60 Sindicato/(8228:8229): [SERVER] Conexion aceptada
+[INFO] 22:47:06:63 Sindicato/(8228:8289): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 22:47:06:63 Sindicato/(8228:8289): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 22:47:20:207 Sindicato/(8228:8229): [SERVER] Conexion aceptada
+[INFO] 22:47:20:216 Sindicato/(8228:8293): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:47:20:216 Sindicato/(8228:8293): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:59:38:328 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 23:59:38:336 Sindicato/(10142:10153): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 23:59:38:336 Sindicato/(10142:10153): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:59:50:878 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 23:59:50:887 Sindicato/(10142:10166): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 23:59:50:887 Sindicato/(10142:10166): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 00:27:10:840 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 00:27:10:849 Sindicato/(10142:10464): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 00:27:10:849 Sindicato/(10142:10464): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 00:27:12:710 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 00:27:12:723 Sindicato/(10142:10470): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 00:27:12:723 Sindicato/(10142:10470): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 00:29:35:729 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 00:29:35:766 Sindicato/(10142:10534): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 00:29:35:766 Sindicato/(10142:10534): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 00:29:38:240 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 00:29:38:267 Sindicato/(10142:10540): Se recibio el mensaje GUARDAR_PEDIDO UGIS 6
+[INFO] 00:29:38:267 Sindicato/(10142:10540): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 00:31:04:291 Sindicato/(10142:10143): [SERVER] Conexion aceptada
+[INFO] 00:31:04:299 Sindicato/(10142:10563): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 00:31:04:299 Sindicato/(10142:10563): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500

@@ -47,7 +47,7 @@ void* fhilo_servidor_clientes(void* v);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-rta_obtenerRestaurante* metadata_restaurante(int socket);
+void* recibir_respuesta(int socket);
 int conectar_con_sindicato();
 void inicio_de_listas_globales();
 
@@ -82,6 +82,7 @@ rta_obtenerRestaurante* metadata_rest;
 void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
 void delay (int number_of_seconds);
 int id_pedidos;
+int id;
 
 
 //LISTAS
