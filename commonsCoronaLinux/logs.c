@@ -59,10 +59,11 @@ char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s", op_code_to_string(tipo_mensaje));
 
-	char* nombre;
+	t_nombre* nombre;
+	restaurante_plato->cantElementos = restaurante_plato->nombres->elements_count;
 	for(int i = 0; i<restaurante_plato->cantElementos; i++){
 		nombre = list_get(restaurante_plato->nombres, i);
-		string_append_with_format(&string_mensaje, " %s", nombre);
+		string_append_with_format(&string_mensaje, " %s", nombre->nombre);
 	}
 
 	return string_mensaje;
@@ -106,16 +107,19 @@ char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje){
 
 char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaurante, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d ", op_code_to_string(tipo_mensaje),
-			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x, obtener_restaurante->posicion.y);
-	char* afinidad;
-	for(int i = 0; i<obtener_restaurante->cantCocineroAfinidad; i++){
-		afinidad = list_get(obtener_restaurante->cocineroAfinidad, i);
-		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad);
+	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d cantCocineros: %d ", op_code_to_string(tipo_mensaje),
+			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x,
+			obtener_restaurante->posicion.y, obtener_restaurante->cantCocineros);
+	t_nombre* afinidad;
+	obtener_restaurante->cantAfinidades = obtener_restaurante->afinidades->elements_count;
+	for(int i = 0; i<obtener_restaurante->cantAfinidades; i++){
+		afinidad = list_get(obtener_restaurante->afinidades, i);
+		string_append_with_format(&string_mensaje, "cocinero %d %s ", i,afinidad->nombre);
 	}
 	string_append(&string_mensaje, "recetas: ");
 	t_receta* receta;
-	for(int j = 0; j<obtener_restaurante->recetas; j++){
+	obtener_restaurante->cantRecetas = obtener_restaurante->recetas->elements_count;
+	for(int j = 0; j<obtener_restaurante->cantRecetas; j++){
 		receta = list_get(obtener_restaurante->recetas, j);
 		string_append_with_format(&string_mensaje, "%s - precio: %d", receta->receta.nombre, receta->precio);
 	}
@@ -141,6 +145,7 @@ char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_c
 	string_append_with_format(&string_mensaje, "%s %s %s", op_code_to_string(tipo_mensaje),
 			consultar_pedido->restaurante, est_pedido_to_string(consultar_pedido->estadoPedido));
 	t_elemPedido* plato;
+	consultar_pedido->cantPlatos = consultar_pedido->platos->elements_count;
 	for(int i = 0; i<consultar_pedido->cantPlatos; i++){
 		plato = list_get(consultar_pedido->platos, i);
 		string_append_with_format(&string_mensaje, "%s - pedidos: %d listos: %d", plato->comida.nombre, plato->cantTotal, plato->cantHecha);
@@ -163,8 +168,9 @@ char* est_pedido_to_string(est_pedido estado){
 
 char* rta_obtener_pedido_to_string(rta_obtenerPedido* obtener_pedido, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s estado: %s", op_code_to_string(tipo_mensaje), est_pedido_to_string(obtener_pedido->estadoPedido));
+	string_append_with_format(&string_mensaje, "%s estado:%s ", op_code_to_string(tipo_mensaje), est_pedido_to_string(obtener_pedido->estadoPedido));
 	t_elemPedido* elem_pedido;
+	obtener_pedido->cantPedidos = obtener_pedido->infoPedidos->elements_count;
 	for(int i = 0; i<obtener_pedido->cantPedidos; i++){
 		elem_pedido = list_get(obtener_pedido->infoPedidos, i);
 		string_append_with_format(&string_mensaje, "%s listo:%d pedido:%d ", elem_pedido->comida.nombre,
@@ -185,6 +191,7 @@ char* rta_obtener_receta_to_string(rta_obtenerReceta* obtener_receta, op_code ti
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s ", op_code_to_string(tipo_mensaje));
 	t_paso* paso;
+	obtener_receta->cantPasos = obtener_receta->pasos->elements_count;
 	for(int i = 0; i<obtener_receta->cantPasos; i++){
 		paso = list_get(obtener_receta->pasos, i);
 		string_append_with_format(&string_mensaje, "%s duracion:%d", paso->paso.nombre, paso->duracion);

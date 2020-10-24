@@ -122,6 +122,11 @@ char* op_code_to_string(op_code tipo_mensaje){
 	case RTA_OBTENER_RECETA:
 		return MENSAJE_RTA_OBTENER_RECETA;
 		break;
+	case RTA_POSICION_CLIENTE:
+		return MENSAJE_RTA_POSICION_CLIENTE;
+		break;
+	case ERROR:
+		return MENSAJE_ERROR;
 	}
 	return NULL;
 }
@@ -287,14 +292,9 @@ void free_nombre(t_nombre* mensaje){
 }
 
 void free_rta_obtener_restaurante(rta_obtenerRestaurante* mensaje){
-	list_destroy_and_destroy_elements(mensaje->cocineroAfinidad, (void*) free_cocineroAfinidad);
+	list_destroy_and_destroy_elements(mensaje->afinidades, (void*) free_nombre);
 	list_destroy_and_destroy_elements(mensaje->recetas, (void*) free_receta);
 	free(mensaje);
-}
-
-void free_cocineroAfinidad(t_cocineroAfinidad* cocineroAfinidad){
-	free(cocineroAfinidad->afinidad.nombre);
-	free(cocineroAfinidad);
 }
 
 void free_receta(t_receta* receta){
