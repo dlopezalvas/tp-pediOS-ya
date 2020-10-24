@@ -85,7 +85,7 @@ void procesar_mensaje(t_mensaje* mensaje_recibido){
 void seleccionar_proceso(){
 	char* linea;
 	do {
-		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato: \n");
+		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato \n");
 		linea = readline(">");
 		string_to_upper(linea);
 	}while (!validar_proceso(linea));

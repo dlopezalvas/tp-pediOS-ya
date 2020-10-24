@@ -477,9 +477,9 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 	t_restaurante* restaurante = buscarRestaurante(obtener_pedido->nombre.nombre);
 	t_segmento* pedido;
 
-	t_mensaje* mensaje_a_enviar;
+	t_mensaje* mensaje_a_enviar = malloc(sizeof(t_mensaje));
 
-	obtener_pedido->id = config_get_int_value(config_comanda, ID_COMANDA);
+	mensaje_a_enviar->id = config_get_int_value(config_comanda, ID_COMANDA);
 
 	if(restaurante != NULL){
 		pedido = buscarPedido(obtener_pedido->id, restaurante);
@@ -542,13 +542,17 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			mensaje_a_enviar->parametros = rtaObtenerPedido;
 
 		}else{
+			puts("no existe pedido");
 			mensaje_a_enviar->tipo_mensaje = ERROR;
 		}
 	}else{
+		puts("no existe restaurante");
 		mensaje_a_enviar->tipo_mensaje = ERROR;
 	}
 
 	enviar_mensaje(mensaje_a_enviar, mensaje_a_procesar->socket_cliente);
+	loggear_mensaje_enviado(mensaje_a_enviar->parametros, mensaje_a_enviar->tipo_mensaje, log_comanda);
+
 	free_struct_mensaje(mensaje_a_enviar->parametros, mensaje_a_enviar->tipo_mensaje);
 	free(mensaje_a_enviar);
 	free_struct_mensaje(obtener_pedido, OBTENER_PEDIDO);
@@ -576,7 +580,12 @@ t_restaurante* buscarRestaurante(char* nombre){
 t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante){
 	t_segmento* pedido;
 
+	puts("id pedido");
+	puts(string_itoa(id_pedido));
+
 	bool _mismoPedido(t_segmento* segmento){
+		puts("buscando en lista");
+		puts(string_itoa(segmento->id_pedido));
 		return id_pedido == segmento->id_pedido;
 	}
 	pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);

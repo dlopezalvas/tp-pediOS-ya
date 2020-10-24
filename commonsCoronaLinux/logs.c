@@ -168,7 +168,7 @@ char* est_pedido_to_string(est_pedido estado){
 
 char* rta_obtener_pedido_to_string(rta_obtenerPedido* obtener_pedido, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s estado: %s", op_code_to_string(tipo_mensaje), est_pedido_to_string(obtener_pedido->estadoPedido));
+	string_append_with_format(&string_mensaje, "%s estado:%s ", op_code_to_string(tipo_mensaje), est_pedido_to_string(obtener_pedido->estadoPedido));
 	t_elemPedido* elem_pedido;
 	obtener_pedido->cantPedidos = obtener_pedido->infoPedidos->elements_count;
 	for(int i = 0; i<obtener_pedido->cantPedidos; i++){
