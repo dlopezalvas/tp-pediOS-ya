@@ -441,16 +441,16 @@ t_restaurante_y_plato* deserializar_restaurante_y_plato(void* buffer){
 
 //rta obtener restaurante
 
-t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante){ //TODO
+t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaurante){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	obtenerRestaurante->afinidades = obtenerRestaurante->afinidades->elements_count;
+	obtenerRestaurante->cantAfinidades = obtenerRestaurante->afinidades->elements_count;
 	obtenerRestaurante->cantRecetas = obtenerRestaurante->recetas->elements_count;
 
 	int size_recetas = tamanio_lista_recetas(obtenerRestaurante->recetas);
-	int size_cocineroAfinidad = tamanio_lista_nombre(obtenerRestaurante->recetas);
+	int size_Afinidades = tamanio_lista_nombre(obtenerRestaurante->afinidades);
 
-	buffer -> size = size_recetas + size_cocineroAfinidad + sizeof(uint32_t) * 6;
+	buffer -> size = size_recetas + size_Afinidades + sizeof(uint32_t) * 6;
 
 	void* stream = malloc(buffer -> size);
 	int offset = 0;
@@ -461,7 +461,7 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 	t_nombre* afinidad;
 	for(int i = 0; i < obtenerRestaurante->cantAfinidades; i++){
 		afinidad = list_get(obtenerRestaurante->afinidades, i);
-
+		afinidad->largo_nombre = strlen(afinidad->nombre);
 		memcpy(stream + offset, &afinidad->largo_nombre, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 		memcpy(stream + offset, afinidad->nombre, afinidad->largo_nombre);
@@ -482,14 +482,14 @@ t_buffer* buffer_rta_obtener_restaurante(rta_obtenerRestaurante* obtenerRestaura
 		memcpy(stream + offset, receta->receta.nombre, receta->receta.largo_nombre);
 		offset += receta->receta.largo_nombre;
 	}
-
-	memcpy(stream + offset, &obtenerRestaurante->cantHornos, sizeof(uint32_t));
+	uint32_t cantHornos = obtenerRestaurante->cantHornos;
+	memcpy(stream + offset, &cantHornos, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &obtenerRestaurante->posicion.x, sizeof(uint32_t));
+	memcpy(stream + offset, &(obtenerRestaurante->posicion.x), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &obtenerRestaurante->posicion.y, sizeof(uint32_t));
+	memcpy(stream + offset, &(obtenerRestaurante->posicion.y), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &obtenerRestaurante->cantCocineros, sizeof(uint32_t));
+	memcpy(stream + offset, &(obtenerRestaurante->cantCocineros), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	buffer->stream = stream;
@@ -727,7 +727,7 @@ t_coordenadas* deserializar_posicion(void* buffer){
 }
 
 //rta_obtenerReceta
-t_buffer* buffer_rta_obtener_receta(rta_obtenerReceta* obtenerReceta){ //TODO
+t_buffer* buffer_rta_obtener_receta(rta_obtenerReceta* obtenerReceta){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 	obtenerReceta->cantPasos = obtenerReceta->pasos->elements_count;
@@ -814,7 +814,7 @@ int tamanio_lista_pasos(t_list* lista_de_pasos){
 	return tamanio;
 }
 
-int tamanio_lista_recetas(t_list* lista_recetas){ //TODO unificar t_paso con t_receta
+int tamanio_lista_recetas(t_list* lista_recetas){
 	int tamanio = 0;
 
 	t_receta* receta;

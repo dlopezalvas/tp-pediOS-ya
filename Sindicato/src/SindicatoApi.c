@@ -2,6 +2,24 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+void internal_api_create_folder(char* path){
+	struct stat st = {0};
+
+	/* Validate if the folder exists to create the folder */
+	if(stat(path, &st) == -1){
+		if(mkdir(path,0777) == 0){
+			log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta creada: %s",path);
+		}
+	}else{
+		log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta existente: %s", path);
+	}
+}
+
+char* internal_api_build_path(char* path, char* toAppend){
+	char* pathBuilded = string_duplicate(path);
+	string_append(&pathBuilded, toAppend);
+	return pathBuilded;
+}
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
@@ -25,9 +43,10 @@ void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
 }
 
 /* Server functions */
-void sindicato_api_send_response_of_operation(t_responseMessage* response){
-	//loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
-	enviar_mensaje(response->message, response->socket);
+void sindicato_api_send_response_of_operation(t_responseMessage* response, int socket_cliente){
+	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
+	enviar_mensaje(response->message, socket_cliente);
+	//enviar_mensaje(response->message, response->message);
 
 	//ya estoy habilitado para hacer los free();
 }
@@ -36,17 +55,15 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	/* Initialize of pedido structure */
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
 	platos->nombres = list_create();
-
 	t_nombre* plato = malloc(sizeof(t_nombre));
-	plato->nombre = "Milanesa";
-	puts(plato->nombre);
-
-	/*t_nombre* restaurante = consultaPatos;
-	log_info(sindicatoLog, restaurante->nombre);*/
 
 	/* DELETE THIS: datos dummies solo para TEST */
+	plato->nombre = "Milanesa";
+	log_info(sindicatoDebugLog, plato->nombre);
+
+
 	list_add(platos->nombres, plato);
-	platos->cantElementos = 1;
+	platos->cantElementos = platos->nombres->elements_count;
 
 	return platos;
 }
@@ -91,7 +108,7 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 	pedidoElem->cantHecha = 1;
 	pedidoElem->cantTotal = 1;
 	pedidoElem->comida.nombre = "Milanesa";
-	puts(pedidoElem->comida.nombre);
+	log_info(sindicatoDebugLog, pedidoElem->comida.nombre);
 
 	pedido->cantPedidos = 1;
 	pedido->estadoPedido = PENDIENTE;
@@ -103,31 +120,27 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	/* Initialize of restaurante structure */
 	rta_obtenerRestaurante* restauranteInfo = malloc(sizeof(rta_obtenerRestaurante));
-	restauranteInfo->cocineroAfinidad = list_create();
+	restauranteInfo->afinidades = list_create();
 	restauranteInfo->recetas = list_create();
 
-	/* List  */
+	/* Elements of list */
 	t_receta* recetaPrecio = malloc(sizeof(t_receta));
-
-	t_cocineroAfinidad* afinidadCocinero = malloc(sizeof(t_cocineroAfinidad));
+	t_nombre* afinidad = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	recetaPrecio->receta.nombre = malloc(strlen("Milanesa")+1);
 	recetaPrecio->receta.nombre = "Milanesa";
+	recetaPrecio->precio = 500;
 
-	afinidadCocinero->afinidad.nombre = malloc(strlen("Empanadas")+1);
-	afinidadCocinero->afinidad.nombre = "Empanadas";
+	afinidad->nombre = "Empanadas";
 
-	list_add(restauranteInfo->recetas,recetaPrecio);
-	list_add(restauranteInfo->cocineroAfinidad, afinidadCocinero);
-
-	puts(string_itoa(restauranteInfo->cocineroAfinidad->elements_count));
-
-	restauranteInfo->cantCocineroAfinidad = 1;
-	restauranteInfo->cantRecetas = 1;
-	restauranteInfo->cantHornos = 1;
+	restauranteInfo->cantAfinidades = 1;
+	list_add(restauranteInfo->afinidades, afinidad);
 	restauranteInfo->posicion.x = 1;
 	restauranteInfo->posicion.y = 2;
+	restauranteInfo->cantRecetas = 1;
+	list_add(restauranteInfo->recetas,recetaPrecio);
+	restauranteInfo->cantHornos = 1;
+	restauranteInfo->cantCocineros = 2;
 
 	return restauranteInfo;
 }
@@ -142,6 +155,7 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 }
 
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
+	//t_nombre* asd;
 	rta_obtenerReceta* receta = malloc(sizeof(rta_obtenerReceta));
 	receta->pasos = list_create();
 
@@ -150,10 +164,8 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 	paso->paso.nombre = "Milanesear";
 	puts(paso->paso.nombre);
 
-	//t_nombre* asd;
-
 	/* DELETE THIS: datos dummies solo para TEST */
-	list_add(receta->pasos,"Milanesa");
+	list_add(receta->pasos,paso);
 	receta->cantPasos = 1;
 
 	return receta;
@@ -170,7 +182,27 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 
 /* Main functions */
 void sindicato_api_afip_initialize(){
-	//char* mountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
 
-	//TODO: montar el FS
+	/* Create mount point of the FS */
+	internal_api_create_folder(sindicatoMountPoint);
+
+	/* Create folder "Metadata" in {mount_point} */
+	char* sindicatoMetadataPath = internal_api_build_path(sindicatoMountPoint, "/Metadata");
+	internal_api_create_folder(sindicatoMetadataPath);
+	free(sindicatoMetadataPath);
+
+	/* Create folder "Files" in {mount_point} */
+	char* sindicatoFilesPath = internal_api_build_path(sindicatoMountPoint, "/Files");
+	internal_api_create_folder(sindicatoFilesPath);
+	free(sindicatoFilesPath);
+
+	/* Create folder "Receta" in {mount_point}/Files */
+	char* sindicatoRecetaPath = internal_api_build_path(sindicatoMountPoint, "/Files/Receta");
+	internal_api_create_folder(sindicatoRecetaPath);
+	free(sindicatoRecetaPath);
+
+	/* Create folder "Restaurante" in {mount_point}/Files */
+	char* sindicatoRestaurantePath = internal_api_build_path(sindicatoMountPoint, "/Files/Restaurante");
+	internal_api_create_folder(sindicatoRestaurantePath);
+	free(sindicatoRestaurantePath);
 }
