@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
 	// modos de debug
 		modo_noComanda = true;
 		modo_noRest = true;
-		modo_mock = true;
+		modo_mock = false;
 
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;
@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
 }
 
 void mock_mensajes(void) {
+	log_debug(logger_planificacion, "[MOCKER] Simulando MockDonalds...");
 	t_restaurante* restaurante = malloc(sizeof(t_restaurante));
     restaurante->nombre = "MockDonalds";
     restaurante->pos_x = 5;
@@ -76,6 +77,7 @@ void mock_mensajes(void) {
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_restaurantes);
 
+	log_debug(logger_planificacion, "[MOCKER] Simulando cliente 77...");
 	t_cliente* cliente = malloc(sizeof(t_cliente));
     cliente->id = 77;
     cliente->pos_x = 10;
@@ -88,11 +90,13 @@ void mock_mensajes(void) {
     pthread_mutex_lock(cliente->mutex);
 
     pthread_mutex_lock(&mutex_lista_clientes);
+	log_debug(logger_planificacion, "[MOCKER] Agregando cliente 77 a la lista...");
     list_add(clientes, cliente);
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_clientes);
 
-	planif_nuevoPedido(808);
+	log_debug(logger_planificacion, "[MOCKER] Disparando planif. nuevo pedido...");
+	planif_nuevoPedido(77);
 
 	return;
 }

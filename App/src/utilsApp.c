@@ -192,15 +192,15 @@ void planif_encolar_READY(t_pedido* pedido) {
 }
 
 void planif_encolar_BLOCK(t_pedido* pedido) {
-    pthread_mutex_lock(&mutex_pedidosEXEC);
     pthread_mutex_lock(&mutex_cola_BLOCK);
+    pthread_mutex_lock(&mutex_pedidosEXEC);
     log_debug(logger_planificacion, "[PEDIDO_%2i] Desencolando de EXEC...", pedido->pedido_id);
     search_remove_return(pedidosEXEC, pedido);
     pedido->pedido_estado = BLOCK;
     log_debug(logger_planificacion, "[PEDIDO_%2i] Encolando en BLOCK...", pedido->pedido_id);
     list_add(cola_BLOCK, pedido);
-    pthread_mutex_unlock(&mutex_pedidosEXEC);
     pthread_mutex_unlock(&mutex_cola_BLOCK);
+    pthread_mutex_unlock(&mutex_pedidosEXEC);
     sem_post(&semaforo_vacantesEXEC);
 }
 
@@ -261,6 +261,7 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
         }
 
         if (SJF_o_HRRN()) {
+            pedido_seleccionado->sjf_ultRafaga_est = estimar_rafaga(pedido_seleccionado);
             pedido_seleccionado->sjf_ultRafaga_real = 0;
         }
 
@@ -332,31 +333,42 @@ double respRatio(t_pedido* pedido) {
     return 1 + (pedido->hrrn_tiempoEsperaREADY) / estimar_rafaga(pedido);
 }
 
-void planif_nuevoPedido(int id_pedido) {
+void planif_nuevoPedido(int id_cliente) { // TODO: ojo
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
 
-    log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido: %i", id_pedido);
+    log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido");
 
-    cliente = get_cliente(id_pedido);
+    cliente = get_cliente_porSuID(id_cliente);
+    log_debug(logger_planificacion, "[PLANIF_NP] Puntero al cliente: %x", cliente);
+
+    if (!cliente) {
+        // TODO: error handling
+        log_debug(logger_planificacion, "[PLANIF_NP] No existe puntero al cliente %i", id_cliente);
+        log_debug(logger_planificacion, "[PLANIF_NP] Aca hay que retornar ERROR pero no esta hecho todavia");
+        return;
+    }
     log_debug(logger_planificacion, "[PLANIF_NP] Cliente: %i", cliente->id);
 
     restaurante = cliente->restaurante_seleccionado; // TODO
+    if (!restaurante) {
+        // TODO: error handling, ya esta hecho en otras partes! abstraer
+    }
     log_debug(logger_planificacion, "[PLANIF_NP] Restaurante: %s", restaurante->nombre);
 
     pedidoNuevo = malloc(sizeof(t_pedido));
     pedidoNuevo->cliente = cliente;
     pedidoNuevo->restaurante = restaurante;
-    pedidoNuevo->pedido_id = id_pedido;
+    pedidoNuevo->pedido_id = cliente->pedido_id;
 
     pedidoNuevo->sjf_ultRafaga_est = cfval_estimacionInicial;
-    pedidoNuevo->sjf_ultRafaga_real = 0; // TODO: esto esta ok? hmmmmmm
+    pedidoNuevo->sjf_ultRafaga_real = cfval_estimacionInicial;
     pedidoNuevo->hrrn_tiempoEsperaREADY = 0;
 
     pedidoNuevo->mutex_clock = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
-    pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado?
+    pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado? porque despues medio que por defecto anda deslockeado D:
     log_debug(logger_planificacion, "[PLANIF_NP] Mutex de clock inicializado");
 
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
@@ -373,18 +385,22 @@ void planif_nuevoPedido(int id_pedido) {
 
 t_cliente* get_cliente_porSuID(int id_cliente) {
     t_cliente* cliente;
+    log_debug(logger_planificacion, "[PLANIF_NP] Lockeando mutex_lista_clientes...");
     pthread_mutex_lock(&mutex_lista_clientes);
     for (
         unsigned index_cli = 0;
         index_cli < list_size(clientes);
         index_cli++
     ) {
+        log_debug(logger_planificacion, "[PLANIF_NP] Cliente de indice %i...", index_cli);
         cliente = list_get(clientes, index_cli);
         if (cliente->id == id_cliente) {
+            log_debug(logger_planificacion, "[PLANIF_NP] \tEncontrado!");
             pthread_mutex_unlock(&mutex_lista_clientes);
             return cliente;
         }
     }
+    log_debug(logger_planificacion, "[PLANIF_NP] No se encontro cliente, se retorna NULL");
     pthread_mutex_unlock(&mutex_lista_clientes);
     return NULL;
 }
@@ -1029,7 +1045,6 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
             ((t_nombre*)list_get(restaurantes->nombres, index_rests))->nombre
         );
     }
-    restaurantes->cantElementos = list_size(restaurantes->nombres);
     log_debug(
         logger_mensajes,
         "[MENSJS]: Cant. de elems.: %i",
@@ -1046,6 +1061,7 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
         logger_mensajes,
         "[MENSJS]: Mensaje enviado"
     );
+    loggear_mensaje_enviado(mensaje, mensaje->tipo_mensaje, logger_mensajes);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }
@@ -1137,7 +1153,6 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
 
     mensaje->tipo_mensaje = CONSULTAR_PLATOS;
     nombre_rest_consultado->nombre="";
-    nombre_rest_consultado->largo_nombre=0;
     mensaje->parametros = nombre_rest_consultado;
 
     pthread_mutex_lock(restaurante_consultado->mutex);

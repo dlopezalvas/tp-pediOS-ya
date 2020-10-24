@@ -129,8 +129,8 @@ extern int errno;
         t_restaurante* restaurante;
         t_repartidor* repartidor;
         int pedido_id;
-        unsigned sjf_ultRafaga_real; // TODO: valor inicial? hmmmmmmmm
-        unsigned sjf_ultRafaga_est;
+        unsigned sjf_ultRafaga_real;
+        double sjf_ultRafaga_est;
         unsigned hrrn_tiempoEsperaREADY;
         t_estado pedido_estado;
         pthread_mutex_t* mutex_EXEC;
@@ -156,7 +156,7 @@ extern int errno;
     pthread_mutex_t mutex_cola_READY;
     void planif_encolar_READY(t_pedido* pedido);
 
-    t_list* cola_BLOCK; // esta cola es solo para esperar los platos no terminados, no para el descanso
+    t_list* cola_BLOCK; // esta cola es para esperar los platos no terminados y para el descanso
     pthread_mutex_t mutex_cola_BLOCK;
     void planif_encolar_BLOCK(t_pedido* pedido);
 
