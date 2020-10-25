@@ -6,11 +6,11 @@
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 /* Console functions */
-void sindicato_api_crear_restaurante(char* nombre, int cantCocineros, int* posXY, char** afinidades, char** platos, int* precioPlatos, int cantHornos);
-void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos);
+void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos);
+void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos);
 
 /* Server functions */
-void sindicato_api_send_response_of_operation(t_responseMessage* response, int socket_cliente);
+void sindicato_api_send_response_of_operation(t_responseMessage* response);
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* message);
 uint32_t* sindicato_api_guardar_pedido(void* pedido);
 uint32_t* sindicato_api_guardar_plato(void* pedido);

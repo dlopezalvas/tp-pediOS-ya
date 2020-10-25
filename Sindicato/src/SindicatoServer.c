@@ -9,7 +9,7 @@ void internal_process_request(int cod_op, int socket_client){
 	uint32_t id_proceso;
 
 	/* Response variables */
-	int operationResult = 0;
+	uint32_t* operationResult = 0;
 	rta_obtenerRestaurante* restaurante;
 	rta_obtenerReceta* receta;
 	rta_obtenerPedido* pedido;
@@ -95,7 +95,7 @@ void internal_process_request(int cod_op, int socket_client){
 	}
 
 	if(sendMessageFlag == ENVIAR_RESPUESTA)
-		sindicato_api_send_response_of_operation(responseMessage, socket_client);
+		sindicato_api_send_response_of_operation(responseMessage);
 
 	//TODO: Liberar memoraia de todos los mensajes.
 }
@@ -113,6 +113,8 @@ void internal_serve_client(int socket){
 		if(cod_op == POSICION_CLIENTE){
 			//TODO:Sincronizar log
 			log_info(sindicatoDebugLog, "[SERVER] Handshake Cliente");
+
+			///TODO: enviar mensaje que no voy a utilizar el socket de escucha
 		}
 		pthread_exit(NULL);
 	}

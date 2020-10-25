@@ -2,34 +2,61 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+void internal_api_createFileSystemFolders(){
+	/* Create mount point of the FS */
+	sindicato_utils_create_folder(sindicatoMountPoint, false);
 
+	/* Create folder "Metadata" in {mount_point} */
+	char* sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
+	sindicato_utils_create_folder(sindicatoMetadataPath, false);
+	free(sindicatoMetadataPath);
+
+	/* Create folder "Files" in {mount_point} */
+	char* sindicatoFilesPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files");
+	sindicato_utils_create_folder(sindicatoFilesPath, false);
+	free(sindicatoFilesPath);
+
+	/* Create folder "Receta" in {mount_point}/Files */
+	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Receta");
+	sindicato_utils_create_folder(sindicatoRecetaPath, false);
+	free(sindicatoRecetaPath);
+
+	/* Create folder "Restaurante" in {mount_point}/Files */
+	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurante");
+	sindicato_utils_create_folder(sindicatoRestaurantePath, false);
+	free(sindicatoRestaurantePath);
+}
+
+void internal_api_initialize_metadata(){
+	char* path_metadata = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
+
+	t_config* config_metadata = config_create(path_metadata);
+
+	metadata_fs = malloc(sizeof(t_metadata));
+
+	metadata_fs->block_size = config_get_int_value(config_metadata, "BLOCK_SIZE");
+	metadata_fs->blocks = config_get_int_value(config_metadata, "BLOCKS");
+	metadata_fs->magic_number = config_get_string_value(config_metadata, "MAGIC_NUMBER");
+
+	config_destroy(config_metadata);
+	free(path_metadata);
+}
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 /* Console functions */
-void sindicato_api_crear_restaurante(char* nombre, int cantCocineros, int* posXY, char** afinidadCocinero, char** platos, int* precioPlatos, int cantHornos){
-	printf("Creo el restaurante\n");
-	printf("%s\n", nombre);
-	printf("%s\n", cantCocineros);
-	printf("%s\n", posXY);
-	printf("%s\n", afinidadCocinero);
-	printf("%s\n", platos);
-	printf("%s\n", precioPlatos);
-	printf("%s\n", cantHornos);
+void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
+	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 }
 
-void sindicato_api_crear_receta(char* nombre, char** pasos, int* tiempoPasos){
-	printf("Creo la receta\n");
-	printf("%s\n", nombre);
-	printf("%s\n", pasos);
-	printf("%s\n", tiempoPasos);
+void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
+	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 }
 
 /* Server functions */
-void sindicato_api_send_response_of_operation(t_responseMessage* response, int socket_cliente){
+void sindicato_api_send_response_of_operation(t_responseMessage* response){
 	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
-	enviar_mensaje(response->message, socket_cliente);
-	//enviar_mensaje(response->message, response->message);
+	enviar_mensaje(response->message, response->socket);
 
 	//ya estoy habilitado para hacer los free();
 }
@@ -166,26 +193,7 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 /* Main functions */
 void sindicato_api_afip_initialize(){
 
-	/* Create mount point of the FS */
-	sindicato_utils_create_folder(sindicatoMountPoint, false);
+	internal_api_createFileSystemFolders();
 
-	/* Create folder "Metadata" in {mount_point} */
-	char* sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
-	sindicato_utils_create_folder(sindicatoMetadataPath, false);
-	free(sindicatoMetadataPath);
-
-	/* Create folder "Files" in {mount_point} */
-	char* sindicatoFilesPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files");
-	sindicato_utils_create_folder(sindicatoFilesPath, false);
-	free(sindicatoFilesPath);
-
-	/* Create folder "Receta" in {mount_point}/Files */
-	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Receta");
-	sindicato_utils_create_folder(sindicatoRecetaPath, false);
-	free(sindicatoRecetaPath);
-
-	/* Create folder "Restaurante" in {mount_point}/Files */
-	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurante");
-	sindicato_utils_create_folder(sindicatoRestaurantePath, false);
-	free(sindicatoRestaurantePath);
+	internal_api_initialize_metadata();
 }

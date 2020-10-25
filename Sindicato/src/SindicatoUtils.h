@@ -14,6 +14,12 @@ typedef struct{
 	t_mensaje* message;
 }t_responseMessage;
 
+typedef struct{
+	uint32_t block_size;
+	uint32_t blocks;
+	char* magic_number;
+}t_metadata;
+
 /* Global variables */
 t_log* sindicatoLog;
 t_log* sindicatoDebugLog;
@@ -21,6 +27,7 @@ t_config* sindicatoConfig;
 uint32_t sindicatoProcessId;
 int sindicatoPort;
 char* sindicatoMountPoint;
+t_metadata* metadata_fs;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 

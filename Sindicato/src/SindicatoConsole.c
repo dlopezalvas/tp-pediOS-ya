@@ -43,23 +43,23 @@ void internal_console_execute_command(char** commandLine){
 	}
 
 	if(string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RESTAURANTE)){
-		// TODO: pasar parametros
 		sindicato_api_crear_restaurante(commandLine[1],commandLine[2],commandLine[3],commandLine[4],commandLine[5],commandLine[6],commandLine[7]);
 		return;
 
 	}
 
 	if(string_equals_ignore_case(commandLine[0],COMMAND_CREAR_RECETA)){
-		// TODO: pasar parametros
 		sindicato_api_crear_receta(commandLine[1],commandLine[2],commandLine[3]);
 		return;
 	}
 
 	if(string_equals_ignore_case(commandLine[0],COMMAND_HELP)){
+		printf("*** Comandos validos ***\n");
 		printf("CrearRestaurante [NOMBRE] [CANTIDAD_COCINEROS] [POSICION] [AFINIDAD_COCINEROS] [PLATOS] [PRECIO_PLATOS] [CANTIDAD_HORNOS]\n");
 		printf("CrearReceta [NOMBRE] [PASOS] [TIEMPO_PASOS]\n");
 		printf("exit\n");
 		printf("help\n");
+		printf("Type help for more comands\n");
 		return;
 	}
 }
