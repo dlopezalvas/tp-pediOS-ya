@@ -2,24 +2,7 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
-void internal_api_create_folder(char* path){
-	struct stat st = {0};
 
-	/* Validate if the folder exists to create the folder */
-	if(stat(path, &st) == -1){
-		if(mkdir(path,0777) == 0){
-			log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta creada: %s",path);
-		}
-	}else{
-		log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta existente: %s", path);
-	}
-}
-
-char* internal_api_build_path(char* path, char* toAppend){
-	char* pathBuilded = string_duplicate(path);
-	string_append(&pathBuilded, toAppend);
-	return pathBuilded;
-}
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
@@ -184,25 +167,25 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 void sindicato_api_afip_initialize(){
 
 	/* Create mount point of the FS */
-	internal_api_create_folder(sindicatoMountPoint);
+	sindicato_utils_create_folder(sindicatoMountPoint, false);
 
 	/* Create folder "Metadata" in {mount_point} */
-	char* sindicatoMetadataPath = internal_api_build_path(sindicatoMountPoint, "/Metadata");
-	internal_api_create_folder(sindicatoMetadataPath);
+	char* sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
+	sindicato_utils_create_folder(sindicatoMetadataPath, false);
 	free(sindicatoMetadataPath);
 
 	/* Create folder "Files" in {mount_point} */
-	char* sindicatoFilesPath = internal_api_build_path(sindicatoMountPoint, "/Files");
-	internal_api_create_folder(sindicatoFilesPath);
+	char* sindicatoFilesPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files");
+	sindicato_utils_create_folder(sindicatoFilesPath, false);
 	free(sindicatoFilesPath);
 
 	/* Create folder "Receta" in {mount_point}/Files */
-	char* sindicatoRecetaPath = internal_api_build_path(sindicatoMountPoint, "/Files/Receta");
-	internal_api_create_folder(sindicatoRecetaPath);
+	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Receta");
+	sindicato_utils_create_folder(sindicatoRecetaPath, false);
 	free(sindicatoRecetaPath);
 
 	/* Create folder "Restaurante" in {mount_point}/Files */
-	char* sindicatoRestaurantePath = internal_api_build_path(sindicatoMountPoint, "/Files/Restaurante");
-	internal_api_create_folder(sindicatoRestaurantePath);
+	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurante");
+	sindicato_utils_create_folder(sindicatoRestaurantePath, false);
 	free(sindicatoRestaurantePath);
 }

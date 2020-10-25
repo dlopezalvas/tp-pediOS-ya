@@ -2,7 +2,6 @@
 #define SINDICATOAPI_H_
 
 #include "SindicatoUtils.h"
-#include <sys/stat.h>
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 

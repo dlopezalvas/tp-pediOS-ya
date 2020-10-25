@@ -12,6 +12,9 @@ int main(void) {
 void sindicato_initialize(){
 	sindicatoConfig = leer_config(SINDICATO_PATH_CONFIG);
 
+	/* Generates the logs folder */
+	sindicato_utils_create_folder(config_get_string_value(sindicatoConfig, "LOGS_PATH"), true);
+
 	sindicatoLog = iniciar_logger(sindicatoConfig);
 	sindicatoDebugLog = sindicato_utils_iniciar_debug_logger(sindicatoConfig);
 
