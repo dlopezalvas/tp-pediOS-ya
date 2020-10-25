@@ -50,5 +50,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-Sindicato/logs/DebugSindicato.log
-Sindicato/logs/Sindicato.log
+.vscode/settings.json
