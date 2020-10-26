@@ -13,6 +13,9 @@ void configurar_ip_puerto(){
 	conexion->puerto = config_get_int_value(config_cliente, PUERTO);
 	conexion->ip = config_get_string_value(config_cliente, IP);
 	id_cliente = config_get_int_value(config_cliente, ID_CLIENTE);
+	posicion.x = config_get_int_value(config_cliente, POSICION_X);
+	posicion.y = config_get_int_value(config_cliente, POSICION_Y);
+
 }
 
 void iniciar_consola(){
@@ -264,8 +267,8 @@ void conexionRecepcion(){
 		handshake->id = id_cliente;
 		t_coordenadas* posicion_cliente = malloc(sizeof(t_coordenadas));
 
-		posicion_cliente->x = config_get_int_value(config_cliente, POSICION_X);
-		posicion_cliente->y = config_get_int_value(config_cliente, POSICION_Y);
+		posicion_cliente->x = posicion.x;
+		posicion_cliente->y = posicion.y;
 
 		handshake->parametros = posicion_cliente;
 
