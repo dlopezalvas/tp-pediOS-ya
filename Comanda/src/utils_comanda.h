@@ -25,6 +25,7 @@
 t_config* config_comanda;
 t_log* log_comanda;
 
+
 t_list* hilos_clientes;
 pthread_mutex_t hilos_clientes_mtx;
 
@@ -90,6 +91,10 @@ void* memoria_swap;
 pthread_mutex_t memoria_principal_mtx;
 pthread_mutex_t memoria_swap_mtx;
 
+int puntero_clock;
+pthread_mutex_t puntero_clock_mtx;
+
+
 void iniciar_comanda();
 void process_request(int cod_op, int cliente_fd);
 void serve_client(int socket);
@@ -119,5 +124,16 @@ int memoria_disponible_mp();
 
 void liberar_pagina(t_pagina* pagina);
 void free_pagina(t_pagina* pagina);
+
+int eleccion_victima_clock_mejorado();
+int eleccion_victima_LRU();
+bool esta_en_MP(t_pagina* pagina);
+void liberar_frame(t_pagina* victima);
+
+void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*));
+bool uso_modificado_cero(t_pagina* pagina);
+bool uso_cero_modificado_uno(t_pagina* pagina);
+void hacer_nada(void* algo); //jaja salu2
+void cambiar_uso_cero(t_pagina* pagina);
 
 #endif /* UTILS_COMANDA_H_ */
