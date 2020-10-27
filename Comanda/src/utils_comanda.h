@@ -9,6 +9,8 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include <semaphore.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
 #include <../commonsCoronaLinux/logs.h>
@@ -96,6 +98,7 @@ pthread_mutex_t puntero_clock_mtx;
 
 
 void iniciar_comanda();
+void inicializar_swap();
 void process_request(int cod_op, int cliente_fd);
 void serve_client(int socket);
 void esperar_cliente(int servidor);
@@ -121,6 +124,7 @@ int guardar_en_mp(t_plato* plato);
 int seleccionar_frame_mp();
 void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista);
 int memoria_disponible_mp();
+void traer_de_swap(t_pagina* pagina);
 
 void liberar_pagina(t_pagina* pagina);
 void free_pagina(t_pagina* pagina);

@@ -23,8 +23,7 @@ void iniciar_comanda(){
 	memoria_principal = malloc(config_get_int_value(config_comanda, TAMANIO_MEMORIA));
 	pthread_mutex_init(&memoria_principal_mtx, NULL);
 
-	memoria_swap = malloc(config_get_int_value(config_comanda, TAMANIO_SWAP));
-	pthread_mutex_init(&memoria_swap_mtx, NULL);
+	inicializar_swap();
 
 	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA) * sizeof(uint32_t);
 	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA) * sizeof(uint32_t);
@@ -44,6 +43,24 @@ void iniciar_comanda(){
 
 	puntero_clock = 0;
 	pthread_mutex_init(&puntero_clock_mtx, NULL);
+
+}
+
+void inicializar_swap(){
+
+	pthread_mutex_init(&memoria_swap_mtx, NULL);
+
+	int tamanio_swap = config_get_int_value(config_comanda, TAMANIO_SWAP);
+
+	int archivo_swap = open("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/Swap.bin", O_RDWR | O_CREAT, 0700);  //uso open porque necesito el int para el mmap
+
+	ftruncate(archivo_swap, tamanio_swap);
+
+	memoria_swap = mmap(NULL, tamanio_swap, PROT_WRITE | PROT_READ, MAP_SHARED, archivo_swap, 0);
+
+//TODO ponerlo en los lugares que usemos swap	msync(memoria_swap, config_get_int_value(config_comanda, TAMANIO_SWAP), MS_SYNC);
+
+	close(archivo_swap);
 
 }
 
@@ -230,7 +247,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					}
 				}else{
 					if(!plato->presencia){
-						//TODO traer de swap
+						traer_de_swap(plato);
 					}
 
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
@@ -429,6 +446,23 @@ void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lis
 
 }
 
+void traer_de_swap(t_pagina* pagina){
+
+	t_plato* plato;
+
+	void* plato_a_deserializar = malloc(TAMANIO_PAGINA);
+
+	int offset = pagina->pagina_swap * TAMANIO_PAGINA;
+
+	pthread_mutex_lock(&memoria_swap_mtx);
+	memcpy(plato_a_deserializar, memoria_swap + offset,  TAMANIO_PAGINA);
+	pthread_mutex_unlock(&memoria_swap_mtx);
+
+	plato = deserializar_pagina(plato_a_deserializar);
+
+	guardar_en_mp(plato);
+}
+
 void guardar_en_swap(int frame_destino_swap, t_plato* plato){
 	void* pagina = serializar_pagina(plato);
 
@@ -436,6 +470,7 @@ void guardar_en_swap(int frame_destino_swap, t_plato* plato){
 
 	pthread_mutex_lock(&memoria_swap_mtx);
 	memcpy(memoria_swap + offset, pagina, TAMANIO_PAGINA);
+	msync(memoria_swap, sizeof(memoria_swap), MS_SYNC);
 	pthread_mutex_unlock(&memoria_swap_mtx);
 	free(pagina);
 }
@@ -572,7 +607,7 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 
 				if(pagina != NULL){
 					if(!pagina->presencia){
-						//TODO traer de swap
+						traer_de_swap(pagina);
 					}
 
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
@@ -636,7 +671,7 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 				pagina->uso = true;
 
 				if(!pagina->presencia){
-					//TODO traer de swap
+					traer_de_swap(pagina);
 				}
 
 				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
