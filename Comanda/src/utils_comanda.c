@@ -58,8 +58,6 @@ void inicializar_swap(){
 
 	memoria_swap = mmap(NULL, tamanio_swap, PROT_WRITE | PROT_READ, MAP_SHARED, archivo_swap, 0);
 
-//TODO ponerlo en los lugares que usemos swap	msync(memoria_swap, config_get_int_value(config_comanda, TAMANIO_SWAP), MS_SYNC);
-
 	close(archivo_swap);
 
 }
@@ -198,7 +196,6 @@ void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){ //listo
 	free(mensaje_a_procesar);
 
 }
-
 
 void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 	int frame_disponible_swap;
@@ -403,12 +400,30 @@ void liberar_frame(t_pagina* victima){
 	victima->ultimo_acceso = time(NULL);
 
 	if(victima->modificado){
-		//TODO actualizar en swap
+		actualizar_swap(victima);
 		victima->modificado = false;
 
 	}
 
 	victima->uso = false;
+
+}
+
+void actualizar_swap(t_pagina* pagina){
+	void* plato = malloc(TAMANIO_PAGINA);
+
+	int offset = pagina->frame * TAMANIO_PAGINA;
+
+	pthread_mutex_lock(&memoria_principal_mtx);
+	memcpy(plato, memoria_principal + offset, TAMANIO_PAGINA);
+	pthread_mutex_unlock(&memoria_principal_mtx);
+
+	pthread_mutex_lock(&memoria_swap_mtx);
+	memcpy(memoria_swap + offset, plato, TAMANIO_PAGINA);
+	msync(memoria_swap, sizeof(memoria_swap), MS_SYNC);
+	pthread_mutex_unlock(&memoria_swap_mtx);
+
+	free(plato);
 
 }
 
