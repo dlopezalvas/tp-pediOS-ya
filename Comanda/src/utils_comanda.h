@@ -12,6 +12,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include<math.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
 #include <../commonsCoronaLinux/logs.h>

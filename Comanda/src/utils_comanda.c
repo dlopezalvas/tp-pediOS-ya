@@ -28,17 +28,17 @@ void iniciar_comanda(){
 	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA);
 	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA);
 
-//	frames_swap = malloc(cant_frames_swap*sizeof(uint32_t));
-	char* mem_frames_swap = malloc(cant_frames_swap / 8 + 1);
-	frames_swap = bitarray_create(mem_frames_swap, cant_frames_swap / 8 + 1);
+	int bytes_swap = ceil((float)cant_frames_swap / 8);
+	int bytes_mp = ceil((float)cant_frames_swap / 8);
+
+	char* mem_frames_swap = malloc(bytes_swap);
+	frames_swap = bitarray_create(mem_frames_swap, bytes_swap);
 
 	pthread_mutex_init(&frames_swap_mtx, NULL);
 
-//	frames_MP = malloc(cant_frames_MP*sizeof(uint32_t));
-	char* mem_frames_MP = malloc(cant_frames_MP / 8);
-	printf("cant frame: %d", cant_frames_MP);
+	char* mem_frames_MP = malloc(bytes_mp);
 
-	frames_MP = bitarray_create(mem_frames_MP, cant_frames_MP / 8);
+	frames_MP = bitarray_create(mem_frames_MP, bytes_mp);
 	pthread_mutex_init(&frames_MP_mtx, NULL);
 
 	for(int i=0; i<cant_frames_swap; i++){
@@ -510,7 +510,7 @@ int memoria_disponible_swap(){
 	int i = 0;
 
 	pthread_mutex_lock(&frames_swap_mtx);
-	while(bitarray_test_bit(frames_swap, i) && i < cant_frames_swap){
+	while( i < cant_frames_swap && bitarray_test_bit(frames_swap, i)){
 		i++;
 	}
 
