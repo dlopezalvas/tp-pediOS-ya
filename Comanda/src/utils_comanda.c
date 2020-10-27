@@ -25,20 +25,29 @@ void iniciar_comanda(){
 
 	inicializar_swap();
 
-	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA) * sizeof(uint32_t);
-	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA) * sizeof(uint32_t);
+	cant_frames_swap = (config_get_int_value(config_comanda, TAMANIO_SWAP) / TAMANIO_PAGINA);
+	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA);
 
-	frames_swap = malloc(cant_frames_swap*sizeof(uint32_t));
+//	frames_swap = malloc(cant_frames_swap*sizeof(uint32_t));
+	char* mem_frames_swap = malloc(cant_frames_swap / 8 + 1);
+	frames_swap = bitarray_create(mem_frames_swap, cant_frames_swap / 8 + 1);
+
 	pthread_mutex_init(&frames_swap_mtx, NULL);
 
-	frames_MP = malloc(cant_frames_MP*sizeof(uint32_t));
+//	frames_MP = malloc(cant_frames_MP*sizeof(uint32_t));
+	char* mem_frames_MP = malloc(cant_frames_MP / 8);
+	printf("cant frame: %d", cant_frames_MP);
+
+	frames_MP = bitarray_create(mem_frames_MP, cant_frames_MP / 8);
 	pthread_mutex_init(&frames_MP_mtx, NULL);
 
 	for(int i=0; i<cant_frames_swap; i++){
-		frames_swap[i]=0;
+
+		bitarray_clean_bit(frames_swap, i);
 	}
-	for(int j=0; j<cant_frames_MP; j++){
-		frames_MP[j]=0;
+
+	for(int j=0; j<1; j++){
+		bitarray_clean_bit(frames_MP, j);
 	}
 
 	puntero_clock = 0;
@@ -70,7 +79,6 @@ void serve_client(int socket){
 		if(_recv == 0 || _recv == -1){
 			cod_op = -1;
 			//intento de reconexion
-			puts("error");
 			liberar_conexion(socket);
 			pthread_exit(NULL);
 		}else{
@@ -266,6 +274,8 @@ int guardar_en_mp(t_plato* plato){
 	void* pagina_serializada = serializar_pagina(plato);
 	int offset = frame * TAMANIO_PAGINA;
 
+	printf("offset %d, tamanio pag %d, mem + offset %d", offset, sizeof(pagina_serializada), memoria_principal + offset);
+
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
 	pthread_mutex_unlock(&memoria_principal_mtx);
@@ -280,6 +290,7 @@ int seleccionar_frame_mp(){
 	if(frame_disponible == -1){
 		switch(algoritmo_reemplazo){
 		case LRU:
+			puts("entro a lru");
 			frame_disponible = eleccion_victima_LRU();
 			break;
 		case CLOCK_MEJORADO:
@@ -386,6 +397,9 @@ int eleccion_victima_LRU(){
 	list_sort(paginas_swap, (void*)lru);
 
 	victima = list_find(paginas_swap, (void*)esta_en_MP); //las ordeno por LRU y agarro la primera en la lista que este ocupada
+
+	puts("victima frame");
+	puts(string_itoa(victima->frame));
 
 	pthread_mutex_unlock(&paginas_swap_mtx);
 
@@ -496,13 +510,13 @@ int memoria_disponible_swap(){
 	int i = 0;
 
 	pthread_mutex_lock(&frames_swap_mtx);
-	while(frames_swap[i] != 0 && i < cant_frames_swap){
+	while(bitarray_test_bit(frames_swap, i) && i < cant_frames_swap){
 		i++;
 	}
 
-	if(frames_swap[i] == 0){
+	if(!bitarray_test_bit(frames_swap, i)){
 		frame_disponible = i;
-		frames_swap[i] = 1;
+		bitarray_set_bit(frames_swap, i);
 	}
 	pthread_mutex_unlock(&frames_swap_mtx);
 
@@ -515,13 +529,15 @@ int memoria_disponible_mp(){
 	int i = 0;
 
 	pthread_mutex_lock(&frames_MP_mtx);
-	while(frames_MP[i] != 0 && i < cant_frames_MP){
+	while(i < cant_frames_MP && bitarray_test_bit(frames_MP, i)){
 		i++;
 	}
 
-	if(frames_MP[i] == 0){
+	if(!bitarray_test_bit(frames_MP, i)){
 		frame_disponible = i;
-		frames_MP[i] = 1;
+		puts("frame disp");
+		puts(string_itoa(frame_disponible));
+		bitarray_test_bit(frames_MP, i);
 	}
 	pthread_mutex_unlock(&frames_MP_mtx);
 
@@ -559,11 +575,11 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 void liberar_pagina(t_pagina* pagina){
 	pthread_mutex_lock(&frames_MP_mtx);
-	frames_MP[pagina->frame] = 0;
+	bitarray_clean_bit(frames_MP, pagina->frame);
 	pthread_mutex_unlock(&frames_MP_mtx);
 
 	pthread_mutex_lock(&frames_swap_mtx);
-	frames_swap[pagina->pagina_swap] = 0;
+	bitarray_clean_bit(frames_swap, pagina->pagina_swap);
 	pthread_mutex_unlock(&frames_swap_mtx);
 }
 

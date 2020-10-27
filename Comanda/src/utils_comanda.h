@@ -7,6 +7,7 @@
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/config.h>
+#include <commons/bitarray.h>
 #include <commons/collections/queue.h>
 #include <semaphore.h>
 #include <sys/mman.h>
@@ -79,10 +80,10 @@ t_algoritmo_reemplazo algoritmo_reemplazo;
 pthread_mutex_t restaurantes_mtx;
 t_list* restaurantes;
 
-uint32_t cant_frames_swap;
-uint32_t cant_frames_MP;
-uint32_t* frames_swap;
-uint32_t* frames_MP;
+int cant_frames_swap;
+int cant_frames_MP;
+t_bitarray* frames_swap;
+t_bitarray* frames_MP;
 
 pthread_mutex_t frames_swap_mtx;
 pthread_mutex_t frames_MP_mtx;
@@ -125,6 +126,7 @@ int seleccionar_frame_mp();
 void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista);
 int memoria_disponible_mp();
 void traer_de_swap(t_pagina* pagina);
+void actualizar_swap(t_pagina* pagina);
 
 void liberar_pagina(t_pagina* pagina);
 void free_pagina(t_pagina* pagina);
