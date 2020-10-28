@@ -29,7 +29,7 @@ void iniciar_comanda(){
 	cant_frames_MP = (config_get_int_value(config_comanda, TAMANIO_MEMORIA) / TAMANIO_PAGINA);
 
 	int bytes_swap = ceil((float)cant_frames_swap / 8);
-	int bytes_mp = ceil((float)cant_frames_swap / 8);
+	int bytes_mp = ceil((float)cant_frames_MP / 8);
 
 	char* mem_frames_swap = malloc(bytes_swap);
 	frames_swap = bitarray_create(mem_frames_swap, bytes_swap);
@@ -146,7 +146,7 @@ void process_request(int cod_op, int cliente_fd){
 		pthread_detach(hilo_operacion);
 		break;
 	default:
-		puts("erro en el switch??");
+		log_info(log_comanda, "[ERROR] Recibi mensaje invalido");
 	}
 }
 
@@ -230,7 +230,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						t_plato* plato_a_guardar = malloc(sizeof(t_plato));
 						plato_a_guardar->cant_pedida = mensaje->cantidad;
 						plato_a_guardar->cant_lista = 0;
-						strncpy(plato_a_guardar->nombre, mensaje->comida.nombre, mensaje->comida.largo_nombre +1);//TODO ver si guardar '\0'
+						strncpy(plato_a_guardar->nombre, mensaje->comida.nombre, mensaje->comida.largo_nombre +1);
 
 						plato = malloc(sizeof(t_pagina));
 						plato->modificado = false;
@@ -254,6 +254,8 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 
 						free(plato_a_guardar);
 						confirmacion = 1;
+					}else{
+						log_info(log_comanda, "[ERROR] No hay memoria disponible en swap");
 					}
 				}else{
 					if(!plato->presencia){
@@ -266,8 +268,14 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					confirmacion = 1;
 				}
 
+			}else{
+				log_info(log_comanda, "[ERROR] El pedido %s %d no esta confirmado", mensaje->restaurante.nombre, mensaje->idPedido);
 			}
+		}else{
+			log_info(log_comanda, "[ERROR] El pedido %s %d no existe", mensaje->restaurante.nombre, mensaje->idPedido);
 		}
+	}else{
+		log_info(log_comanda, "[ERROR] El restaurante %s no existe", mensaje->restaurante.nombre);
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_GUARDAR_PLATO);
@@ -284,7 +292,9 @@ int guardar_en_mp(t_plato* plato){
 
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se guardo el plato %s en el frame %d posicion: %d", plato->nombre, frame, memoria_principal + offset);
 	pthread_mutex_unlock(&memoria_principal_mtx);
+
 	free(pagina_serializada);
 	return frame;
 }
@@ -294,6 +304,7 @@ int seleccionar_frame_mp(){
 	int frame_disponible = memoria_disponible_mp();
 
 	if(frame_disponible == -1){
+		log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se inicio el algoritmo de seleccion de victima");
 		switch(algoritmo_reemplazo){
 		case LRU:
 			puts("entro a lru");
@@ -333,6 +344,8 @@ int eleccion_victima_clock_mejorado(){
 		}
 	}
 
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
+
 	pthread_mutex_unlock(&puntero_clock_mtx);
 
 	liberar_frame(victima);
@@ -358,12 +371,12 @@ bool uso_modificado_cero(t_pagina* pagina){
 }
 
 void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*)){
-	t_pagina * pagina = list_get(self, puntero_clock);
+	t_pagina * pagina; // = list_get(self, puntero_clock);
 //	t_pagina *aux = NULL;
 
 	for(int i = puntero_clock; !condition(pagina) && i < self->elements_count; i++) {
-		closure(pagina);
 		pagina = list_get(self, i);
+		closure(pagina);
 	}
 
 	if(!condition(pagina)){
@@ -403,8 +416,7 @@ int eleccion_victima_LRU(){
 
 	victima = list_find(paginas_swap, (void*)esta_en_MP); //las ordeno por LRU y agarro la primera en la lista que este ocupada
 
-	puts("victima frame");
-
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 	pthread_mutex_unlock(&paginas_swap_mtx);
 
@@ -425,6 +437,8 @@ void liberar_frame(t_pagina* victima){
 	}
 	victima->presencia = false;
 	victima->uso = false;
+
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se elimino a la victima en el frame %d posicion: %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 }
 
@@ -502,7 +516,7 @@ void traer_de_swap(t_pagina* pagina){
 	plato = deserializar_pagina(plato_a_deserializar);
 	free(plato_a_deserializar);
 
-	guardar_en_mp(plato);
+	pagina->frame = guardar_en_mp(plato);
 	pagina->presencia = true;
 	pagina->uso = true;
 	pagina->ultimo_acceso = time(NULL);
@@ -519,6 +533,7 @@ void guardar_en_swap(int frame_destino_swap, t_plato* plato){
 	memcpy(memoria_swap + offset, pagina, TAMANIO_PAGINA);
 	msync(memoria_swap, sizeof(memoria_swap), MS_SYNC);
 	pthread_mutex_unlock(&memoria_swap_mtx);
+	log_info(log_comanda, "[MEMORIA_SWAP] Se guardo el plato %s en el frame %d posicion %d", plato->nombre, frame_destino_swap, memoria_swap + offset);
 	free(pagina);
 }
 
@@ -585,7 +600,11 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			list_destroy_and_destroy_elements(pedido->tabla_paginas, (void*)free_pagina);
 			confirmacion = 1;
 			free(pedido);
+		}else{
+			log_info(log_comanda, "[ERROR] El pedido %s %d no existe", mensaje->nombre.nombre, mensaje->id);
 		}
+	}else{
+		log_info(log_comanda, "[ERROR] El restaurante %s no existe", mensaje->nombre.nombre);
 	}
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_FINALIZAR_PEDIDO);
 	free_struct_mensaje(mensaje, FINALIZAR_PEDIDO);
@@ -626,7 +645,11 @@ void ejecucion_confirmar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 				confirmacion = 1;
 			}
 			pthread_mutex_unlock(&(restaurante->tabla_segmentos_mtx));
+		}else{
+			log_info(log_comanda, "[ERROR] El pedido %s %d no existe", mensaje->nombre.nombre, mensaje->id);
 		}
+	}else{
+		log_info(log_comanda, "[ERROR] El restaurante %s no existe", mensaje->nombre.nombre);
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_CONFIRMAR_PEDIDO);
@@ -669,17 +692,16 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 
 					confirmacion = 1;
 				}else{
-					puts("PAGINA ES NULL");
+					log_info(log_comanda, "[ERROR] No existe el plato %s", mensaje->comida.nombre);
 				}
 			}else{
-				puts("pedido no confirmado");
-
+				log_info(log_comanda, "[ERROR] El pedido %s %d no esta confirmado", mensaje->restaurante.nombre, mensaje->idPedido);
 			}
 		}else{
-			puts("pedido es null");
+			log_info(log_comanda, "[ERROR] El pedido %s %d no existe", mensaje->restaurante.nombre, mensaje->idPedido);
 		}
 	}else{
-		puts("no existe restaurante");
+		log_info(log_comanda, "[ERROR] El restaurante %s no existe", mensaje->restaurante.nombre);
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_PLATO_LISTO);
@@ -711,8 +733,11 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			rtaObtenerPedido->estadoPedido = pedido->estado;
 			rtaObtenerPedido->infoPedidos = list_create();
 
+			void* plato_a_deserializar;
+
 			t_elemPedido* elemPedido;
 			int offset;
+			t_plato* plato;
 
 			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 			int cantidad_platos = pedido->tabla_paginas->elements_count;
@@ -720,14 +745,10 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 			for(int i = 0; i < cantidad_platos; i++){
 
-				void* plato_a_deserializar = malloc(TAMANIO_PAGINA);
-
-				t_plato* plato;
+				plato_a_deserializar = malloc(TAMANIO_PAGINA);
 
 				pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 				pagina = list_get(pedido->tabla_paginas, i);
-
-				offset = pagina->frame * TAMANIO_PAGINA;
 
 				pagina->ultimo_acceso = time(NULL);
 				pagina->uso = true;
@@ -735,6 +756,7 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 				if(!pagina->presencia){
 					traer_de_swap(pagina);
 				}
+				offset = pagina->frame * TAMANIO_PAGINA;
 
 				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
@@ -761,9 +783,11 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			mensaje_a_enviar->parametros = rtaObtenerPedido;
 
 		}else{
+			log_info(log_comanda, "[ERROR] El pedido %s %d no existe", obtener_pedido->nombre.nombre, obtener_pedido->id);
 			mensaje_a_enviar->tipo_mensaje = ERROR;
 		}
 	}else{
+		log_info(log_comanda, "[ERROR] El restaurante %s no existe", obtener_pedido->nombre.nombre);
 		mensaje_a_enviar->tipo_mensaje = ERROR;
 	}
 
