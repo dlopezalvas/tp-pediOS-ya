@@ -238,6 +238,11 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						plato->ultimo_acceso = time(NULL);
 						plato->pagina_swap = frame_disponible_swap;
 						plato->presencia = true; //TODO ver si necesita mutex
+						//TODO no se si va aca
+						guardar_en_swap(frame_disponible_swap, plato_a_guardar);
+
+						plato->frame = guardar_en_mp(plato_a_guardar);
+
 
 						pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 						list_add(pedido->tabla_paginas, plato);
@@ -247,10 +252,8 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						list_add(paginas_swap, plato);
 						pthread_mutex_unlock(&paginas_swap_mtx);
 
-						guardar_en_swap(frame_disponible_swap, plato_a_guardar);
-
-						plato->frame = guardar_en_mp(plato_a_guardar);
 						free(plato_a_guardar);
+						confirmacion = 1;
 					}
 				}else{
 					if(!plato->presencia){
@@ -260,8 +263,9 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 					actualizar_plato_mp(plato, mensaje->cantidad, 0);
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+					confirmacion = 1;
 				}
-				confirmacion = 1;
+
 			}
 		}
 	}
@@ -332,6 +336,7 @@ int eleccion_victima_clock_mejorado(){
 	pthread_mutex_unlock(&puntero_clock_mtx);
 
 	liberar_frame(victima);
+	list_destroy(en_mp);
 
 	return victima->frame;
 }
@@ -349,36 +354,34 @@ bool uso_cero_modificado_uno(t_pagina* pagina){
 }
 
 bool uso_modificado_cero(t_pagina* pagina){
-	return !pagina->uso && !pagina->modificado;
+	return (!pagina->uso && !pagina->modificado);
 }
 
 void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*)){
-	t_link_element *element = list_get(self, puntero_clock);
-	t_link_element *aux = NULL;
+	t_pagina * pagina = list_get(self, puntero_clock);
+//	t_pagina *aux = NULL;
 
-	while (element != NULL && !condition(element->data)) {
-		aux = element->next;
-		closure(element->data);
-		element = aux;
+	for(int i = puntero_clock; !condition(pagina) && i < self->elements_count; i++) {
+		closure(pagina);
+		pagina = list_get(self, i);
 	}
 
-	if(element == NULL){
-		element = self->head;
+	if(!condition(pagina)){
+//		pagina = list_get(self, 0);
 
-		for(int i = 0; i < puntero_clock && !condition(element->data); i++){
-			aux = element->next;
-			closure(element->data);
-			element = aux;
+		for(int i = 0; i < puntero_clock && !condition(pagina); i++){
+			pagina = list_get(self, 0);
+			closure(pagina);
 		}
 	}
 
-	if(!condition(element->data)){
+	if(!condition(pagina)){
 		return NULL;
 	}
 
-	puntero_clock = ((t_pagina*) element->data)->frame;
+	puntero_clock = pagina->frame;
 
-	return element->data;
+	return pagina;
 
 }
 
@@ -501,6 +504,8 @@ void traer_de_swap(t_pagina* pagina){
 
 	guardar_en_mp(plato);
 	pagina->presencia = true;
+	pagina->uso = true;
+	pagina->ultimo_acceso = time(NULL);
 	free(plato);
 
 }
@@ -527,7 +532,7 @@ int memoria_disponible_swap(){
 		i++;
 	}
 
-	if(!bitarray_test_bit(frames_swap, i) && i < cant_frames_swap){
+	if(i < cant_frames_swap && !bitarray_test_bit(frames_swap, i)){
 		frame_disponible = i;
 		bitarray_set_bit(frames_swap, i);
 	}
