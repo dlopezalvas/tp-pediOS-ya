@@ -412,7 +412,7 @@ int eleccion_victima_LRU(){
 }
 
 void liberar_frame(t_pagina* victima){
-	victima->presencia = false;
+
 	victima->ultimo_acceso = time(NULL);
 
 	if(victima->modificado){
@@ -420,7 +420,7 @@ void liberar_frame(t_pagina* victima){
 		victima->modificado = false;
 
 	}
-
+	victima->presencia = false;
 	victima->uso = false;
 
 }
@@ -433,6 +433,8 @@ void actualizar_swap(t_pagina* pagina){
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(plato, memoria_principal + offset, TAMANIO_PAGINA);
 	pthread_mutex_unlock(&memoria_principal_mtx);
+
+	offset = pagina->pagina_swap * TAMANIO_PAGINA;
 
 	pthread_mutex_lock(&memoria_swap_mtx);
 	memcpy(memoria_swap + offset, plato, TAMANIO_PAGINA);
@@ -498,8 +500,9 @@ void traer_de_swap(t_pagina* pagina){
 	free(plato_a_deserializar);
 
 	guardar_en_mp(plato);
-	free(plato);
 	pagina->presencia = true;
+	free(plato);
+
 }
 
 void guardar_en_swap(int frame_destino_swap, t_plato* plato){
