@@ -514,14 +514,10 @@ int memoria_disponible_swap(){
 		i++;
 	}
 
-
-	if(i < cant_frames_swap){
-		if(!bitarray_test_bit(frames_swap, i)){
-			frame_disponible = i;
-			bitarray_set_bit(frames_swap, i);
-		}
+	if(!bitarray_test_bit(frames_swap, i) && i < cant_frames_swap){
+		frame_disponible = i;
+		bitarray_set_bit(frames_swap, i);
 	}
-
 	pthread_mutex_unlock(&frames_swap_mtx);
 
 	return frame_disponible;
@@ -537,12 +533,11 @@ int memoria_disponible_mp(){
 		i++;
 	}
 
-	if(i < cant_frames_MP){
-		if(!bitarray_test_bit(frames_MP, i)){
-			frame_disponible = i;
-			bitarray_set_bit(frames_MP, i);
-		}
+	if(!bitarray_test_bit(frames_MP, i) && i < cant_frames_MP){
+		frame_disponible = i;
+		bitarray_set_bit(frames_MP, i);
 	}
+
 
 
 	pthread_mutex_unlock(&frames_MP_mtx);
