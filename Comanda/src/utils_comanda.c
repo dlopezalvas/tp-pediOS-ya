@@ -340,6 +340,7 @@ int eleccion_victima_clock_mejorado(){
 	while(victima == NULL){
 		victima = list_iterate_and_find_from_index(en_mp, (void*)hacer_nada, (void*)uso_modificado_cero);
 		if(victima == NULL){
+			puts("ENTRA AL SEGUNDA PASO");
 			victima = list_iterate_and_find_from_index(en_mp, (void*)cambiar_uso_cero, (void*)uso_cero_modificado_uno);
 		}
 	}
@@ -371,7 +372,7 @@ bool uso_modificado_cero(t_pagina* pagina){
 }
 
 void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*)){
-	t_pagina * pagina; // = list_get(self, puntero_clock);
+	t_pagina * pagina = list_get(self, puntero_clock);
 //	t_pagina *aux = NULL;
 
 	for(int i = puntero_clock; !condition(pagina) && i < self->elements_count; i++) {
@@ -380,10 +381,10 @@ void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(
 	}
 
 	if(!condition(pagina)){
-//		pagina = list_get(self, 0);
+		pagina = list_get(self, 0);
 
 		for(int i = 0; i < puntero_clock && !condition(pagina); i++){
-			pagina = list_get(self, 0);
+			pagina = list_get(self, i);
 			closure(pagina);
 		}
 	}
