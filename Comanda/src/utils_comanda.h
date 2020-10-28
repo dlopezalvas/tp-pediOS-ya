@@ -124,7 +124,7 @@ t_plato* deserializar_pagina(void* stream);
 void guardar_en_swap(int frame_destino_swap, t_plato* plato);
 int guardar_en_mp(t_plato* plato);
 int seleccionar_frame_mp();
-void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista);
+bool actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista);
 int memoria_disponible_mp();
 void traer_de_swap(t_pagina* pagina);
 void actualizar_swap(t_pagina* pagina);

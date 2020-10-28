@@ -463,10 +463,11 @@ void actualizar_swap(t_pagina* pagina){
 
 }
 
-void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista){
+bool actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista){
 
 	void* plato_a_deserializar = malloc(TAMANIO_PAGINA);
 	void* plato_serializado;
+	bool confirmacion = true;
 
 	t_plato* plato;
 
@@ -486,7 +487,7 @@ void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lis
 
 	plato->cant_lista += cantidad_lista;
 	if(plato->cant_pedida < plato->cant_lista){
-		puts("error ya estan listos todos los pedidos");
+		confirmacion = false;
 		plato->cant_lista = plato->cant_pedida;
 	}
 
@@ -499,7 +500,7 @@ void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lis
 	free(plato_a_deserializar);
 	free(plato);
 	free(plato_serializado);
-
+	return confirmacion;
 }
 
 void traer_de_swap(t_pagina* pagina){
@@ -692,10 +693,12 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 					}
 
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
-					actualizar_plato_mp(pagina, 0, 1); //cantLista le suma 1
+					if(actualizar_plato_mp(pagina, 0, 1)){
+						confirmacion = 1;//cantLista le suma 1
+						log_info(log_comanda, "[ERROR] No pueden estar listos mas %s de los pedidos", mensaje->comida.nombre);
+					}
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
-					confirmacion = 1;
 				}else{
 					log_info(log_comanda, "[ERROR] No existe el plato %s", mensaje->comida.nombre);
 				}
