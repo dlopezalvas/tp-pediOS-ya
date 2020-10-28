@@ -612,15 +612,19 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 }
 
 void liberar_pagina(t_pagina* pagina){
+	if(pagina->presencia){
 	pthread_mutex_lock(&frames_MP_mtx);
 	bitarray_clean_bit(frames_MP, pagina->frame);
 	pthread_mutex_unlock(&frames_MP_mtx);
-
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se libero el frame %d posicion %d", pagina->frame, pagina->frame * TAMANIO_PAGINA + memoria_principal);
 	pagina->presencia = false;
+	}
 
 	pthread_mutex_lock(&frames_swap_mtx);
 	bitarray_clean_bit(frames_swap, pagina->pagina_swap);
 	pthread_mutex_unlock(&frames_swap_mtx);
+
+	log_info(log_comanda, "[MEMORIA_SWAP] Se libero el frame %d posicion %d", pagina->pagina_swap, pagina->pagina_swap * TAMANIO_PAGINA + memoria_swap);
 }
 
 void free_pagina(t_pagina* pagina){ //TODO fijarnos si list_destroy elimina los elementos o no :o
