@@ -46,7 +46,7 @@ void iniciar_comanda(){
 		bitarray_clean_bit(frames_swap, i);
 	}
 
-	for(int j=0; j<1; j++){
+	for(int j=0; j<cant_frames_MP; j++){
 		bitarray_clean_bit(frames_MP, j);
 	}
 
@@ -237,6 +237,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						plato->uso = true;
 						plato->ultimo_acceso = time(NULL);
 						plato->pagina_swap = frame_disponible_swap;
+						plato->presencia = true; //TODO ver si necesita mutex
 
 						pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 						list_add(pedido->tabla_paginas, plato);
@@ -247,6 +248,7 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						pthread_mutex_unlock(&paginas_swap_mtx);
 
 						guardar_en_swap(frame_disponible_swap, plato_a_guardar);
+
 						plato->frame = guardar_en_mp(plato_a_guardar);
 						free(plato_a_guardar);
 					}
@@ -274,7 +276,7 @@ int guardar_en_mp(t_plato* plato){
 	void* pagina_serializada = serializar_pagina(plato);
 	int offset = frame * TAMANIO_PAGINA;
 
-	printf("offset %d, tamanio pag %d, mem + offset %d", offset, sizeof(pagina_serializada), memoria_principal + offset);
+//	printf("offset %d, tamanio pag %d, mem + offset %d", offset, sizeof(pagina_serializada), memoria_principal + offset);
 
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
@@ -399,7 +401,7 @@ int eleccion_victima_LRU(){
 	victima = list_find(paginas_swap, (void*)esta_en_MP); //las ordeno por LRU y agarro la primera en la lista que este ocupada
 
 	puts("victima frame");
-	puts(string_itoa(victima->frame));
+
 
 	pthread_mutex_unlock(&paginas_swap_mtx);
 
@@ -453,6 +455,7 @@ void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lis
 	pagina->modificado = true;
 	pagina->ultimo_acceso = time(NULL);
 	pagina->uso = true;
+	pagina->presencia = true;
 
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(plato_a_deserializar, memoria_principal + offset, TAMANIO_PAGINA);
@@ -462,6 +465,10 @@ void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lis
 	plato->cant_pedida += cantidad_pedida;
 
 	plato->cant_lista += cantidad_lista;
+	if(plato->cant_pedida < plato->cant_lista){
+		puts("error ya estan listos todos los pedidos");
+		plato->cant_lista = plato->cant_pedida;
+	}
 
 	//guardo en la mp
 	plato_serializado = serializar_pagina(plato);
@@ -488,8 +495,11 @@ void traer_de_swap(t_pagina* pagina){
 	pthread_mutex_unlock(&memoria_swap_mtx);
 
 	plato = deserializar_pagina(plato_a_deserializar);
+	free(plato_a_deserializar);
 
 	guardar_en_mp(plato);
+	free(plato);
+	pagina->presencia = true;
 }
 
 void guardar_en_swap(int frame_destino_swap, t_plato* plato){
@@ -533,7 +543,7 @@ int memoria_disponible_mp(){
 		i++;
 	}
 
-	if(!bitarray_test_bit(frames_MP, i) && i < cant_frames_MP){
+	if(i < cant_frames_MP && !bitarray_test_bit(frames_MP, i)){
 		frame_disponible = i;
 		bitarray_set_bit(frames_MP, i);
 	}
@@ -578,6 +588,8 @@ void liberar_pagina(t_pagina* pagina){
 	pthread_mutex_lock(&frames_MP_mtx);
 	bitarray_clean_bit(frames_MP, pagina->frame);
 	pthread_mutex_unlock(&frames_MP_mtx);
+
+	pagina->presencia = false;
 
 	pthread_mutex_lock(&frames_swap_mtx);
 	bitarray_clean_bit(frames_swap, pagina->pagina_swap);
@@ -640,6 +652,7 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 				if(pagina != NULL){
 					if(!pagina->presencia){
 						traer_de_swap(pagina);
+						pagina->presencia = true;
 					}
 
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
@@ -647,9 +660,18 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 					confirmacion = 1;
+				}else{
+					puts("PAGINA ES NULL");
 				}
+			}else{
+				puts("pedido no confirmado");
+
 			}
+		}else{
+			puts("pedido es null");
 		}
+	}else{
+		puts("no existe restaurante");
 	}
 
 	enviar_confirmacion(confirmacion, mensaje_a_procesar->socket_cliente, RTA_PLATO_LISTO);
