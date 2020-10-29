@@ -187,6 +187,7 @@ void planif_encolar_READY(t_pedido* pedido) {
     }
     pedido->pedido_estado = READY;
     list_add(cola_READY, pedido);
+    log_debug(logger_planificacion, "[REP_%2i] Pedido %i encolado en READY", pedido->repartidor->id, pedido->pedido_id);
     pthread_mutex_unlock(&mutex_cola_READY);
     sem_post(&semaforo_pedidos_READY);
 }
@@ -425,6 +426,12 @@ t_cliente* get_cliente(int id_pedido) { // TODO: redo esto, el id no es univoco
 
 t_restaurante* get_restaurante(char* nombre_restaurante) {
     t_restaurante* restaurante;
+    if (string_equals_ignore_case(
+        nombre_restaurante,
+        "Resto Default" // TODO: esto va en una variable porque si no es un lio
+    )) {
+        return resto_default;
+    }
     pthread_mutex_lock(&mutex_lista_restaurantes);
     if (list_is_empty(restaurantes)) {
         return resto_default;
@@ -455,10 +462,13 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
     t_repartidor* repartidor;
     t_pedido* pedido_a_planif;
     t_repartidor* repartidor_a_planif;
+    unsigned
+        index_pedido_a_planif,
+        index_repartidor_a_planif;
     unsigned distancia;
     unsigned distancia_minima;
 
-    repartidores_disponibles = list_create();
+    repartidores_disponibles = list_create(); // todo: liberar lista al final (pero no los elementos!)
 
     for (
         unsigned index_repartidor = 0;
@@ -475,6 +485,10 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
 
     repartidor = NULL;
     distancia_minima = -1;
+
+    // log_debug(logger_planificacion, "[PLANIF_LP] D. minima: %u", distancia_minima);
+    // log_debug(logger_planificacion, "[PLANIF_LP] Cant. elems. en cola NEW: %i", list_size(cola_NEW));
+    // log_debug(logger_planificacion, "[PLANIF_LP] Cant. elems. en rep. disp.: %i", list_size(repartidores_disponibles));
 
     for (
         unsigned index_pedido = 0;
@@ -496,15 +510,26 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
                         );
             if (distancia < distancia_minima) {
                 distancia_minima = distancia;
-                repartidor_a_planif = repartidor;
-                pedido_a_planif = pedido;
+                index_repartidor_a_planif = index_repartidor;
+                index_pedido_a_planif = index_pedido;
             }
         }
     }
-
-    pedido_a_planif->repartidor = repartidor_a_planif;
-    repartidor_a_planif->tiene_pedido_asignado = true;
-    repartidor_a_planif->frecuenciaDescanso_restante = repartidor_a_planif->frecuenciaDescanso;
+    // log_debug(logger_planificacion, "[PLANIF_LP] index_repartidor_a_planif = %i", index_repartidor_a_planif);
+    // log_debug(logger_planificacion, "[PLANIF_LP] index_pedido_a_planif = %i", index_pedido_a_planif);
+    pedido_a_planif = list_remove(cola_NEW, index_pedido_a_planif);
+    // log_debug(logger_planificacion, "[PLANIF_LP] list remove 1");
+    pedido_a_planif->repartidor = list_remove(repartidores_disponibles, index_repartidor_a_planif);
+    // log_debug(logger_planificacion, "[PLANIF_LP] list remove 2");
+    pedido_a_planif->repartidor->tiene_pedido_asignado = true;
+    pedido_a_planif->repartidor->frecuenciaDescanso_restante = pedido_a_planif->repartidor->frecuenciaDescanso;
+    log_debug(
+        logger_planificacion,
+        "[PLANIF_LP] Se asigno el rep. %i al pedido %i del cliente %i",
+        pedido_a_planif->repartidor->id,
+        pedido_a_planif->pedido_id,
+        pedido_a_planif->cliente->id
+    );
     return pedido_a_planif;
 }
 
@@ -578,10 +603,16 @@ void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
 }
 
 void pedido_repartidorLlegoACliente(t_pedido* pedido) {
+    pthread_mutex_lock(&mutex_pedidosEXEC);
+    // pthread_mutex_lock(&mutex_pedidosEXIT);
+    search_remove_return(pedidosEXEC, pedido);
     pedido->pedido_estado = EXIT;
+    pthread_mutex_unlock(&mutex_pedidosEXEC);
+    sem_post(&semaforo_vacantesEXEC);
+    // pthread_mutex_unlock(&mutex_pedidosEXIT);
     log_debug(
         logger_planificacion,
-        "[PEDIDO_%2i] Llegado a cliente %2i; pasado a EXIT",
+        "********************************************************************************************\n**************************************** [PEDIDO_%2i] Llegado a cliente %2i; pasado a EXIT\n************************************************************************************************************************************",
         pedido->pedido_id,
         pedido->cliente->id
     );
@@ -629,6 +660,12 @@ void consumir_ciclo(t_pedido* pedido) {
         pedido->pedido_id
     );
     planif_encolar_BLOCK(pedido);
+    log_debug(
+        logger_planificacion,
+        "[REP_%2i] Seteando tiempo de descanso restante a %i",
+        pedido->repartidor->id,
+        pedido->repartidor->tiempoDescanso
+    );
     for (
         pedido->repartidor->tiempoDescanso_restante = pedido->repartidor->tiempoDescanso;
         pedido->repartidor->tiempoDescanso_restante > 0;
@@ -637,11 +674,11 @@ void consumir_ciclo(t_pedido* pedido) {
         // sleep(cfval_retardoCicloCPU);
         pthread_mutex_lock(pedido->mutex_clock);
         log_debug(
-        logger_planificacion,
-        "[PEDIDO_%2i] Ciclo descanso consumido (restan %i)",
-        pedido->pedido_id,
-        pedido->repartidor->tiempoDescanso_restante
-    );
+            logger_planificacion,
+            "[PEDIDO_%2i] Ciclo descanso consumido (restan %i)",
+            pedido->pedido_id,
+            pedido->repartidor->tiempoDescanso_restante - 1
+        );
     }
     log_debug(
         logger_planificacion,
@@ -736,10 +773,16 @@ t_list* get_nombresRestConectados(void) {
 }
 
 void* fhilo_clock(void* __sin_uso__) {
+    unsigned ciclo = 0;
     while (true) {
         pthread_mutex_lock(&mutex_cola_BLOCK);
         pthread_mutex_lock(&mutex_pedidosEXEC);
         pthread_mutex_lock(&mutex_cola_READY);
+        log_debug(
+            logger_planificacion,
+            "[CLOCK]: -------------------------------------------------------- Ciclo %i",
+            ++ciclo
+        );
         for (
             unsigned index_EXEC = 0;
             index_EXEC < list_size(pedidosEXEC);
@@ -1061,7 +1104,7 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
         logger_mensajes,
         "[MENSJS]: Mensaje enviado"
     );
-    loggear_mensaje_enviado(mensaje, mensaje->tipo_mensaje, logger_mensajes);
+    loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, logger_mensajes);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }
@@ -1194,7 +1237,7 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
     
     // buscar rest de ese cliente
     cliente_en_cuestion = get_cliente_porSuID(cliente_id);
-    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: mutex transaccional?
+    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: ojo el mutex del socket del rest.
     
     if (!resto_en_cuestion) {
         // TODO: error handling
