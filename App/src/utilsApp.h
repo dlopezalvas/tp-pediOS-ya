@@ -71,7 +71,17 @@ extern int errno;
         int pos_x;
         int pos_y;
         char* nombre;
+        pthread_mutex_t* q_mtx; // TODO: init
+        sem_t* q_sem; // TODO: init
+        t_list* q; // TODO: init
+        pthread_t* q_admin; // TODO: init
     } t_restaurante;
+
+    typedef struct {
+        t_mensaje* m_enviar;
+        t_mensaje* m_recibir;
+        pthread_mutex_t* mutex;
+    } qr_form_t;
 
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
@@ -79,6 +89,10 @@ extern int errno;
     t_restaurante* get_restaurante(char* nombre_restaurante);
     void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket);
     t_list* get_nombresRestConectados(void);
+
+    void qr_free_form(qr_form_t* form);
+    qr_form_t* qr_request(t_mensaje* m_enviar, t_restaurante* rest);
+    void* qr_admin(t_restaurante* rest);
 
 // clientes
     typedef struct {
@@ -133,6 +147,7 @@ extern int errno;
         double sjf_ultRafaga_est;
         unsigned hrrn_tiempoEsperaREADY;
         t_estado pedido_estado;
+        pthread_mutex_t* estaPreparado; // TODO: init locked; lo unlockea el hilo que recibe el obtener pedido X/X
         pthread_mutex_t* mutex_EXEC;
         pthread_mutex_t* mutex_clock;
         pthread_t* hilo;
@@ -195,7 +210,7 @@ void* fhilo_servidor(void* arg);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-t_mensaje* mensajear_comanda(t_mensaje* mensaje, bool liberar_params);
+t_mensaje* mensajear_comanda(op_code cod_op_env, void* params, bool liberar_params, int* socket_conversacion);
 
 sem_t sem_mensajes_a_enviar;
 t_queue* mensajes_a_enviar;
