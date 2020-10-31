@@ -1,7 +1,12 @@
 #ifndef SINDICATOUTILS_H_
 #define SINDICATOUTILS_H_
 
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+#include <commons/bitarray.h>
 
 #include "../commonsCoronaLinux/logs.h"
 #include "../commonsCoronaLinux/socket.h"
@@ -21,18 +26,26 @@ typedef struct{
 }t_metadata;
 
 /* Global variables */
+
 t_log* sindicatoLog;
 t_log* sindicatoDebugLog;
+
 t_config* sindicatoConfig;
-uint32_t sindicatoProcessId;
 int sindicatoPort;
 char* sindicatoMountPoint;
-t_metadata* metadata_fs;
+uint32_t sindicatoProcessId;
+
+t_metadata* metadataFS;
+char* metadaPathFS;
+t_bitarray* bitarray;
+
+pthread_mutex_t bitarray_mtx;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 t_log* sindicato_utils_iniciar_debug_logger(t_config* config);
 void sindicato_utils_create_folder(char* path, bool logsFolder);
 char* sindicato_utils_build_path(char* path, char* toAppend);
+void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
 
 #endif /* SINDICATOUTILS_H_ */

@@ -96,6 +96,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 	if(sendMessageFlag == ENVIAR_RESPUESTA)
 		sindicato_api_send_response_of_operation(responseMessage);
+		sindicato_utils_free_memory_message(responseMessage);
 
 	//TODO: Liberar memoraia de todos los mensajes.
 }

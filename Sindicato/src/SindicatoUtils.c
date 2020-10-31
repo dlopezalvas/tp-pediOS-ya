@@ -31,3 +31,52 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	string_append(&pathBuilded, toAppend);
 	return pathBuilded;
 }
+
+void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
+
+	/* Vallidate which message shiuld be free */
+	switch(responseMessage->message->tipo_mensaje){
+		case RTA_CONSULTAR_PLATOS:
+			free_restaurante_y_plato(responseMessage->message->parametros);
+
+			break;
+		case RTA_GUARDAR_PEDIDO:
+			free_id_o_confirmacion(responseMessage->message->parametros);
+
+			break;
+		case RTA_GUARDAR_PLATO:
+			free_id_o_confirmacion(responseMessage->message->parametros);
+
+			break;
+		case RTA_CONFIRMAR_PEDIDO:
+			free_id_o_confirmacion(responseMessage->message->parametros);
+
+			break;
+		case RTA_OBTENER_PEDIDO:
+			free_rta_obtener_pedido(responseMessage->message->parametros);
+
+			break;
+		case RTA_OBTENER_RESTAURANTE:
+			free_rta_obtener_restaurante(responseMessage->message->parametros);
+
+			break;
+		case RTA_PLATO_LISTO:
+			free_id_o_confirmacion(responseMessage->message->parametros);
+
+			break;
+		case RTA_OBTENER_RECETA:
+			free_rta_obtener_receta(responseMessage->message->parametros);
+
+			break;
+		case RTA_TERMINAR_PEDIDO:
+			free_id_o_confirmacion(responseMessage->message->parametros);
+
+			break;
+		default:
+			break;
+	}
+
+	free(responseMessage->message);
+	free(responseMessage);
+}
+

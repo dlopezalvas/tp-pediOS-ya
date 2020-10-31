@@ -22,8 +22,6 @@ void sindicato_initialize(){
 	sindicatoProcessId = (uint32_t)config_get_int_value(sindicatoConfig, "SINDICATO_ID");
 	sindicatoPort = config_get_int_value(sindicatoConfig,"PUERTO_ESCUCHA"); //TODO: Se puede optimizar
 	sindicatoMountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
-	
-	config_destroy(sindicatoConfig);
 
 	sindicato_api_afip_initialize();
 
@@ -37,6 +35,7 @@ void sindicato_initialize(){
 	pthread_create(&sindicatoConsoleThread, NULL, (void*)sindicato_console_initialize,NULL);
 	pthread_join(sindicatoConsoleThread, NULL);
 
+	config_destroy(sindicatoConfig);
 	log_destroy(sindicatoLog);
 	log_destroy(sindicatoDebugLog);
 }

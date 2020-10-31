@@ -28,18 +28,45 @@ void internal_api_createFileSystemFolders(){
 }
 
 void internal_api_initialize_metadata(){
-	char* path_metadata = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
+	metadaPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
 
-	t_config* config_metadata = config_create(path_metadata);
+	t_config* metadataConfig = config_create(metadaPathFS);
 
-	metadata_fs = malloc(sizeof(t_metadata));
+	metadataFS = malloc(sizeof(t_metadata));
 
-	metadata_fs->block_size = config_get_int_value(config_metadata, "BLOCK_SIZE");
-	metadata_fs->blocks = config_get_int_value(config_metadata, "BLOCKS");
-	metadata_fs->magic_number = config_get_string_value(config_metadata, "MAGIC_NUMBER");
+	metadataFS->block_size = config_get_int_value(metadataConfig, "BLOCK_SIZE");
+	metadataFS->blocks = config_get_int_value(metadataConfig, "BLOCKS");
+	metadataFS->magic_number = config_get_string_value(metadataConfig, "MAGIC_NUMBER");
 
-	config_destroy(config_metadata);
-	free(path_metadata);
+	config_destroy(metadataConfig);
+}
+
+void internal_api_bitmap_create(){
+
+	int blocks = metadataFS->blocks/8;
+
+	int bitarrayFile = open(metadaPathFS, O_RDWR | O_CREAT, 0700);  //uso open porque necesito el int para el mmap
+
+	ftruncate(bitarrayFile, blocks);
+
+	char* bitarrayMap = mmap(0, blocks, PROT_WRITE | PROT_READ, MAP_SHARED, bitarrayFile, 0);
+
+	//TODO: ver errores en mapeo
+
+	bitarray = bitarray_create_with_mode(bitarrayMap, blocks, LSB_FIRST);
+	//
+	//	for(int i = 0; i < blocks; i++){
+	//		bitarray_clean_bit(bitarray, i);
+	//	}
+
+	msync(bitarray, sizeof(bitarray), MS_SYNC);
+
+	pthread_mutex_init(&bitarray_mtx, NULL);
+
+	log_info(sindicatoDebugLog,"[FILESYSTEM] Bitmap creado");
+
+	close(bitarrayFile);
+	free(metadaPathFS);
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
@@ -196,4 +223,6 @@ void sindicato_api_afip_initialize(){
 	internal_api_createFileSystemFolders();
 
 	internal_api_initialize_metadata();
+
+	internal_api_bitmap_create();
 }
