@@ -59,6 +59,8 @@ t_conexion* conexion;
 char* proceso;
 uint32_t id_cliente;
 
+t_coordenadas posicion;
+
 pthread_mutex_t iniciar_consola_mtx;
 
 bool conexion_ok;
