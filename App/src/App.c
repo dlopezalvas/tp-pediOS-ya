@@ -4,8 +4,8 @@ int main(int argc, char* argv[]) {
 
 	// modos de debug
 		modo_noComanda = true;
-		modo_noRest = true;
-		modo_mock = true;
+		modo_noRest = false;
+		modo_mock = false;
 
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;
@@ -73,13 +73,13 @@ void mock_mensajes(void) {
 	t_restaurante* centralPerk = mock_registrar_restaurante("Central Perk", 11, 9);
 	mock_registrar_cliente(99, 1, 2, 909, centralPerk);
 
-	mock_confirmar_pedido(66); // TODO: esto no es univoco
+	mock_confirmar_pedido(66, 606); // TODO: esto no es univoco
 	sleep(1);
-	mock_confirmar_pedido(77);
+	mock_confirmar_pedido(77, 707);
 	sleep(1);
-	mock_confirmar_pedido(88);
+	mock_confirmar_pedido(88, 808);
 	sleep(4);
-	mock_confirmar_pedido(99);
+	mock_confirmar_pedido(99, 909);
 
 	return;
 }
@@ -127,7 +127,7 @@ void mock_registrar_cliente(
     pthread_mutex_unlock(&mutex_lista_clientes);
 }
 
-void mock_confirmar_pedido(int id_cliente) {
+void mock_confirmar_pedido(int id_cliente, int id_pedido) {
 	log_debug(logger_planificacion, "[MOCKER] Disparando planif. nuevo pedido (%i)", id_cliente);
-	planif_nuevoPedido(id_cliente);
+	planif_nuevoPedido(id_cliente, id_pedido);
 }

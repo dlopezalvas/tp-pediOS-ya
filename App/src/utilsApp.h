@@ -189,7 +189,7 @@ extern int errno;
     pthread_t hilo_planificador_cortoPlazo;
     pthread_t hilo_planificador_largoPlazo;
     pthread_t hilo_clock;
-    void planif_nuevoPedido(int id_pedido);
+    void planif_nuevoPedido(int id_cliente, int pedido_id);
     t_pedido* planif_asignarRepartidor(void);
     t_pedido* planif_FIFO(void);
     t_pedido* planif_SJF_SD(void);
@@ -232,8 +232,9 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);
 void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente);
 void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente);
 void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int cliente_id);
-void gestionar_PLATO_LISTO(m_platoListo* plato);
+void gestionar_PLATO_LISTO(m_platoListo* plato_params, int socket_rest);
 
+void responder_ERROR(int socket);
 bool todosLosPlatosEstanPreparados(rta_obtenerPedido* pedido);
 
 #endif // UTILSAPP_H_

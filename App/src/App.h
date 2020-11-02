@@ -12,6 +12,6 @@ void mock_registrar_cliente(
 		int pedido_id,
 		t_restaurante* restaurante_seleccionado
 );
-void mock_confirmar_pedido(int id);
+void mock_confirmar_pedido(int id_cliente, int id_pedido);
 
 #endif // APP_H_

@@ -34,6 +34,10 @@ void configuracionInicial(void) {
         
         logger_obligatorio = log_create(pathArchivoLog, program_name, logger_obligatorio_consolaActiva, LOG_LEVEL_INFO);
 
+    // configuracion del id de app
+        cfval_id = config_get_int_value(config, "ID_APP");
+        log_debug(logger_configuracion, "[CONFIG] ID de App: %i", cfval_id);
+
     // configuracion de ip y puertos
         cfval_ipComanda = config_get_string_value(config, "IP_COMANDA");
         log_debug(logger_configuracion, "[CONFIG] IP de Comanda: %s", cfval_ipComanda);
@@ -116,7 +120,8 @@ void configuracionInicial(void) {
         log_debug(logger_configuracion, "[CONFIG] Platos del restaurant default:");
 
         platos_default_enviable = malloc(sizeof(t_restaurante_y_plato));
-        
+        platos_default_enviable->nombres = list_create();
+
         for (
             unsigned index_platos = 0;
             cfval_platosDefault[index_platos];
@@ -124,7 +129,7 @@ void configuracionInicial(void) {
         ) {
             nombre_plato_default = malloc(sizeof(t_nombre));
             nombre_plato_default->nombre = cfval_platosDefault[index_platos];
-            list_add(platos_default_enviable, nombre_plato_default);
+            list_add(platos_default_enviable->nombres, nombre_plato_default);
             log_debug(logger_configuracion, "[CONFIG] |\t%s", cfval_platosDefault[index_platos]);
         }
         
@@ -135,7 +140,7 @@ void configuracionInicial(void) {
         log_debug(logger_configuracion, "[CONFIG] Pos. Y restaurant default: %i", cfval_posicionRestDefaultY);
 
         resto_default = malloc(sizeof(t_restaurante));
-        resto_default->nombre = "Resto Default";
+        resto_default->nombre = "RestoDefault";
         resto_default->pos_x = cfval_posicionRestDefaultX;
         resto_default->pos_y = cfval_posicionRestDefaultY;
 
@@ -334,7 +339,7 @@ double respRatio(t_pedido* pedido) {
     return 1 + (pedido->hrrn_tiempoEsperaREADY) / estimar_rafaga(pedido);
 }
 
-void planif_nuevoPedido(int id_cliente, int pedido_id) { // TODO: ojo
+void planif_nuevoPedido(int id_cliente, int pedido_id) { // TODO: que devuelva bool si algo anda mal
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
@@ -1195,8 +1200,17 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
         );
         mensaje = malloc(sizeof(t_mensaje));
         mensaje->tipo_mensaje = RTA_CONSULTAR_PLATOS;
+        mensaje->id = cfval_id;
         mensaje->parametros = platos_default_enviable;
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: Pre enviar mensaje"
+        );
         enviar_mensaje(mensaje, socket_cliente);
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: Post enviar mensaje"
+        );
         free(mensaje);
         return;
     }
@@ -1260,8 +1274,8 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
     if (resto_en_cuestion == resto_default) {
         pedido_id = resto_default_get_id();
     } else {
-        // TODO
         // mandarle el crear pedido
+        mensaje = malloc(sizeof(t_mensaje));
         mensaje->tipo_mensaje = CREAR_PEDIDO;
         mensaje->id = cfval_id;
         mensaje->parametros = NULL;
@@ -1308,7 +1322,7 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
             // TODO: free
             break;
         case RTA_GUARDAR_PEDIDO:
-            if (*(rta_comanda->parametros)) { // -------------------------------- OK
+            if (*(int*)(rta_comanda->parametros)) { // -------------------------------- OK
                 mensaje = malloc(sizeof(t_mensaje));
                 mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
                 mensaje->id = cfval_id;
@@ -1350,6 +1364,7 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
     }
     
     if (resto_en_cuestion != resto_default) {
+        mensaje = malloc(sizeof(t_mensaje));
         mensaje->tipo_mensaje = AGREGAR_PLATO;
         mensaje->id = cfval_id;
         mensaje->parametros = plato;
@@ -1364,7 +1379,7 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
                 qr_free_form(form);
                 return;
             case RTA_AGREGAR_PLATO:
-                if (!*(form->m_recibir->parametros)) { // ------------------- FAIL
+                if (!*(int*)(form->m_recibir->parametros)) { // ------------------- FAIL
                     responder_ERROR(socket_cliente);
                     qr_free_form(form);
                     return;
@@ -1393,7 +1408,7 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
                 responder_ERROR(socket_cliente);
                 break;
             case RTA_GUARDAR_PLATO:
-                if (*(rta_comanda->parametros)) {
+                if (*(int*)(rta_comanda->parametros)) {
                     mensaje_a_cli = malloc(sizeof(t_mensaje));
                     mensaje_a_cli->tipo_mensaje = RTA_AGREGAR_PLATO;
                     mensaje_a_cli->id = cfval_id;
@@ -1478,7 +1493,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                     free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                     return;
                 case RTA_CONFIRMAR_PEDIDO:
-                    if (!*(form->m_recibir->parametros)) {
+                    if (!*(int*)(form->m_recibir->parametros)) {
                         responder_ERROR(socket_cliente);
                         qr_free_form(form);
                         free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
@@ -1501,7 +1516,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                             free(rta_cp_comanda);
                             return;
                         case RTA_CONFIRMAR_PEDIDO:
-                            if (!*(rta_cp_comanda->parametros)) {
+                            if (!*(int*)(rta_cp_comanda->parametros)) {
                                 responder_ERROR(socket_cliente);
                                 free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                                 free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
@@ -1561,7 +1576,7 @@ void gestionar_PLATO_LISTO(m_platoListo* plato_params, int socket_rest) {
             free(mje_rtaPL);
             return;
         case RTA_PLATO_LISTO:
-            if (!*(mje_rtaPL->parametros)) {
+            if (!*(int*)(mje_rtaPL->parametros)) {
                 responder_ERROR(socket_rest);
                 free_struct_mensaje(plato_params, PLATO_LISTO);
                 free_struct_mensaje(mje_rtaPL->parametros, mje_rtaPL->tipo_mensaje);
@@ -1777,6 +1792,7 @@ qr_form_t* qr_request(t_mensaje* m_enviar, t_restaurante* rest) { // TODO: y si 
     pthread_mutex_unlock(rest->q_mtx);
     pthread_mutex_lock(form->mutex);
     pthread_mutex_lock(form->mutex);
+    return form;
 }
 
 void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_admin, rest);
@@ -1808,7 +1824,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
         if (_recv_op == -1 || _recv_op == 0) {
             log_debug(logger_mensajes, "[Q (\"%s\")] Error al recibir op_code", rest->nombre);
             // TODO: logging
-            form->error_flag = FLAG_ERROR;
+            *(form->error_flag) = FLAG_ERROR;
             log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
             pthread_mutex_unlock(form->mutex);
             log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
@@ -1820,7 +1836,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
         if (_recv_id == -1 || _recv_id == 0) {
             log_debug(logger_mensajes, "[Q (\"%s\")] Error al recibir id", rest->nombre);
             // TODO: logging
-            form->error_flag = FLAG_ERROR;
+            *(form->error_flag) = FLAG_ERROR;
             log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
             pthread_mutex_unlock(form->mutex);
             log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
