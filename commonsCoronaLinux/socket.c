@@ -47,20 +47,27 @@ int iniciar_cliente(char* ip, int puerto){
 	return cliente;
 }
 
-void* recibir_mensaje(int socket_cliente, int* size)
-{
-	void * buffer;
+void* recibir_mensaje(int socket_cliente, int* error){
+    void * buffer;
+    int aux_size = 0;
+    int _recv;
 
-	int aux_size = 0;
-
-	recv(socket_cliente, &aux_size, sizeof(int), 0);
-	buffer = malloc(aux_size);
-	if(aux_size != 0){
-	recv(socket_cliente, buffer, aux_size, 0);
-	}
-	*size = aux_size;
-
-	return buffer;
+    *error = 0;
+    _recv = recv(socket_cliente, &aux_size, sizeof(int), 0);
+    if (_recv == 0 || _recv == -1) {
+        *error = 1;
+        return NULL;
+    }
+    buffer = malloc(aux_size);
+    if(aux_size != 0){
+        _recv = recv(socket_cliente, buffer, aux_size, 0);
+        if (_recv == 0 || _recv == -1) {
+            *error = 1;
+            return NULL;
+        }
+    }
+    // *size = aux_size;
+    return buffer;
 }
 
 void enviar_mensaje(t_mensaje* mensaje, int socket){
