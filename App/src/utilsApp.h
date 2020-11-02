@@ -62,6 +62,7 @@ extern int errno;
     char** cfval_platosDefault;
     int cfval_posicionRestDefaultX;
     int cfval_posicionRestDefaultY;
+    uint32_t cfval_id; // TODO: init
     t_restaurante_y_plato* platos_default_enviable;
 
 // restaurantes
@@ -81,10 +82,14 @@ extern int errno;
         t_mensaje* m_enviar;
         t_mensaje* m_recibir;
         pthread_mutex_t* mutex;
+        error_flag_t* error_flag;
     } qr_form_t;
 
     t_list* restaurantes;
     pthread_mutex_t mutex_lista_restaurantes;
+    unsigned resto_default_id_serial; // TODO: init
+    unsigned resto_default_get_id(void);
+    pthread_mutex_t resto_default_id_serial_mtx; // TODO: init
     t_restaurante* resto_default;
     t_restaurante* get_restaurante(char* nombre_restaurante);
     void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket);
@@ -101,13 +106,14 @@ extern int errno;
         int pos_y;
         int id;
         int pedido_id;
+        bool seleccionoPedido; // TODO: init en false obvio
         t_restaurante* restaurante_seleccionado;
         int socket;
     } t_cliente;
 
     t_list* clientes;
     pthread_mutex_t mutex_lista_clientes;
-    t_cliente* get_cliente(int id_pedido);
+    // t_cliente* get_cliente(int id_pedido);
     t_cliente* get_cliente_porSuID(int id_cliente);
     void guardar_seleccion(char* nombre_rest, int id_cliente);
 
@@ -161,6 +167,7 @@ extern int errno;
     void consumir_ciclo(t_pedido* pedido);
     void pedido_repartidorLlegoARestaurante(t_pedido* pedido);
     void pedido_repartidorLlegoACliente(t_pedido* pedido);
+    t_pedido* get_pedido(int id_pedido, char* nombre_restaurante, bool mutex_pedidos_locked_outside);
 
 // colas
     t_list* cola_NEW;
@@ -210,7 +217,7 @@ void* fhilo_servidor(void* arg);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-t_mensaje* mensajear_comanda(op_code cod_op_env, void* params, bool liberar_params, int* socket_conversacion);
+t_mensaje* mensajear_comanda(op_code cod_op_env, void* params, bool liberar_params);
 
 sem_t sem_mensajes_a_enviar;
 t_queue* mensajes_a_enviar;
@@ -224,7 +231,9 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
 void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);
 void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente);
 void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente);
-void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente);
+void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int cliente_id);
 void gestionar_PLATO_LISTO(m_platoListo* plato);
+
+bool todosLosPlatosEstanPreparados(rta_obtenerPedido* pedido);
 
 #endif // UTILSAPP_H_
