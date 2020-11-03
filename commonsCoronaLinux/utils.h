@@ -122,7 +122,10 @@ typedef enum{ //son para saber el tipo de struct que usa cada mensaje
 	STRC_POSICION_RESTAUNTE = 13
 }struct_code;
 
-
+typedef enum {
+    FLAG_OK = 0,
+    FLAG_ERROR = 1
+}error_flag_t;
 
 typedef struct{
 	op_code tipo_mensaje;
