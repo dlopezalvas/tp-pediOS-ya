@@ -2,7 +2,8 @@
 
 /logs/
 
-/Blocks/
-/Files/
+/afip/Blocks/
+/afip/Files/
+/afip/Metadata/Bitmap.bin
 
 /.settings/
