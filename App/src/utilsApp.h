@@ -232,6 +232,7 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente);
 void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente);
 void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente);
 void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int cliente_id);
+void gestionar_CONSULTAR_PEDIDO(uint32_t* id_pedido, int socket_cliente, int cliente_id);
 void gestionar_PLATO_LISTO(m_platoListo* plato_params, int socket_rest);
 
 void responder_ERROR(int socket);
