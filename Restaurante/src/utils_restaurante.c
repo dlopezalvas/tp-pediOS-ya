@@ -86,13 +86,26 @@ void iniciar_restaurante(){
 		buffer=recibir_respuesta(conexion_sindicato);
 		metadata_rest = buffer;
 
+		//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
+		log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
+		iniciar_colas_ready_es (metadata_rest);
+
+		//CREAR PROCESO PLANIFICADOR
+		pthread_create(&hilo_planificador, NULL,(void*) fhilo_planificador, NULL);
+
+		//CREAR PROCESO SERVIDOR DE CLIENTES
+		log_info(log_config_ini, "Iniciar_planificador de platos \n");
+		pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
+
+		//ME CONECTO CON APP PARA ENVIAR MI POS Y NOMBRE
+		conectarme_con_app();
 
 
 	}else{
 
-		log_info(log_config_ini, "\tSe cargan los datos de default, Sindicato no sisponible \n");
+		log_info(log_config_ini, "\tSe cargan los datos de default, Sindicato no disponible \n");
 
-
+/*
 		printf("paso la creacion de var");
 
 		//obtengo los datos del restaurante de un archivo para hacer pruebas
@@ -161,8 +174,9 @@ void iniciar_restaurante(){
 
 
 		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
-
-
+*/
+		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
+		log_info(log_config_ini, "\tFin proceso, sindicato no disponible \n");
 	}
 
 	//INICIO DE LISTAS GLOBALES
@@ -170,23 +184,67 @@ void iniciar_restaurante(){
 	inicio_de_listas_globales();
 
 
-
-	//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
-	log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
-	iniciar_colas_ready_es (metadata_rest);
-
-	//CREAR PROCESO PLANIFICADOR
-	log_info(log_config_ini, "Iniciar_planificador de platos \n");
-	//pthread_create(plafinificar);
-	pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
-	pthread_create(&hilo_planificador, NULL,(void*) fhilo_planificador, NULL);
-
-
-
-
 }
 
 
+void conectarme_con_app(){
+	rta_obtenerRestaurante* metadata = malloc(sizeof(rta_obtenerRestaurante));
+	metadata=metadata_rest;
+
+	//char* nombre_resto =string_duplicate(cfg_nombre_restaurante);
+	char* nombre_resto =cfg_nombre_restaurante;
+
+
+	t_mensaje* mensaje_inicial_app = malloc(sizeof(t_mensaje));
+
+	m_restaurante* m_restaurante = malloc(sizeof(m_restaurante));
+
+	m_restaurante->nombre.nombre=nombre_resto;
+	m_restaurante->posicion.x=metadata->posicion.x;
+	m_restaurante->posicion.y=metadata->posicion.x;
+
+
+	//mandar t_mje
+
+	mensaje_inicial_app->id=id;
+	mensaje_inicial_app->tipo_mensaje=POSICION_RESTAUNTE;
+	mensaje_inicial_app->parametros=m_restaurante;
+
+
+	//iniciar cliente
+	socket_app= iniciar_cliente(cfg_ip_app,cfg_puerto_app);
+	log_info(log_config_ini, "Socket con app: %d\n",socket_app);
+
+
+	if(socket_app !=-1){
+		//crear un hilo que reciba mjes de este socket
+		pthread_create(&hilo_serve_app, NULL,(void*) fhilo_serve_app, socket_app);
+		log_info(log_config_ini, "Se inicio el socket de escucha con app \n");
+		//mando el mj
+		enviar_mensaje(mensaje_inicial_app,socket_app);
+		log_info(log_config_ini, "Se envio el mj a app \n");
+
+	}else{
+		log_info(log_config_ini, "App no disponible \n");
+	}
+}
+
+void* fhilo_serve_app(int socket){
+	int rec;
+	int cod_op;
+	while(1){
+		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
+		if(rec == -1 || rec == 0 ){
+			cod_op = -1;
+
+			pthread_exit(NULL);
+		}
+		log_info(log_config_ini ,"Recibi un mj de app \n");
+		log_info(log_config_ini ,"Se recibio de app cod_op: %d \n",cod_op);
+
+		process_request(cod_op, socket);
+	}
+}
 void inicio_de_listas_globales(){
 
 	//LSITA DE HILOS CLIENTE
@@ -219,18 +277,6 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 	uint32_t cant_afinidades= metadata->cantAfinidades;
 	log_info(log_config_ini, "\tcant_afinidades: %PRIu32  \n",cant_afinidades);
 
-	//t_receta* metadata_receta1 = malloc(sizeof(t_receta));
-	printf("seg fault");
-	//metadata_receta1=list_get(metadata->recetas, 0);
-
-	//log_info(log_config_ini, "\treceta1: %s \n",metadata_receta1->receta);
-
-	//t_receta* metadata_receta2 = malloc(sizeof(t_receta));
-	//metadata_receta2=list_get(metadata->recetas, 1);
-	//log_info(log_config_ini, "\treceta2 %s \n",metadata_receta2->receta);
-
-	//uint32_t cant_hornos= metadata->cantHornos;
-	//log_info(log_config_ini, "\tcantidad de hornos %d  \n", cant_hornos);
 
 	id_pedidos=5;
 	log_info(log_config_ini, "\tLos id de pedidos que tiene este restaurante comienza en: %d  \n", id_pedidos);
@@ -801,9 +847,10 @@ void process_request(int cod_op, int cliente_fd) {
 		}
 
 
+//TODO  //RESPONDO AL CLIENTE
 
 
-		//RECIBO RESPUESTA
+
 
 		//RESPONDO AL CLIENTE
 /*

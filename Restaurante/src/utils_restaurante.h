@@ -35,6 +35,10 @@ char* cfg_nombre_restaurante;
 char* cfg_algoritmo_planificacion;
 int cfg_quantum;
 
+void conectarme_con_app();
+
+int socket_app;
+
 
 //LOG
 t_log* log_oficial;
@@ -61,6 +65,8 @@ pthread_mutex_t mutex_id_pedidos;
 pthread_mutex_t mutex_pcb;
 t_list *  hilos_pcb;
 
+pthread_t hilo_serve_app;
+
 //PCB - PLATOS
 typedef struct{
 			uint32_t id_pedido;
@@ -75,6 +81,7 @@ void* fhilo_plato (t_plato_pcb* v);
 
 //FHILOS
 void* fhilo_planificador (void* v);
+void* fhilo_serve_app (int socket);
 
 
 //METADATA

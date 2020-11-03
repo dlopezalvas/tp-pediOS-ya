@@ -688,3 +688,7 @@
 [INFO] 00:59:15:631 cliente/(11029:11086): Se recibio el mensaje ERROR
 [INFO] 00:59:22:644 cliente/(11029:11092): Se envio el mensaje CONSULTAR_PEDIDO 8
 [INFO] 00:59:22:647 cliente/(11029:11092): Se recibio el mensaje ERROR
+[INFO] 00:41:23:891 cliente/(30231:30251): Se envio el mensaje CREAR_PEDIDO
+[INFO] 00:42:05:568 cliente/(30231:30281): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 00:42:05:572 cliente/(30231:30281): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:42:37:578 cliente/(30231:30289): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
