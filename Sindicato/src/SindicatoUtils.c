@@ -32,6 +32,16 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	return pathBuilded;
 }
 
+char* sindicato_utils_build_block_path(int blockNumber){
+	char* fileName = sindicato_utils_build_path(".", metadataFS->magic_number);
+	fileName = sindicato_utils_build_path(string_itoa(blockNumber), fileName);
+
+	char* filePath = sindicato_utils_build_path(sindicatoBlocksPath, "/");
+	filePath = sindicato_utils_build_path(filePath, fileName);
+
+	return filePath;
+}
+
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
 
 	/* Vallidate which message shiuld be free */

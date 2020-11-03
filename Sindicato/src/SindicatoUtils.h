@@ -33,10 +33,11 @@ t_log* sindicatoDebugLog;
 t_config* sindicatoConfig;
 int sindicatoPort;
 char* sindicatoMountPoint;
+char* sindicatoBlocksPath;
+
 uint32_t sindicatoProcessId;
 
 t_metadata* metadataFS;
-char* metadaPathFS;
 t_bitarray* bitarray;
 
 pthread_mutex_t bitarray_mtx;
@@ -46,6 +47,7 @@ pthread_mutex_t bitarray_mtx;
 t_log* sindicato_utils_iniciar_debug_logger(t_config* config);
 void sindicato_utils_create_folder(char* path, bool logsFolder);
 char* sindicato_utils_build_path(char* path, char* toAppend);
+char* sindicato_utils_build_block_path(int blockNumber);
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
 
 #endif /* SINDICATOUTILS_H_ */

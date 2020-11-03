@@ -16,36 +16,42 @@ void internal_api_createFileSystemFolders(){
 	sindicato_utils_create_folder(sindicatoFilesPath, false);
 	free(sindicatoFilesPath);
 
+	/* Create folder "Blocks" in {mount_point} */
+	sindicatoBlocksPath = sindicato_utils_build_path(sindicatoMountPoint, "/Blocks");
+	sindicato_utils_create_folder(sindicatoBlocksPath, false);
+
 	/* Create folder "Receta" in {mount_point}/Files */
-	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Receta");
+	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas");
 	sindicato_utils_create_folder(sindicatoRecetaPath, false);
 	free(sindicatoRecetaPath);
 
 	/* Create folder "Restaurante" in {mount_point}/Files */
-	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurante");
+	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes");
 	sindicato_utils_create_folder(sindicatoRestaurantePath, false);
 	free(sindicatoRestaurantePath);
 }
 
 void internal_api_initialize_metadata(){
-	metadaPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
+	char* metadaPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
 
 	t_config* metadataConfig = config_create(metadaPathFS);
 
 	metadataFS = malloc(sizeof(t_metadata));
 
-	metadataFS->block_size = config_get_int_value(metadataConfig, "BLOCK_SIZE");
-	metadataFS->blocks = config_get_int_value(metadataConfig, "BLOCKS");
+	metadataFS->block_size = (uint32_t)config_get_int_value(metadataConfig, "BLOCK_SIZE");
+	metadataFS->blocks = (uint32_t)config_get_int_value(metadataConfig, "BLOCKS");
 	metadataFS->magic_number = config_get_string_value(metadataConfig, "MAGIC_NUMBER");
 
-	config_destroy(metadataConfig);
+	//config_destroy(metadataConfig);
+	free(metadaPathFS);
 }
 
 void internal_api_bitmap_create(){
+	char* bitmapPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Bitmap.bin");
 
 	int blocks = metadataFS->blocks/8;
 
-	int bitarrayFile = open(metadaPathFS, O_RDWR | O_CREAT, 0700);  //uso open porque necesito el int para el mmap
+	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);  //uso open porque necesito el int para el mmap
 
 	ftruncate(bitarrayFile, blocks);
 
@@ -66,7 +72,21 @@ void internal_api_bitmap_create(){
 	log_info(sindicatoDebugLog,"[FILESYSTEM] Bitmap creado");
 
 	close(bitarrayFile);
-	free(metadaPathFS);
+	free(bitmapPathFS);
+}
+
+void internal_api_initialize_blocks(){
+	char* filePath;
+	FILE* bloqueFS;
+
+	for(int i = 1; i <= (int)metadataFS->blocks; i++){
+		filePath = sindicato_utils_build_block_path(i);
+
+		bloqueFS = fopen(filePath, "a");
+
+		fclose(bloqueFS);
+		free(filePath);
+	}
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
@@ -225,4 +245,6 @@ void sindicato_api_afip_initialize(){
 	internal_api_initialize_metadata();
 
 	internal_api_bitmap_create();
+
+	internal_api_initialize_blocks();
 }

@@ -36,6 +36,7 @@ void sindicato_initialize(){
 	pthread_join(sindicatoConsoleThread, NULL);
 
 	config_destroy(sindicatoConfig);
+
 	log_destroy(sindicatoLog);
 	log_destroy(sindicatoDebugLog);
 }
