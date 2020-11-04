@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
 	// modos de debug
 		modo_noComanda = true;
 		modo_noRest = true;
-		modo_mock = false;
+		modo_mock = true;
 
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;
@@ -70,16 +70,16 @@ void mock_mensajes(void) {
 	mock_registrar_cliente(77, 2, 5, 707, mockDonalds);
 	t_restaurante* krabbyKrab = mock_registrar_restaurante("El Crustaceo Cascarudo", 9, 4);
 	mock_registrar_cliente(88, 5, 5, 808, krabbyKrab);
-	t_restaurante* centralPerk = mock_registrar_restaurante("Central Perk", 11, 9);
-	mock_registrar_cliente(99, 1, 2, 909, centralPerk);
+	// t_restaurante* centralPerk = mock_registrar_restaurante("Central Perk", 11, 9);
+	// mock_registrar_cliente(99, 1, 2, 909, centralPerk);
 
 	mock_confirmar_pedido(66, 606); // TODO: esto no es univoco
 	sleep(1);
 	mock_confirmar_pedido(77, 707);
 	sleep(1);
 	mock_confirmar_pedido(88, 808);
-	sleep(4);
-	mock_confirmar_pedido(99, 909);
+	// sleep(4);
+	// mock_confirmar_pedido(99, 909);
 
 	return;
 }

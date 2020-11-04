@@ -31,7 +31,7 @@ void configuracionInicial(void) {
     // configuracion del logger para el log obligatorio
         pathArchivoLog = config_get_string_value(config, "ARCHIVO_LOG");
         log_debug(logger_configuracion, "[CONFIG] Path del log obligatorio: %s", pathArchivoLog);
-        
+
         logger_obligatorio = log_create(pathArchivoLog, program_name, logger_obligatorio_consolaActiva, LOG_LEVEL_INFO);
 
     // configuracion del id de app
@@ -170,11 +170,14 @@ void configuracionInicial(void) {
     // lista de clientes
         clientes = list_create();
         pthread_mutex_init(&mutex_lista_clientes, NULL);
+
+    // liberacion de memoria
+        config_destroy(config);
 }
 
 void planif_encolar_NEW(t_pedido* pedido) {
     pthread_mutex_lock(&mutex_cola_NEW);
-    log_debug(logger_planificacion, "[PLANIF_NP] Encolando pedido %i en NEW...", pedido->pedido_id);
+    log_debug(logger_planificacion, "[PLANIF_NP] Encolando pedido %i (%s) en NEW...", pedido->pedido_id, pedido->restaurante->nombre);
     pedido->pedido_estado = NEW;
     list_add(cola_NEW, pedido);
     pthread_mutex_unlock(&mutex_cola_NEW);
@@ -530,11 +533,13 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
     pedido_a_planif->repartidor->frecuenciaDescanso_restante = pedido_a_planif->repartidor->frecuenciaDescanso;
     log_debug(
         logger_planificacion,
-        "[PLANIF_LP] Se asigno el rep. %i al pedido %i del cliente %i",
+        "[PLANIF_LP] Se asigno el rep. %i al pedido %i (%s) del cliente %i",
         pedido_a_planif->repartidor->id,
         pedido_a_planif->pedido_id,
+        pedido_a_planif->restaurante->nombre,
         pedido_a_planif->cliente->id
     );
+    list_destroy(repartidores_disponibles);
     return pedido_a_planif;
 }
 
@@ -636,6 +641,10 @@ void pedido_repartidorLlegoARestaurante(t_pedido* pedido) {
 }
 
 void pedido_repartidorLlegoACliente(t_pedido* pedido) {
+    t_nombre_y_id params_FP;
+    t_mensaje* rta_comanda;
+    t_mensaje* mje_env_cli;
+
     pthread_mutex_lock(&mutex_pedidosEXEC);
     // pthread_mutex_lock(&mutex_pedidosEXIT);
     search_remove_return(pedidosEXEC, pedido);
@@ -651,9 +660,36 @@ void pedido_repartidorLlegoACliente(t_pedido* pedido) {
         pedido->cliente->id
     );
     repartidor_desocupar(pedido->repartidor);
-    // TODO
-    // envio de mensaje a comanda
-    // envio de mensaje al cliente corresp.
+
+    if (modo_mock) return;
+
+    params_FP.id = pedido->pedido_id;
+    params_FP.nombre.nombre = pedido->restaurante->nombre;
+    rta_comanda = mensajear_comanda(FINALIZAR_PEDIDO, &params_FP, false);
+    if (!rta_comanda) {
+        // TODO ???
+    }
+    switch (rta_comanda->tipo_mensaje) {
+        case ERROR: // TODO
+            free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
+            free(rta_comanda);
+            break;
+            // return;
+        case RTA_OBTENER_PEDIDO:
+            free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
+            free(rta_comanda);
+            break;
+        default: // TODO
+            free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
+            free(rta_comanda);
+            // return;
+    }
+    mje_env_cli = malloc(sizeof(t_mensaje));
+    mje_env_cli->tipo_mensaje = FINALIZAR_PEDIDO;
+    mje_env_cli->id = cfval_id;
+    mje_env_cli->parametros = &params_FP;
+    enviar_mensaje(mje_env_cli, pedido->cliente->socket); // TODO: mutex socket
+    free(mje_env_cli);
 }
 
 void repartidor_desocupar(t_repartidor* repartidor) {
@@ -727,13 +763,13 @@ void consumir_ciclo(t_pedido* pedido) {
         pedido->repartidor->id,
         pedido->pedido_id
     );
-    pthread_mutex_trylock(pedido->mutex_EXEC);
-    log_debug(
-        logger_planificacion,
-        "[R%i-P%i] Post trylock mutex EXEC",
-        pedido->repartidor->id,
-        pedido->pedido_id
-    );
+    // pthread_mutex_trylock(pedido->mutex_EXEC);
+    // log_debug(
+    //     logger_planificacion,
+    //     "[R%i-P%i] Post trylock mutex EXEC",
+    //     pedido->repartidor->id,
+    //     pedido->pedido_id
+    // );
     pthread_mutex_lock(pedido->mutex_EXEC);
     log_debug(
         logger_planificacion,
@@ -1453,11 +1489,14 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
     }
 
     // mandarle guardar plato a comanda
+    plato_comanda = malloc(sizeof(m_guardarPlato));
     plato_comanda->restaurante.nombre = string_duplicate(resto_en_cuestion->nombre);
     plato_comanda->idPedido = plato->id;
     plato_comanda->comida.nombre = string_duplicate(plato->nombre.nombre);
     plato_comanda->cantidad = 1;
-    rta_comanda = mensajear_comanda(GUARDAR_PLATO, plato_comanda, true); // ESTABA ACA
+    rta_comanda = mensajear_comanda(GUARDAR_PLATO, plato_comanda, true);
+    log_debug(logger_mensajes, "[MENSJS] rta_comanda: %x", rta_comanda);
+    log_debug(logger_mensajes, "[MENSJS] rta_comanda->parametros: %x", rta_comanda->parametros);
 
     // proc respuesta
     if (!rta_comanda) {
@@ -1484,6 +1523,7 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
                 responder_ERROR(socket_cliente);
         }
     }
+
 
     free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
     free(rta_comanda);
@@ -1549,6 +1589,68 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                 free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                 return;
             }
+
+
+
+
+
+
+
+
+            if (rest_a_conf == resto_default) {
+                rta_cp_comanda = mensajear_comanda(CONFIRMAR_PEDIDO, pedido, false);
+                if (!rta_cp_comanda) {
+                    responder_ERROR(socket_cliente);
+                    free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                    free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
+                    free(rta_cp_comanda);
+                    return;
+                }
+                switch (rta_cp_comanda->tipo_mensaje) {
+                    case ERROR:
+                        responder_ERROR(socket_cliente);
+                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
+                        free(rta_cp_comanda);
+                        return;
+                    case RTA_CONFIRMAR_PEDIDO:
+                        if (!*(int*)(rta_cp_comanda->parametros)) {
+                            responder_ERROR(socket_cliente);
+                            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                            free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
+                            free(rta_cp_comanda);
+                            return;
+                        }
+                        planif_nuevoPedido(cliente_id, pedido->id);
+                        mje_confirm_cli = malloc(sizeof(t_mensaje));
+                        mje_confirm_cli->tipo_mensaje = RTA_CONFIRMAR_PEDIDO;
+                        mje_confirm_cli->id = cfval_id;
+                        confirm = 1;
+                        mje_confirm_cli->parametros = &confirm;
+                        enviar_mensaje(mje_confirm_cli, socket_cliente);
+                        free(mje_confirm_cli);
+                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
+                        free(rta_cp_comanda);
+                        return;
+                    default:
+                        responder_ERROR(socket_cliente);
+                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
+                        free(rta_cp_comanda);
+                        return;
+                }
+            }
+
+
+
+
+
+
+
+
+
+
             mje_cprest = malloc(sizeof(t_mensaje));
             mje_cprest->tipo_mensaje = CONFIRMAR_PEDIDO;
             mje_cprest->id = cfval_id;
@@ -1611,6 +1713,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                             free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                             free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                             free(rta_cp_comanda);
+                            break;
                         default:
                             responder_ERROR(socket_cliente);
                             free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
@@ -1813,36 +1916,50 @@ t_mensaje* mensajear_comanda(op_code cod_op_env, void* params, bool liberar_para
         return NULL;
     }
 
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) cliente establecido contra comanda (socket %i)", socket);
+
     // enviar
     mensaje_env = malloc(sizeof(t_mensaje));
     mensaje_env->tipo_mensaje = cod_op_env;
     mensaje_env->id = 0;
     mensaje_env->parametros = params;
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) pre envio");
     enviar_mensaje(mensaje_env, socket);
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) post envio");
     if (liberar_params) {
         free_struct_mensaje(mensaje_env->parametros, mensaje_env->tipo_mensaje);
     }
     free(mensaje_env);
 
     // recibir rta
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) pre recv cod_op, socket: %i", socket);
     _recv_op = recv(socket, &cod_op_rec, sizeof(op_code), MSG_WAITALL);
-    if (_recv_op != -1 && _recv_op != 0) {
+    if (_recv_op == -1 && _recv_op == 0) {
+        perror("");
         // TODO: error handling
         return NULL;
     }
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) post recv cod_op");
+
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) pre recv id");
     _recv_id = recv(socket, &id_recibida, sizeof(uint32_t), MSG_WAITALL);
-    if (_recv_id != -1 && _recv_id != 0) {
+    if (_recv_id == -1 && _recv_id == 0) {
         // TODO: error handling
         return NULL;
     }
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) post recv id");
+
     mensaje_rec = malloc(sizeof(t_mensaje));
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) rta_comanda: %x", mensaje_rec);
     mensaje_rec->tipo_mensaje = cod_op_rec;
-    mensaje_rec->id = 0;
+    mensaje_rec->id = id_recibida;
     stream = recibir_mensaje(socket, &error);
     if (error) {
+        log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda) entro en if para liberar mensaje_rec");
         free(mensaje_rec);
         return NULL;
     }
+    log_debug(logger_mensajes, "[MENSJS] (en mensajear_comanda, despues del if) rta_comanda: %x", mensaje_rec);
     mensaje_rec->parametros = deserializar_mensaje(stream, cod_op_rec);
     // switch (cod_op_rec) {
     //     case RTA_CONSULTAR_PLATOS: ;
