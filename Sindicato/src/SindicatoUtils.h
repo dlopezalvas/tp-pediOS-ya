@@ -31,6 +31,8 @@ t_log* sindicatoLog;
 t_log* sindicatoDebugLog;
 
 t_config* sindicatoConfig;
+t_config* metadataConfig;
+
 int sindicatoPort;
 char* sindicatoMountPoint;
 char* sindicatoBlocksPath;

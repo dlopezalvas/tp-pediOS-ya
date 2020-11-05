@@ -2,6 +2,18 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+void internal_console_free(char* read, char** command){
+	int position = 0;
+
+	while(command[position] != NULL){
+		free(command[position]);
+		position++;
+	}
+
+	free(command);
+	free(read);
+}
+
 bool internal_console_validate_arguments(char** arguments, command_type_id commandType){
 
 	int position = 0;
@@ -81,13 +93,13 @@ void internal_console_init(){
 		char** splitted_command = string_split(read," ");
 
 		if(string_equals_ignore_case(splitted_command[0],COMMAND_EXIT)){
-			free(read);
+			internal_console_free(read, splitted_command);
 			break;
 		}
 		
 		internal_console_execute_command(splitted_command);
 
-		free(read);
+		internal_console_free(read, splitted_command);
 	}
 }
 

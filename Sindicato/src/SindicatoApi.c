@@ -34,7 +34,7 @@ void internal_api_createFileSystemFolders(){
 void internal_api_initialize_metadata(){
 	char* metadaPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
 
-	t_config* metadataConfig = config_create(metadaPathFS);
+	metadataConfig = config_create(metadaPathFS);
 
 	metadataFS = malloc(sizeof(t_metadata));
 
@@ -42,7 +42,8 @@ void internal_api_initialize_metadata(){
 	metadataFS->blocks = (uint32_t)config_get_int_value(metadataConfig, "BLOCKS");
 	metadataFS->magic_number = config_get_string_value(metadataConfig, "MAGIC_NUMBER");
 
-	//config_destroy(metadataConfig);
+	log_info(sindicatoDebugLog,"[FILESYSTEM] Metadata leida y guardada");
+
 	free(metadaPathFS);
 }
 
@@ -60,10 +61,6 @@ void internal_api_bitmap_create(){
 	//TODO: ver errores en mapeo
 
 	bitarray = bitarray_create_with_mode(bitarrayMap, blocks, LSB_FIRST);
-	//
-	//	for(int i = 0; i < blocks; i++){
-	//		bitarray_clean_bit(bitarray, i);
-	//	}
 
 	msync(bitarray, sizeof(bitarray), MS_SYNC);
 
@@ -87,6 +84,47 @@ void internal_api_initialize_blocks(){
 		fclose(bloqueFS);
 		free(filePath);
 	}
+
+	log_info(sindicatoDebugLog,"[FILESYSTEM] Bloques inicializados");
+}
+
+int internal_api_get_free_block(){
+	for(int i = 1; i <= metadataFS->blocks; i++){
+		if(!bitarray_test_bit(bitarray,i)){
+			pthread_mutex_lock(&bitarray_mtx);
+			bitarray_set_bit(bitarray,i);
+			msync(bitarray, sizeof(bitarray), MS_SYNC);
+			pthread_mutex_unlock(&bitarray_mtx);
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+char** internal_api_get_free_blocks(int blocksNeeded){
+	int freeBlock;
+	char* stringAux;
+	char** blocks = malloc(blocksNeeded*sizeof(int));
+
+	for(int i = 1; i <= blocksNeeded; i++){
+		freeBlock = internal_api_get_free_block();
+		if(freeBlock == -1){
+			log_error(sindicatoDebugLog, "[FILESYSTEM] ERROR: No hay bloques disponibles");
+			//TODO: Debo liberar los bloques reservados en caso de que se quede sin bloques disponibles
+			free(blocks);
+			return NULL;
+		}
+
+		stringAux = string_itoa(freeBlock);
+		blocks[i-1] = string_new();
+		string_append(&blocks[i-1], stringAux);
+		free(stringAux);
+	}
+
+	log_info(sindicatoDebugLog, "[FILESYSTEM] %d bloques fueron seteados en bitmap.",blocksNeeded);
+
+	return blocks;
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */

@@ -25,10 +25,16 @@ void sindicato_initialize(){
 
 	sindicato_api_afip_initialize();
 
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
 	/* Initialize the thread that listen conections */
 	pthread_t sindicatoServerThread;
-	pthread_create(&sindicatoServerThread, NULL, (void*)sindicato_server_initialize, NULL);
+	pthread_create(&sindicatoServerThread, &attr, (void*)sindicato_server_initialize, NULL);
 	pthread_detach(sindicatoServerThread);
+
+	pthread_attr_destroy(&attr);
 
 	/* Initialize the thread that open the console */
 	pthread_t sindicatoConsoleThread;
@@ -36,9 +42,12 @@ void sindicato_initialize(){
 	pthread_join(sindicatoConsoleThread, NULL);
 
 	config_destroy(sindicatoConfig);
+	config_destroy(metadataConfig);
 
 	log_destroy(sindicatoLog);
 	log_destroy(sindicatoDebugLog);
+
+	free(metadataFS);
 }
 
 
