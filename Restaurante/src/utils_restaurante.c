@@ -86,6 +86,8 @@ void iniciar_restaurante(){
 		buffer=recibir_respuesta(conexion_sindicato);
 		metadata_rest = buffer;
 
+		liberar_conexion(conexion_sindicato);
+
 		//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
 		log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
 		iniciar_colas_ready_es (metadata_rest);
@@ -200,8 +202,10 @@ void conectarme_con_app(){
 	m_restaurante* m_restaurante = malloc(sizeof(m_restaurante));
 
 	m_restaurante->nombre.nombre=nombre_resto;
+	//m_restaurante->posicion.x=metadata_rest->posicion.x;
+	//m_restaurante->posicion.y=metadata_rest->posicion.y;
 	m_restaurante->posicion.x=metadata->posicion.x;
-	m_restaurante->posicion.y=metadata->posicion.x;
+	m_restaurante->posicion.y=metadata->posicion.y;
 
 
 	//mandar t_mje
@@ -212,7 +216,7 @@ void conectarme_con_app(){
 
 
 	//iniciar cliente
-	socket_app= iniciar_cliente(cfg_ip_app,cfg_puerto_app);
+	socket_app= iniciar_cliente(cfg_ip_app,cfg_puerto_app); //variable global
 	log_info(log_config_ini, "Socket con app: %d\n",socket_app);
 
 
@@ -275,14 +279,56 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 
 
 	uint32_t cant_afinidades= metadata->cantAfinidades;
-	log_info(log_config_ini, "\tcant_afinidades: %PRIu32  \n",cant_afinidades);
+	log_info(log_config_ini, "\tcant_afinidades: %d  \n",cant_afinidades);
+
+	t_nombre* afinidad1= malloc(sizeof(t_nombre));
+	afinidad1=list_get(metadata->afinidades,0);
+	log_info(log_config_ini, "\tAfinidad: %s \n",afinidad1->nombre);
+
+	t_coordenadas* coordenada= malloc(sizeof(t_coordenadas));
+	coordenada->x=metadata->posicion.x;
+	coordenada->y=metadata->posicion.y;
+	log_info(log_config_ini, "\tCoordenada X: %d Coordenada Y: %d \n",coordenada->x,coordenada->y);
 
 
-	id_pedidos=5;
+	t_receta* receta1= malloc(sizeof(t_receta));
+	receta1=list_get(metadata->recetas,0);
+	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta1->receta.nombre,receta1->precio);
+
+	t_receta* receta2= malloc(sizeof(t_receta));
+	receta2=list_get(metadata->recetas,1);
+	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta2->receta.nombre,receta2->precio);
+
+
+	int hornos=metadata->cantHornos;
+
+	log_info(log_config_ini, "\tCantidad de hornos: %d\n",hornos);
+
+
+	id_pedidos=5; // este dato deberia venir de sindicato
 	log_info(log_config_ini, "\tLos id de pedidos que tiene este restaurante comienza en: %d  \n", id_pedidos);
 	//Logica de generacion de colas de ready y i/o
 	//TODO
 
+	//logica
+
+	t_list*  afinidades=list_create();
+
+	afinidades=metadata->afinidades; //supongo que las afinidades s
+
+
+	int cantidad_afiniades= afinidades->elements_count;
+	int cantidad_colas=cantidad_afiniades+1;
+	log_info(log_config_ini, "\tCantidad de colas: %d  \n", cantidad_colas);
+
+
+	for (int cocineros = 0;	cocineros <cant_cocineros-1;	cocineros++)
+	{
+		list_get(afinidades,cocineros);
+
+
+	}
+//
 
 
 
@@ -569,7 +615,7 @@ void process_request(int cod_op, int cliente_fd) {
 			sindicato_GUARDAR_PLATO->comida.largo_nombre=nombre_plato_GUARDAR_PLATO->largo_nombre;
 			sindicato_GUARDAR_PLATO->comida.nombre=nombre_plato_GUARDAR_PLATO->nombre;
 			sindicato_GUARDAR_PLATO->idPedido=mj_agregar_plato->id;
-			sindicato_GUARDAR_PLATO->restaurante.largo_nombre=nombre_restaurante_GUARDAR_PLATO->largo_nombre;
+			//sindicato_GUARDAR_PLATO->restaurante.largo_nombre=nombre_restaurante_GUARDAR_PLATO->largo_nombre;
 			sindicato_GUARDAR_PLATO->restaurante.nombre=nombre_restaurante_GUARDAR_PLATO->nombre;
 
 			t_mensaje* mje_sindicato_GUARDAR_PLATO= malloc(sizeof(t_mensaje));
@@ -640,7 +686,7 @@ void process_request(int cod_op, int cliente_fd) {
 		 t_nombre_y_id* id_CONFIRMAR_PEDIDO = malloc(sizeof(t_nombre_y_id));
 
 		id_CONFIRMAR_PEDIDO=mensaje;
-		log_info(log_config_ini ,"Se quiere CONFIRMAR_PEDIDO de resto: %s con id: %d",id_CONFIRMAR_PEDIDO->nombre.nombre,id_CONFIRMAR_PEDIDO->id);
+		log_info(log_config_ini ,"Se quiere CONFIRMAR_PEDIDO de resto: %s  con id: %d",id_CONFIRMAR_PEDIDO->nombre.nombre,id_CONFIRMAR_PEDIDO->id);
 
 
 		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
@@ -681,17 +727,19 @@ void process_request(int cod_op, int cliente_fd) {
 		}else{
 			//ENVIAR OBTENER_PEDIDO A SINDICATO
 			enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
+			log_info(log_config_ini ,"Se envio a sindicato el mj OBTENER_PEDIDO: ",cod_op);
 
 			//RECIBIR RESPUESTA DE SINDICATO
 			void* buffer_RTA_OBTENER_PEDIDO=NULL;
 
 			buffer_RTA_OBTENER_PEDIDO= recibir_respuesta(socket_OBTENER_PEDIDO);// TODO
 			rta_sindicato_RTA_OBTENER_PEDIDO=buffer_RTA_OBTENER_PEDIDO;
+			log_info(log_config_ini ,"Se recibio rta de sindicato el mj OBTENER_PEDIDO: ",cod_op);
 			liberar_conexion( socket_OBTENER_PEDIDO);
 
 			//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
 
-					pthread_t* hilo_plato;
+
 					t_elemPedido* pedido_n = malloc(sizeof(t_elemPedido));
 					t_nombre* sindicato_nombre_plato_receta = malloc(sizeof(t_nombre));
 
@@ -724,10 +772,10 @@ void process_request(int cod_op, int cliente_fd) {
 						enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
 
 						//RECIBIR RESPUESTA DE SINDICATO
-						void* buffer_RTA_OBTENER_RECETA= NULL;
+						void* buffer_RTA_OBTENER_RECETA= recibir_respuesta(socket_OBTENER_PEDIDO);
 
 						buffer_RTA_OBTENER_RECETA= recibir_respuesta(socket_OBTENER_RECETA);// TODO
-						buffer_RTA_OBTENER_RECETA =rta_sindicato_RTA_OBTENER_RECETA;
+						rta_sindicato_RTA_OBTENER_RECETA=buffer_RTA_OBTENER_RECETA;
 						liberar_conexion( socket_OBTENER_RECETA);
 
 
@@ -740,20 +788,23 @@ void process_request(int cod_op, int cliente_fd) {
 						plato_pcb->cantPasos=rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
 						plato_pcb->pasos=rta_sindicato_RTA_OBTENER_RECETA->pasos;
 
-						//creo hilo pcb
-
-						hilo_plato= malloc(sizeof(pthread_t));
+						//cargo lista de pcb
+						log_info(log_config_ini,"\tPCB id: %d \n",plato_pcb->id_pedido);
+						log_info(log_config_ini,"\tPCB nombe plato: %s \n",plato_pcb->comida.nombre);
+						log_info(log_config_ini,"\tPCB cant de platos: %d \n",plato_pcb->cantTotal);
+						log_info(log_config_ini,"\tPCB cant hecha: %d \n",plato_pcb->cantHecha);
+						log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos);
+						//log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos); PASOS list get
 
 						pthread_mutex_lock(&mutex_pcb);
-						list_add(hilos_pcb, hilo_plato);
+						list_add(pcb_platos, plato_pcb);
 						pthread_mutex_unlock(&mutex_pcb);
-
-						pthread_create(hilo_plato,NULL,fhilo_plato,plato_pcb);
-						pthread_detach(hilo_plato);
+						//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
+						//plafinificar
+						//todo
 
 					}
-					//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
-					//plafinificar
+
 
 					//respondo al cliente -- consultar en que casos se debe mandar fail
 					//esta es la respuesta al cliente,

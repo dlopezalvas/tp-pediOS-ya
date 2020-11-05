@@ -53,3 +53,10 @@
 [INFO] 00:40:57:856 DebugSindicato/(30218:30218): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurante
 [INFO] 00:40:57:857 DebugSindicato/(30218:30219): [SERVER] Servidor Creado
 [INFO] 00:42:37:580 DebugSindicato/(30218:30294): AsadoCompleto
+[INFO] 18:59:57:917 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip
+[INFO] 18:59:57:926 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Metadata
+[INFO] 18:59:57:926 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files
+[INFO] 18:59:57:926 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Receta
+[INFO] 18:59:57:926 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurante
+[INFO] 18:59:57:927 DebugSindicato/(7052:7053): [SERVER] Servidor Creado
+[INFO] 19:00:19:89 DebugSindicato/(7052:7070): AsadoCompleto

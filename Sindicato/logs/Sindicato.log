@@ -90,3 +90,40 @@
 [INFO] 00:42:37:580 Sindicato/(30218:30294): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
 [INFO] 00:42:37:580 Sindicato/(30218:30294): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
 [INFO] 00:42:37:581 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:10:54:282 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:10:54:290 Sindicato/(30218:2652): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:10:54:290 Sindicato/(30218:2652): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 22:12:17:133 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:12:17:141 Sindicato/(30218:2708): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:12:17:141 Sindicato/(30218:2708): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 22:24:28:197 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:24:28:206 Sindicato/(30218:2968): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:24:28:206 Sindicato/(30218:2968): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 22:34:20:938 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:34:20:948 Sindicato/(30218:3056): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:34:20:948 Sindicato/(30218:3056): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 22:37:57:331 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 22:37:57:340 Sindicato/(30218:3156): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 22:37:57:340 Sindicato/(30218:3156): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 23:05:10:746 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 23:05:10:755 Sindicato/(30218:3818): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 23:05:10:755 Sindicato/(30218:3818): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 23:05:58:965 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 23:05:58:973 Sindicato/(30218:3898): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 23:05:58:973 Sindicato/(30218:3898): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 23:19:56:452 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 23:19:56:460 Sindicato/(30218:4149): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 23:19:56:460 Sindicato/(30218:4149): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 23:37:49:127 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 23:37:49:134 Sindicato/(30218:4515): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 23:37:49:134 Sindicato/(30218:4515): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 00:31:41:645 Sindicato/(30218:30219): [SERVER] Conexion aceptada
+[INFO] 00:31:41:653 Sindicato/(30218:5557): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 00:31:41:653 Sindicato/(30218:5557): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 19:00:01:651 Sindicato/(7052:7053): [SERVER] Conexion aceptada
+[INFO] 19:00:01:659 Sindicato/(7052:7058): Se recibio el mensaje OBTENER_RESTAURANTE uggis
+[INFO] 19:00:01:659 Sindicato/(7052:7058): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 19:00:19:69 Sindicato/(7052:7053): [SERVER] Conexion aceptada
+[INFO] 19:00:19:89 Sindicato/(7052:7070): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 19:00:19:89 Sindicato/(7052:7070): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 19:00:19:161 Sindicato/(7052:7053): [SERVER] Conexion aceptada

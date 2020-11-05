@@ -692,3 +692,4 @@
 [INFO] 00:42:05:568 cliente/(30231:30281): Se envio el mensaje AGREGAR_PLATO ugis 2
 [INFO] 00:42:05:572 cliente/(30231:30281): Se recibio el mensaje RTA_AGREGAR_PLATO OK
 [INFO] 00:42:37:578 cliente/(30231:30289): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 19:00:19:1 cliente/(30231:7067): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2

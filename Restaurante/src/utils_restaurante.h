@@ -63,7 +63,7 @@ pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
 pthread_mutex_t mutex_pcb;
-t_list *  hilos_pcb;
+t_list *  pcb_platos;
 
 pthread_t hilo_serve_app;
 
@@ -76,6 +76,15 @@ typedef struct{
 			uint32_t cantTotal;
 			uint32_t cantHecha;
 }t_plato_pcb;
+
+
+
+
+typedef struct{
+	t_nombre cocinero;
+	t_nombre afinidad;
+}t_cocinero_afinidad;
+
 
 void* fhilo_plato (t_plato_pcb* v);
 
