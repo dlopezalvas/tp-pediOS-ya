@@ -7,8 +7,12 @@
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/config.h>
+#include <commons/bitarray.h>
 #include <commons/collections/queue.h>
 #include <semaphore.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include<math.h>
 #include <../commonsCoronaLinux/utils.h>
 #include <../commonsCoronaLinux/socket.h>
 #include <../commonsCoronaLinux/logs.h>
@@ -24,6 +28,7 @@
 
 t_config* config_comanda;
 t_log* log_comanda;
+
 
 t_list* hilos_clientes;
 pthread_mutex_t hilos_clientes_mtx;
@@ -42,6 +47,7 @@ typedef struct{
 
 typedef struct{
 	int id_pedido;
+	est_pedido estado;
 	t_list* tabla_paginas;
 } t_segmento;
 
@@ -75,10 +81,10 @@ t_algoritmo_reemplazo algoritmo_reemplazo;
 pthread_mutex_t restaurantes_mtx;
 t_list* restaurantes;
 
-uint32_t cant_frames_swap;
-uint32_t cant_frames_MP;
-uint32_t* frames_swap;
-uint32_t* frames_MP;
+int cant_frames_swap;
+int cant_frames_MP;
+t_bitarray* frames_swap;
+t_bitarray* frames_MP;
 
 pthread_mutex_t frames_swap_mtx;
 pthread_mutex_t frames_MP_mtx;
@@ -89,7 +95,12 @@ void* memoria_swap;
 pthread_mutex_t memoria_principal_mtx;
 pthread_mutex_t memoria_swap_mtx;
 
+int puntero_clock;
+pthread_mutex_t puntero_clock_mtx;
+
+
 void iniciar_comanda();
+void inicializar_swap();
 void process_request(int cod_op, int cliente_fd);
 void serve_client(int socket);
 void esperar_cliente(int servidor);
@@ -111,12 +122,25 @@ void ejecucion_handshake_cliente(t_mensaje_a_procesar* mensaje_a_procesar);
 int memoria_disponible_swap();
 t_plato* deserializar_pagina(void* stream);
 void guardar_en_swap(int frame_destino_swap, t_plato* plato);
-void guardar_en_mp(t_plato* plato);
+int guardar_en_mp(t_plato* plato);
 int seleccionar_frame_mp();
-void actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida);
+bool actualizar_plato_mp(t_pagina* pagina, int cantidad_pedida, int cantidad_lista);
 int memoria_disponible_mp();
+void traer_de_swap(t_pagina* pagina);
+void actualizar_swap(t_pagina* pagina);
 
 void liberar_pagina(t_pagina* pagina);
 void free_pagina(t_pagina* pagina);
+
+int eleccion_victima_clock_mejorado();
+int eleccion_victima_LRU();
+bool esta_en_MP(t_pagina* pagina);
+void liberar_frame(t_pagina* victima);
+
+void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*));
+bool uso_modificado_cero(t_pagina* pagina);
+bool uso_cero_modificado_uno(t_pagina* pagina);
+void hacer_nada(void* algo); //jaja salu2
+void cambiar_uso_cero(t_pagina* pagina);
 
 #endif /* UTILS_COMANDA_H_ */

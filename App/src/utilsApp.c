@@ -1,4 +1,5 @@
 #include "utilsApp.h"
+#include <errno.h>
 
 // configuracionInicial() inicializa:
 //      > los loggers
@@ -191,15 +192,15 @@ void planif_encolar_READY(t_pedido* pedido) {
 }
 
 void planif_encolar_BLOCK(t_pedido* pedido) {
-    pthread_mutex_lock(&mutex_pedidosEXEC);
     pthread_mutex_lock(&mutex_cola_BLOCK);
+    pthread_mutex_lock(&mutex_pedidosEXEC);
     log_debug(logger_planificacion, "[PEDIDO_%2i] Desencolando de EXEC...", pedido->pedido_id);
     search_remove_return(pedidosEXEC, pedido);
     pedido->pedido_estado = BLOCK;
     log_debug(logger_planificacion, "[PEDIDO_%2i] Encolando en BLOCK...", pedido->pedido_id);
     list_add(cola_BLOCK, pedido);
-    pthread_mutex_unlock(&mutex_pedidosEXEC);
     pthread_mutex_unlock(&mutex_cola_BLOCK);
+    pthread_mutex_unlock(&mutex_pedidosEXEC);
     sem_post(&semaforo_vacantesEXEC);
 }
 
@@ -259,6 +260,11 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
                 pedido_seleccionado = planif_HRRN();
         }
 
+        if (SJF_o_HRRN()) {
+            pedido_seleccionado->sjf_ultRafaga_est = estimar_rafaga(pedido_seleccionado);
+            pedido_seleccionado->sjf_ultRafaga_real = 0;
+        }
+
         log_debug(logger_planificacion, "[PLANIF_CP] Pedido seleccionado: %i", pedido_seleccionado->pedido_id);
 
         log_debug(logger_planificacion, "[PLANIF_CP] Unlockeando cola de READY...");
@@ -277,40 +283,92 @@ void* fhilo_planificador_cortoPlazo(void* __sin_uso__) { // (de READY a EXEC)
     }
 }
 
+bool SJF_o_HRRN(void) {
+    return ((cfval_algoritmoPlanificacion == SJF_SD) || (cfval_algoritmoPlanificacion == HRRN));
+}
+
 t_pedido* planif_FIFO(void) {
     log_debug(logger_planificacion, "[PLANIF_CP] Desencolando pedido de READY...");
     return list_remove(cola_READY, 0);
 }
 
 t_pedido* planif_SJF_SD(void) {
-    // TODO
+    unsigned index_pedido_min = 0;
+    double estimacion_min = estimar_rafaga(list_get(cola_READY, index_pedido_min));
+    for (
+        unsigned index_READY = 1;
+        index_READY < list_size(cola_READY);
+        index_READY++
+    ) {
+        if (estimar_rafaga(list_get(cola_READY, index_READY)) < estimacion_min) {
+            index_pedido_min = index_READY;
+        }
+    }
+    return list_remove(cola_READY, index_pedido_min);
+}
+
+double estimar_rafaga(t_pedido* pedido) {
+    // Tn+1 = ta + (1-a)Tn ... de donde sale estimacion inicial?
+    return (pedido->sjf_ultRafaga_real) * cfval_alpha
+        + (pedido->sjf_ultRafaga_est) * (1 - cfval_alpha);
 }
 
 t_pedido* planif_HRRN(void) {
-    // TODO
+    unsigned index_pedido_max = 0;
+    double respRatio_max = estimar_rafaga(list_get(cola_READY, index_pedido_max));
+    for (
+        unsigned index_READY = 1;
+        index_READY < list_size(cola_READY);
+        index_READY++
+    ) {
+        if (respRatio(list_get(cola_READY, index_READY)) > respRatio_max) {
+            index_pedido_max = index_READY;
+        }
+    }
+    return list_remove(cola_READY, index_pedido_max);
 }
 
-void planif_nuevoPedido(int id_pedido) {
+double respRatio(t_pedido* pedido) {
+    // Tn+1 = ta + (1-a)Tn ... de donde sale estimacion inicial?
+    return 1 + (pedido->hrrn_tiempoEsperaREADY) / estimar_rafaga(pedido);
+}
+
+void planif_nuevoPedido(int id_cliente) { // TODO: ojo
     t_restaurante* restaurante;
     t_cliente* cliente;
     t_pedido* pedidoNuevo;
 
-    log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido: %i", id_pedido);
+    log_debug(logger_planificacion, "[PLANIF_NP] Planificando nuevo pedido");
 
-    cliente = get_cliente(id_pedido);
+    cliente = get_cliente_porSuID(id_cliente);
+    log_debug(logger_planificacion, "[PLANIF_NP] Puntero al cliente: %x", cliente);
+
+    if (!cliente) {
+        // TODO: error handling
+        log_debug(logger_planificacion, "[PLANIF_NP] No existe puntero al cliente %i", id_cliente);
+        log_debug(logger_planificacion, "[PLANIF_NP] Aca hay que retornar ERROR pero no esta hecho todavia");
+        return;
+    }
     log_debug(logger_planificacion, "[PLANIF_NP] Cliente: %i", cliente->id);
 
     restaurante = cliente->restaurante_seleccionado; // TODO
+    if (!restaurante) {
+        // TODO: error handling, ya esta hecho en otras partes! abstraer
+    }
     log_debug(logger_planificacion, "[PLANIF_NP] Restaurante: %s", restaurante->nombre);
 
     pedidoNuevo = malloc(sizeof(t_pedido));
     pedidoNuevo->cliente = cliente;
     pedidoNuevo->restaurante = restaurante;
-    pedidoNuevo->pedido_id = id_pedido;
+    pedidoNuevo->pedido_id = cliente->pedido_id;
+
+    pedidoNuevo->sjf_ultRafaga_est = cfval_estimacionInicial;
+    pedidoNuevo->sjf_ultRafaga_real = cfval_estimacionInicial;
+    pedidoNuevo->hrrn_tiempoEsperaREADY = 0;
 
     pedidoNuevo->mutex_clock = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
-    pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado?
+    pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado? porque despues medio que por defecto anda deslockeado D:
     log_debug(logger_planificacion, "[PLANIF_NP] Mutex de clock inicializado");
 
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
@@ -327,23 +385,27 @@ void planif_nuevoPedido(int id_pedido) {
 
 t_cliente* get_cliente_porSuID(int id_cliente) {
     t_cliente* cliente;
+    log_debug(logger_planificacion, "[PLANIF_NP] Lockeando mutex_lista_clientes...");
     pthread_mutex_lock(&mutex_lista_clientes);
     for (
         unsigned index_cli = 0;
         index_cli < list_size(clientes);
         index_cli++
     ) {
+        log_debug(logger_planificacion, "[PLANIF_NP] Cliente de indice %i...", index_cli);
         cliente = list_get(clientes, index_cli);
         if (cliente->id == id_cliente) {
+            log_debug(logger_planificacion, "[PLANIF_NP] \tEncontrado!");
             pthread_mutex_unlock(&mutex_lista_clientes);
             return cliente;
         }
     }
+    log_debug(logger_planificacion, "[PLANIF_NP] No se encontro cliente, se retorna NULL");
     pthread_mutex_unlock(&mutex_lista_clientes);
     return NULL;
 }
 
-t_cliente* get_cliente(int id_pedido) {
+t_cliente* get_cliente(int id_pedido) { // TODO: redo esto, el id no es univoco
     t_cliente* cliente;
     pthread_mutex_lock(&mutex_lista_clientes);
     for (
@@ -542,6 +604,7 @@ void repartidor_desocupar(t_repartidor* repartidor) {
 
 void consumir_ciclo(t_pedido* pedido) {
     pedido->repartidor->frecuenciaDescanso_restante--;
+    pedido->sjf_ultRafaga_real++;
     log_debug(
         logger_planificacion,
         "[PEDIDO_%2i] Movido a posicion (%i;%i)",
@@ -649,9 +712,14 @@ t_list* get_nombresRestConectados(void) {
     nombresRestConectados = list_create();
     pthread_mutex_lock(&mutex_lista_restaurantes);
     if (list_is_empty(restaurantes) || modo_noRest) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: RESTO DEFAULT"
+        );
         pthread_mutex_unlock(&mutex_lista_restaurantes);
         restaurante = malloc(sizeof(t_nombre));
         restaurante->nombre = "Resto Default";
+        list_add(nombresRestConectados, restaurante);
         return nombresRestConectados;
     }
     for (
@@ -671,6 +739,7 @@ void* fhilo_clock(void* __sin_uso__) {
     while (true) {
         pthread_mutex_lock(&mutex_cola_BLOCK);
         pthread_mutex_lock(&mutex_pedidosEXEC);
+        pthread_mutex_lock(&mutex_cola_READY);
         for (
             unsigned index_EXEC = 0;
             index_EXEC < list_size(pedidosEXEC);
@@ -685,8 +754,16 @@ void* fhilo_clock(void* __sin_uso__) {
         ) {
             pthread_mutex_unlock(((t_pedido*)list_get(cola_BLOCK, index_BLOCK))->mutex_clock);
         }
+        for (
+            unsigned index_READY = 0;
+            index_READY < list_size(cola_READY);
+            index_READY++
+        ) {
+            ((t_pedido*)list_get(cola_READY, index_READY))->hrrn_tiempoEsperaREADY++;
+        }
         pthread_mutex_unlock(&mutex_cola_BLOCK);
         pthread_mutex_unlock(&mutex_pedidosEXEC);
+        pthread_mutex_unlock(&mutex_cola_READY);
         sleep(cfval_retardoCicloCPU);
     }
 }
@@ -751,7 +828,7 @@ void configuracionConexiones(void) {
 void* fhilo_servidor(void* arg) {
     int conexion_servidor;
     conexion_servidor = iniciar_servidor(cfval_puertoEscucha);
-    log_debug(logger_mensajes, "[MENSJS]: 1");
+    log_debug(logger_mensajes, "[MENSJS]: fhilo_servidor, pre esperar_cliente");
     while(1) {
         esperar_cliente(conexion_servidor);
     }
@@ -762,16 +839,19 @@ void esperar_cliente(int servidor){
 
 	unsigned int tam_direccion = sizeof(struct sockaddr_in);
 
+    log_debug(logger_mensajes, "[MENSJS]: arranca esperar cliente");
 	int cliente = accept (servidor, (void*) &direccion_cliente, &tam_direccion);
+
+    log_debug(logger_mensajes, "[MENSJS]: conexion aceptada");
+
 	pthread_t hilo;
-    log_debug(logger_mensajes, "[MENSJS]: 2");
 
 	pthread_mutex_lock(&mutex_hilos);
-    log_debug(logger_mensajes, "[MENSJS]: 3");
+    log_debug(logger_mensajes, "[MENSJS]: mtx hilos lockeado");
 	list_add(hilos, &hilo);
 	pthread_mutex_unlock(&mutex_hilos);
 
-    log_debug(logger_mensajes, "[MENSJS]: 4");
+    log_debug(logger_mensajes, "[MENSJS]: creando hilo serve_client");
 	pthread_create(&hilo,NULL,(void*)serve_client,cliente);
 	pthread_detach(hilo);
 
@@ -779,20 +859,25 @@ void esperar_cliente(int servidor){
 
 void serve_client(int socket){
 	int rec;
-	int cod_op;
+	int cod_op = -1;
 	while(1){
+        log_debug(logger_mensajes, "[MENSJS]: pre recibir op_code");
 		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
-        log_debug(logger_mensajes, "[MENSJS]: 5");
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: post recibir op_code: %i-%s",
+            cod_op,
+            op_code_to_string(cod_op)
+        );
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
+            log_debug(logger_mensajes, "[MENSJS]: Fin de conexion: recv = %i", rec);
 			//			pthread_mutex_lock(&logger_mutex);
 			//			log_info(logger,"Se desconecto el proceso con id: %d",socket);
 			//			pthread_mutex_unlock(&logger_mutex);
 			pthread_exit(NULL);
 		}
-		puts("recibi un mensaje");
-		printf("codigo: %d\n", cod_op);
-        log_debug(logger_mensajes, "[MENSJS]: 6");
+        log_debug(logger_mensajes, "[MENSJS]: pre process_request");
 		process_request(cod_op, socket);
 	}
 }
@@ -804,24 +889,34 @@ void process_request(int cod_op, int cliente_fd) {
     uint32_t cliente_id;
 
     // TODO: provisorio?
-    rec = recv(socket, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
-    log_debug(logger_mensajes, "[MENSJS]: 7");
+    log_debug(logger_mensajes, "[MENSJS]: en process_request, por hacer recv de id");
+    rec = recv(cliente_fd, &cliente_id, sizeof(uint32_t), MSG_WAITALL);
+    log_debug(logger_mensajes, "[MENSJS]: en process_request, post hacer recv de id: %i", cliente_id);
+    
     if(rec == -1 || rec == 0 ){
         cod_op = -1;
         //			pthread_mutex_lock(&logger_mutex);
         //			log_info(logger,"Se desconecto el proceso con id: %d",socket);
         //			pthread_mutex_unlock(&logger_mutex);
+        log_debug(logger_mensajes, "[MENSJS]: Al hacer recv, hubo un error o la conexion ya se cerro", rec);
         pthread_exit(NULL);
     }
 
-    if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
-        void* buffer = recibir_mensaje(cliente_fd, &size);
-        mensaje = deserializar_mensaje(buffer, cod_op);
-    }
+    // log_debug(logger_mensajes, "[MENSJS]: pre comparacion sospechosa");
+    // log_debug(logger_mensajes, "[MENSJS]: struct code: %i", op_code_to_struct_code(cod_op));
+
+    // if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
+
+    // log_debug(logger_mensajes, "[MENSJS]: entro en if porque el mje no es vacio");
+    void* buffer = recibir_mensaje(cliente_fd, &size);
+    log_debug(logger_mensajes, "[MENSJS]: mje recibido");
+    mensaje = deserializar_mensaje(buffer, cod_op);
+    log_debug(logger_mensajes, "[MENSJS]: mje deserializado");
+
+    // }
 
     // TODO loggear_mensaje_recibido(mensaje_deserializado, cod_op, logger_mensajes);
 
-    // TODO: switch con tipos de mensaje
     switch (cod_op) {
 
         // de CLIENTE:
@@ -906,9 +1001,21 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
     pthread_mutex_unlock(&mutex_lista_clientes);
 
     mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
+    mensaje->id = 807;
     *confirmacion = 1;
     mensaje->parametros = confirmacion;
+
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Contestando handshake..."
+    );
+
     enviar_mensaje(mensaje, socket_cliente);
+
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Handshake contestado"
+    );
 
     pthread_mutex_unlock(cliente->mutex);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
@@ -919,11 +1026,42 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
     t_mensaje* mensaje = malloc(sizeof(t_mensaje));
     t_restaurante_y_plato* restaurantes = malloc(sizeof(t_restaurante_y_plato));
 
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Gestionando CONSULTAR_RESTAURANTES:"
+    );
+
     mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
     restaurantes->nombres = get_nombresRestConectados();
-    restaurantes->cantElementos = list_size(restaurantes->nombres);
+    for (
+        unsigned index_rests = 0;
+        index_rests < list_size(restaurantes->nombres);
+        index_rests++
+    ) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: \t%i: %s",
+            index_rests,
+            ((t_nombre*)list_get(restaurantes->nombres, index_rests))->nombre
+        );
+    }
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Cant. de elems.: %i",
+        list_size(restaurantes->nombres)
+    );
+    mensaje->id = 807;
     mensaje->parametros = restaurantes;
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Enviando mensaje..."
+    );
     enviar_mensaje(mensaje, socket_cliente);
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Mensaje enviado"
+    );
+    loggear_mensaje_enviado(mensaje, mensaje->tipo_mensaje, logger_mensajes);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }
@@ -934,12 +1072,36 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
     t_cliente* cliente_seleccionante;
 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
+    log_debug(logger_mensajes, "[MENSJS]: Se encontro el puntero del cliente %i", cliente_seleccionante->id);
     cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
 
+    if (!(cliente_seleccionante->restaurante_seleccionado)) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: No se encontro el restaurante %s; se responde ERROR",
+            seleccion->restaurante.nombre
+        );
+        mensaje = malloc(sizeof(t_mensaje));
+        mensaje->tipo_mensaje=ERROR;
+        mensaje->id = 807;
+        enviar_mensaje(mensaje, socket_cliente);
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: ERROR enviado"
+        );
+        free(mensaje);
+        return;
+    }
+    
+    log_debug(logger_mensajes, "[MENSJS]: encontro rest %s", cliente_seleccionante->restaurante_seleccionado->nombre);
+
     mensaje->tipo_mensaje = RTA_SELECCIONAR_RESTAURANTE;
+    mensaje->id = 807;
     *confirmacion = 1;
     mensaje->parametros = confirmacion;
+    log_debug(logger_mensajes, "[MENSJS]: pre enviar msj");
     enviar_mensaje(mensaje, socket_cliente);
+    log_debug(logger_mensajes, "[MENSJS]: post enviar msj");
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
     free(mensaje);
 }
@@ -949,17 +1111,36 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
     t_nombre* nombre_rest_consultado = malloc(sizeof(t_nombre));
     t_restaurante* restaurante_consultado;
     t_cliente* cliente_consultor;
+    uint32_t* confirmacion;
     op_code cod_op;
     int id_recibida;
     int _recv_op;
     int _recv_id;
     int size = 0;
 
+    log_debug(
+        logger_mensajes,
+        "[MENSJS]: Gestionando CONSULTAR_PLATOS:"
+    );
+
     cliente_consultor = get_cliente_porSuID(cliente_id);
     restaurante_consultado = cliente_consultor->restaurante_seleccionado;
 
     if (!restaurante_consultado) {
         // TODO: tambien agregarle null cuando se guarda el cliente al conectarse no?
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: El cliente no tiene restaurante seleccionado, se contesta ERROR"
+        );
+        mensaje = malloc(sizeof(t_mensaje));
+        mensaje->tipo_mensaje=ERROR;
+        mensaje->id = 807;
+        enviar_mensaje(mensaje, socket_cliente);
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: ERROR enviado"
+        );
+        free(mensaje);
         return;
     } else if (restaurante_consultado == resto_default) {
         mensaje = malloc(sizeof(t_mensaje));
@@ -972,7 +1153,6 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
 
     mensaje->tipo_mensaje = CONSULTAR_PLATOS;
     nombre_rest_consultado->nombre="";
-    nombre_rest_consultado->largo_nombre=0;
     mensaje->parametros = nombre_rest_consultado;
 
     pthread_mutex_lock(restaurante_consultado->mutex);

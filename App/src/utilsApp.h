@@ -20,6 +20,8 @@
 // #define RTA_POSICION_CLIENTE 401
 // #define ERROR 402
 
+extern int errno;
+
 // debug
     bool modo_noComanda;
     bool modo_noRest;
@@ -127,6 +129,9 @@
         t_restaurante* restaurante;
         t_repartidor* repartidor;
         int pedido_id;
+        unsigned sjf_ultRafaga_real;
+        double sjf_ultRafaga_est;
+        unsigned hrrn_tiempoEsperaREADY;
         t_estado pedido_estado;
         pthread_mutex_t* mutex_EXEC;
         pthread_mutex_t* mutex_clock;
@@ -151,7 +156,7 @@
     pthread_mutex_t mutex_cola_READY;
     void planif_encolar_READY(t_pedido* pedido);
 
-    t_list* cola_BLOCK; // esta cola es solo para esperar los platos no terminados, no para el descanso
+    t_list* cola_BLOCK; // esta cola es para esperar los platos no terminados y para el descanso
     pthread_mutex_t mutex_cola_BLOCK;
     void planif_encolar_BLOCK(t_pedido* pedido);
 
@@ -170,6 +175,9 @@
     sem_t semaforo_pedidos_NEW;
     sem_t semaforo_pedidos_READY;
     sem_t semaforo_vacantesEXEC;
+    double estimar_rafaga(t_pedido* pedido);
+    double respRatio(t_pedido* pedido);
+    bool SJF_o_HRRN(void);
     unsigned distancia_entre(int ax, int ay, int bx, int by);
 
 // liberacion de memoria
