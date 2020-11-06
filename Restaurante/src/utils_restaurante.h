@@ -17,6 +17,7 @@
 #include <../commonsCoronaLinux/utils.h>
 #include <commons/collections/queue.h>
 #include <../commonsCoronaLinux/socket.h>
+#include <../commonsCoronaLinux/logs.h>
 #include <inttypes.h>
 #include <errno.h>
 
@@ -36,6 +37,7 @@ char* cfg_ip_app;
 char* cfg_nombre_restaurante;
 char* cfg_algoritmo_planificacion;
 int cfg_quantum;
+int cfg_id;
 
 void conectarme_con_app();
 
@@ -56,6 +58,9 @@ void process_request(int cod_op, int cliente_fd);
 void* recibir_respuesta(int socket);
 int conectar_con_sindicato();
 void inicio_de_listas_globales();
+bool mismo_nombre(t_nombre* afinidad1, t_nombre* afinidad2);
+void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
+
 
 //HILOS - SEMAFOROS
 pthread_t hilo_servidor_clientes;
@@ -117,13 +122,13 @@ rta_obtenerRestaurante* metadata_rest;
 void iniciar_colas_ready_es();
 void delay (int number_of_seconds);
 int id_pedidos;
-int id;
+
 
 
 //LISTAS
 
 t_list *  list_pedidos;
-t_list *  status_platos;
+
 
 //MENSAJES
 uint32_t recibir_RTA_GUARDAR_PEDIDO(int socket);
@@ -133,6 +138,7 @@ rta_obtenerReceta* recibir_RTA_OBTENER_RECETA(int socket);
 
 //FUNCIONES
 t_restaurante_y_plato* recibir_RTA_CONSULTAR_PLATOS(int socket);
+void agregar_cola_ready(t_plato_pcb* plato);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
