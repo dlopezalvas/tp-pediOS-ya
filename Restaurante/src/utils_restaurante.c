@@ -55,7 +55,7 @@ void iniciar_restaurante(){
 	void* buffer = NULL;
 	//CONEXION SINDICATO
 
-	conexion_sindicato= conectar_con_sindicato();
+	conexion_sindicato = conectar_con_sindicato();
 
 	log_info(log_config_ini, "ya me conecte \n");
 	//GET DE METADATA
@@ -69,6 +69,7 @@ void iniciar_restaurante(){
 
 		t_mensaje* obt_restaurante = malloc(sizeof(t_mensaje));
 		obt_restaurante->tipo_mensaje = OBTENER_RESTAURANTE;
+		obt_restaurante->id = cfg_id;
 
 
 		t_nombre* nombre_restaurante = malloc(sizeof(t_nombre));
@@ -205,7 +206,7 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 		pthread_mutex_unlock(&cola_afinidades_mtx);
 		if(cola == NULL){
 			cola = malloc(sizeof(t_cola_afinidad));
-			cola->afinidad.nombre = malloc(strlen(afinidad->nombre));
+			cola->afinidad.nombre = malloc(strlen(afinidad->nombre)+1);
 			strcpy(cola->afinidad.nombre, afinidad->nombre);
 			cola->cant_cocineros_disp = 0;
 			cola->cola = queue_create();
