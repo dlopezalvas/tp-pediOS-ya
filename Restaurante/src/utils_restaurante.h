@@ -10,10 +10,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include <commons/string.h>
 #include<commons/log.h>
 #include<commons/config.h>
 #include <../commonsCoronaLinux/utils.h>
+#include <commons/collections/queue.h>
 #include <../commonsCoronaLinux/socket.h>
 #include <inttypes.h>
 #include <errno.h>
@@ -59,6 +61,15 @@ void inicio_de_listas_globales();
 pthread_t hilo_servidor_clientes;
 pthread_t hilo_planificador;
 t_list *  hilos;
+pthread_mutex_t cola_afinidades_mtx;
+t_list* colas_afinidades;
+sem_t hornos_disp;
+sem_t platos_a_hornear_sem;
+pthread_mutex_t platos_block_mtx;
+t_list* platos_block;
+t_list* platos_exec;
+pthread_mutex_t platos_exec_mtx;
+
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
@@ -78,6 +89,14 @@ typedef struct{
 }t_plato_pcb;
 
 
+typedef struct{
+			t_nombre afinidad;
+			t_queue* cola;
+			pthread_mutex_t mutex_cola;
+			sem_t cocineros_disp;
+			sem_t platos_disp;
+			uint32_t cant_cocineros_disp;
+}t_cola_afinidad;
 
 
 typedef struct{
@@ -95,7 +114,7 @@ void* fhilo_serve_app (int socket);
 
 //METADATA
 rta_obtenerRestaurante* metadata_rest;
-void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
+void iniciar_colas_ready_es();
 void delay (int number_of_seconds);
 int id_pedidos;
 int id;

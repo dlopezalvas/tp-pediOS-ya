@@ -67,23 +67,25 @@ void iniciar_restaurante(){
 		//Enviar mje obtener restaurante
 
 
-		t_mensaje* tipomje = malloc(sizeof(t_mensaje));
-		tipomje->tipo_mensaje=OBTENER_RESTAURANTE;
+		t_mensaje* obt_restaurante = malloc(sizeof(t_mensaje));
+		obt_restaurante->tipo_mensaje = OBTENER_RESTAURANTE;
 
 
-		t_nombre* nombre_restaurante=malloc(sizeof(t_nombre));
-		nombre_restaurante->nombre="uggis";
-		nombre_restaurante->largo_nombre=strlen(cfg_nombre_restaurante);
+		t_nombre* nombre_restaurante = malloc(sizeof(t_nombre));
+		nombre_restaurante->nombre = malloc(strlen(cfg_nombre_restaurante)+1);
+		strcpy(nombre_restaurante->nombre, cfg_nombre_restaurante);
+//		nombre_restaurante->largo_nombre=strlen(cfg_nombre_restaurante);
 
-		tipomje->parametros=nombre_restaurante;
+		obt_restaurante->parametros = nombre_restaurante;
 		log_info(log_config_ini, "estoy por enviar el mj\n");
-		enviar_mensaje(tipomje, conexion_sindicato);
-
+		enviar_mensaje(obt_restaurante, conexion_sindicato);
+		free_struct_mensaje(nombre_restaurante, OBTENER_RESTAURANTE);
+		free(obt_restaurante);
 		//Recibir respuesta obtener restaurante
 
 		log_info(log_config_ini, "estoy por recibir el mj\n");
 
-		buffer=recibir_respuesta(conexion_sindicato);
+		buffer = recibir_respuesta(conexion_sindicato);
 		metadata_rest = buffer;
 
 		liberar_conexion(conexion_sindicato);
@@ -105,79 +107,7 @@ void iniciar_restaurante(){
 
 	}else{
 
-		log_info(log_config_ini, "\tSe cargan los datos de default, Sindicato no disponible \n");
 
-/*
-		printf("paso la creacion de var");
-
-		//obtengo los datos del restaurante de un archivo para hacer pruebas
-		config_sindicato = leer_config("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Restaurante/src/default_sindicato.config");
-		int cantidad_cocineros=config_get_int_value(config_sindicato,"CANTIDAD_COCINEROS");
-		t_nombre* afinidad1=malloc(sizeof(t_nombre));
-		afinidad1->nombre =config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS1");
-
-		t_nombre* afinidad2 =malloc(sizeof(t_nombre));
-		afinidad2->nombre=	config_get_string_value(config_sindicato,"AFINIDAD_COCINEROS2");
-		int posx =config_get_int_value(config_sindicato,"POSX");
-		int posy =config_get_int_value(config_sindicato,"POSY");
-		int cant_recetas=config_get_int_value(config_sindicato,"CANTRECETAS");
-
-
-
-		t_nombre* nom_receta1=malloc(sizeof(t_nombre));
-		nom_receta1->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA1"));
-		nom_receta1->nombre=config_get_string_value(config_sindicato,"RECETA1");
-		t_receta* receta1=malloc(sizeof(t_nombre));
-		receta1->receta.nombre=nom_receta1;
-
-		t_nombre* nom_receta2=malloc(sizeof(t_nombre));
-		nom_receta2->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA2"));
-		nom_receta2->nombre =config_get_string_value(config_sindicato,"RECETA2");
-		t_receta* receta2=malloc(sizeof(t_mensaje));
-		receta2->receta.nombre=nom_receta2;
-
-		t_nombre* nom_receta3=malloc(sizeof(t_nombre));
-		nom_receta3->largo_nombre=strlen(config_get_string_value(config_sindicato,"RECETA3"));
-		nom_receta3->nombre =config_get_string_value(config_sindicato,"RECETA3");
-		t_receta* receta3=malloc(sizeof(t_nombre));
-		receta3->receta.nombre=nom_receta3;
-
-		int hornos= config_get_int_value(config_sindicato,"CANTIDAD_HORNOS");
-
-		log_info(log_config_ini, "\tTermino la lectura del archivo de datos default \n");
-
-
-
-
-
-
-
-		metadata_rest->cantCocineros=cantidad_cocineros;
-		log_info(log_config_ini, "\t\tcantidad de cocineros %d \n",metadata_rest->cantCocineros);
-
-		metadata_rest->afinidades = list_create();
-		list_add(metadata_rest->afinidades, afinidad1);
-		t_nombre* afi1= malloc(sizeof(t_nombre));
-		afi1=list_get(metadata_rest->afinidades, 0);
-		log_info(log_config_ini, "\t\tafinidad1: %s \n",afi1->nombre);
-
-		list_add(metadata_rest->afinidades, afinidad2);
-		t_nombre* afi2= malloc(sizeof(t_nombre));
-		afi2=	list_get(metadata_rest->afinidades, 1);
-		log_info(log_config_ini, "\t\tafinidad2: %s \n",afi2->nombre);
-
-		metadata_rest->posicion.x=posx;
-		metadata_rest->posicion.y=posy;
-		log_info(log_config_ini, "\t\tcoordenadas x:%d ,  y:%d \n",metadata_rest->posicion.x,metadata_rest->posicion.y);
-
-
-		metadata_rest->cantRecetas=cant_recetas;
-		log_info(log_config_ini, "\t\tcantiad de recetas: %d \n",metadata_rest->cantRecetas);
-
-
-		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
-*/
-		log_info(log_config_ini, "\tDatos default restaurante cargados \n");
 		log_info(log_config_ini, "\tFin proceso, sindicato no disponible \n");
 	}
 
@@ -258,7 +188,7 @@ void inicio_de_listas_globales(){
 
 }
 
-void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata){
+void iniciar_colas_ready_es(){
 
 	/*
 	 * Creación de colas de planificación
@@ -270,69 +200,104 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 
 
 	log_info(log_config_ini, "Comienza proceso de colas");
-
-	uint32_t cant_cocineros= metadata->cantCocineros;
-	log_info(log_config_ini, "Cargue la variable cant_cocineros");
-
-
-	log_info(log_config_ini, "\tcant_cocineros: %d \n",cant_cocineros);
-
-
-	uint32_t cant_afinidades= metadata->cantAfinidades;
-	log_info(log_config_ini, "\tcant_afinidades: %d  \n",cant_afinidades);
-
-	t_nombre* afinidad1= malloc(sizeof(t_nombre));
-	afinidad1=list_get(metadata->afinidades,0);
-	log_info(log_config_ini, "\tAfinidad: %s \n",afinidad1->nombre);
-
-	t_coordenadas* coordenada= malloc(sizeof(t_coordenadas));
-	coordenada->x=metadata->posicion.x;
-	coordenada->y=metadata->posicion.y;
-	log_info(log_config_ini, "\tCoordenada X: %d Coordenada Y: %d \n",coordenada->x,coordenada->y);
-
-
-	t_receta* receta1= malloc(sizeof(t_receta));
-	receta1=list_get(metadata->recetas,0);
-	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta1->receta.nombre,receta1->precio);
-
-	t_receta* receta2= malloc(sizeof(t_receta));
-	receta2=list_get(metadata->recetas,1);
-	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta2->receta.nombre,receta2->precio);
-
-
-	int hornos=metadata->cantHornos;
-
-	log_info(log_config_ini, "\tCantidad de hornos: %d\n",hornos);
-
-
-	id_pedidos=5; // este dato deberia venir de sindicato
-	log_info(log_config_ini, "\tLos id de pedidos que tiene este restaurante comienza en: %d  \n", id_pedidos);
+//
+//	uint32_t cant_cocineros = metadata_rest->cantCocineros;
+//	log_info(log_config_ini, "Cargue la variable cant_cocineros");
+//
+//
+//	log_info(log_config_ini, "\tcant_cocineros: %d \n",cant_cocineros);
+//
+//
+//	uint32_t cant_afinidades = metadata_rest->cantAfinidades;
+//	log_info(log_config_ini, "\tcant_afinidades: %d  \n",cant_afinidades);
+//
+//	t_nombre* afinidad1;
+//	afinidad1=list_get(metadata_rest->afinidades,0);
+//	log_info(log_config_ini, "\tAfinidad: %s \n",afinidad1->nombre);
+//
+//	t_coordenadas* coordenada = malloc(sizeof(t_coordenadas));
+//	coordenada->x = metadata_rest->posicion.x;
+//	coordenada->y = metadata_rest->posicion.y;
+//	log_info(log_config_ini, "\tCoordenada X: %d Coordenada Y: %d \n",coordenada->x,coordenada->y);
+//
+//
+//	t_receta* receta1 = malloc(sizeof(t_receta));
+//	receta1 = list_get(metadata_rest->recetas,0);
+//	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta1->receta.nombre,receta1->precio);
+//
+//	t_receta* receta2 = malloc(sizeof(t_receta));
+//	receta2 = list_get(metadata_rest->recetas,1);
+//	log_info(log_config_ini, "\tReceta: %s con precio: %d\n",receta2->receta.nombre,receta2->precio);
+//
+//
+//	int hornos=metadata_rest->cantHornos;
+//
+//	log_info(log_config_ini, "\tCantidad de hornos: %d\n",hornos);
+//
+//
+//	id_pedidos=5; // este dato deberia venir de sindicato
+//	log_info(log_config_ini, "\tLos id de pedidos que tiene este restaurante comienza en: %d  \n", id_pedidos);
 	//Logica de generacion de colas de ready y i/o
 	//TODO
 
 	//logica
-
-	t_list*  afinidades=list_create();
-
-	afinidades=metadata->afinidades; //supongo que las afinidades s
-
-
-	int cantidad_afiniades= afinidades->elements_count;
-	int cantidad_colas=cantidad_afiniades+1;
-	log_info(log_config_ini, "\tCantidad de colas: %d  \n", cantidad_colas);
-
-
-	for (int cocineros = 0;	cocineros <cant_cocineros-1;	cocineros++)
-	{
-		list_get(afinidades,cocineros);
-
-
+	colas_afinidades = list_create();
+	t_nombre* afinidad;
+	bool _mismo_nombre(t_cola_afinidad* cola1){
+		return mismo_nombre(cola1->afinidad, afinidad);
 	}
-//
+	t_cola_afinidad* cola;
 
+	for(int i = 0;	i < metadata_rest->afinidades->elements_count;	i++){
+		afinidad = list_get(metadata_rest->afinidades,i);
+		pthread_mutex_lock(&cola_afinidades_mtx);
+		cola = list_find(colas_afinidades, (void*)_mismo_nombre);
+		pthread_mutex_unlock(&cola_afinidades_mtx);
+		if(cola == NULL){
+			cola = malloc(sizeof(t_cola_afinidad));
+			cola->afinidad->nombre = malloc(strlen(cola->afinidad->nombre));
+			strcpy(cola->afinidad->nombre, afinidad->nombre);
+			cola->cant_cocineros_disp = 0;
+			cola->cola = queue_create();
+			pthread_mutex_init(&(cola->mutex_cola));
+			sem_init(&(cola->platos_disp), 0 ,0 );
+			list_add(colas_afinidades, cola);
+		}
+		cola->cant_cocineros_disp ++;
+	}
 
+	uint32_t cant_cocineros_otros = metadata_rest->cantCocineros - metadata_rest->afinidades->elements_count;
+	if(cant_cocineros_otros != 0){
+		cola = malloc(sizeof(t_cola_afinidad));
+		cola->afinidad->nombre = "Otros";
+		cola->cant_cocineros_disp = cant_cocineros_otros;
+		cola->cola = queue_create();
+		pthread_mutex_init(&(cola->mutex_cola));
+		sem_init(&(cola->platos_disp), 0 ,0 );
+		list_add(colas_afinidades, cola);
+	}
+
+	for(int i = 0;	i < colas_afinidades->elements_count;	i++){
+		cola = list_get(colas_afinidades,i);
+		sem_init(&(cola->cocineros_disp), 0, cola->cant_cocineros_disp);
+	}
+
+	sem_init(&hornos_disp, 0, metadata_rest->cantHornos);
+	sem_init(&platos_a_hornear_sem, 0 , 0);
+
+	pthread_mutex_init(&platos_block_mtx);
+	platos_block = list_create();
+
+	//TODO ver si es necesario
+
+	pthread_mutex_init(&platos_exec_mtx);
+	platos_exec = list_create();
 
 	log_info(log_config_ini, "Fin inicializacion colas de ready \n");
+}
+
+bool mismo_nombre(t_nombre* afinidad1, t_nombre* afinidad2){
+	return string_equals_ignore_case(afinidad1->nombre,afinidad2->nombre);
 }
 
 void* fhilo_planificador(void* v){
@@ -948,25 +913,31 @@ void delay (int number_of_seconds){
 }
 
 void* recibir_respuesta(int socket){
-	op_code cod_op=999;
+	op_code cod_op = 999;
 	uint32_t id_proceso;
 	void* mensaje=NULL;
-	int size=0;
+	int error = 0;
 	int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
 	log_info(log_config_ini, "cod op: %d\n",cod_op);
 
-	if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO && _recv != 0){
-		recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-		void* buffer = recibir_mensaje(socket, &size);
-		mensaje = deserializar_mensaje(buffer, cod_op);
-		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
+	if(_recv == 0 || _recv == -1){
+		//error
+	}
 
+	_recv = recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 
-	}else{
-		recv(socket, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
-		loggear_mensaje_recibido(NULL, cod_op, log_config_ini);
-}
+	if(_recv == 0 || _recv == -1){
+		//error
+	}
 
+	void* buffer = recibir_mensaje(socket, &error);
+
+	if(error == 1){
+		//error
+	}
+
+	mensaje = deserializar_mensaje(buffer, cod_op);
+	loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
 	return mensaje;
 }
