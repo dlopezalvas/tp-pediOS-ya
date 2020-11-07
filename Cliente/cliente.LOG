@@ -693,3 +693,26 @@
 [INFO] 00:42:05:572 cliente/(30231:30281): Se recibio el mensaje RTA_AGREGAR_PLATO OK
 [INFO] 00:42:37:578 cliente/(30231:30289): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
 [INFO] 19:00:19:1 cliente/(30231:7067): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:50:44:805 cliente/(6855:6860): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 21:50:44:806 cliente/(6855:6860): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoCompleto Choripan
+[INFO] 21:51:32:495 cliente/(6855:6873): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:51:32:497 cliente/(6855:6873): Se recibio el mensaje ERROR
+[INFO] 21:52:13:577 cliente/(6855:6884): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:52:13:578 cliente/(6855:6884): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 21:52:44:299 cliente/(6855:6892): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:52:44:301 cliente/(6855:6892): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:53:04:438 cliente/(6855:6903): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:53:10:28 cliente/(6855:6911): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:53:17:420 cliente/(6855:6918): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:53:37:995 cliente/(6855:6923): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:53:44:485 cliente/(6855:6931): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:54:00:440 cliente/(6855:6951): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 21:55:25:859 cliente/(6855:6974): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:55:25:909 cliente/(6855:6974): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 21:57:52:877 cliente/(6855:7060): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:57:53:55 cliente/(6855:7060): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 21:58:26:115 cliente/(6855:7119): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:58:26:268 cliente/(6855:7119): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 21:58:35:732 cliente/(6855:7127): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 21:59:45:591 cliente/(6855:7187): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 22:00:55:520 cliente/(6855:7252): Se envio el mensaje CONSULTAR_PEDIDO 1

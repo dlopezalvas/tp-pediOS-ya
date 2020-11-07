@@ -127,3 +127,78 @@
 [INFO] 19:00:19:89 Sindicato/(7052:7070): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
 [INFO] 19:00:19:89 Sindicato/(7052:7070): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
 [INFO] 19:00:19:161 Sindicato/(7052:7053): [SERVER] Conexion aceptada
+[INFO] 21:49:49:110 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:49:49:138 Sindicato/(6807:6814): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:49:49:138 Sindicato/(6807:6814): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:50:44:806 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:50:44:806 Sindicato/(6807:6863): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 21:50:44:806 Sindicato/(6807:6863): Se envio el mensaje RTA_CONSULTAR_PLATOS AsadoCompleto Choripan
+[INFO] 21:51:32:497 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:51:32:497 Sindicato/(6807:6878): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 21:51:32:497 Sindicato/(6807:6878): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 21:52:44:301 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:52:44:301 Sindicato/(6807:6897): Se recibio el mensaje GUARDAR_PLATO  id: 1 ugis cantidad: 1
+[INFO] 21:52:44:301 Sindicato/(6807:6897): Se envio el mensaje RTA_GUARDAR_PLATO OK
+[INFO] 21:53:04:440 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:04:441 Sindicato/(6807:6908): Se recibio el mensaje OBTENER_PEDIDO  2
+[INFO] 21:53:04:441 Sindicato/(6807:6908): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:53:14:522 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:14:522 Sindicato/(6807:6915): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:53:14:522 Sindicato/(6807:6915): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:53:17:421 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:17:421 Sindicato/(6807:6921): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:53:17:421 Sindicato/(6807:6921): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:53:42:536 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:42:537 Sindicato/(6807:6928): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:53:42:537 Sindicato/(6807:6928): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:53:44:488 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:44:488 Sindicato/(6807:6934): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:53:44:488 Sindicato/(6807:6934): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:53:47:382 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:53:47:383 Sindicato/(6807:6938): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:53:47:383 Sindicato/(6807:6938): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:54:00:441 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:54:00:442 Sindicato/(6807:6954): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:54:00:442 Sindicato/(6807:6954): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:54:49:908 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:54:49:918 Sindicato/(6807:6961): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:54:49:918 Sindicato/(6807:6961): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:55:25:864 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:55:25:870 Sindicato/(6807:6977): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:55:25:870 Sindicato/(6807:6977): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:55:25:879 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:55:25:889 Sindicato/(6807:6978): Se recibio el mensaje OBTENER_RECETA AsadoCompleto
+[INFO] 21:55:25:889 Sindicato/(6807:6978): Se envio el mensaje RTA_OBTENER_RECETA Milanesear duracion:1
+[INFO] 21:57:48:345 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:57:48:355 Sindicato/(6807:7055): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:57:48:355 Sindicato/(6807:7055): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:57:52:923 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:57:52:932 Sindicato/(6807:7063): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:57:52:932 Sindicato/(6807:7063): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:57:52:971 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:57:52:979 Sindicato/(6807:7064): Se recibio el mensaje OBTENER_RECETA AsadoCompleto
+[INFO] 21:57:52:980 Sindicato/(6807:7064): Se envio el mensaje RTA_OBTENER_RECETA Milanesear duracion:1
+[INFO] 21:58:23:148 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:58:23:158 Sindicato/(6807:7116): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:58:23:158 Sindicato/(6807:7116): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:58:26:157 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:58:26:164 Sindicato/(6807:7122): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:58:26:164 Sindicato/(6807:7122): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:58:26:199 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:58:26:211 Sindicato/(6807:7123): Se recibio el mensaje OBTENER_RECETA AsadoCompleto
+[INFO] 21:58:26:211 Sindicato/(6807:7123): Se envio el mensaje RTA_OBTENER_RECETA Milanesear duracion:1
+[INFO] 21:58:35:759 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:58:35:781 Sindicato/(6807:7130): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:58:35:781 Sindicato/(6807:7130): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 21:59:43:454 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:59:43:465 Sindicato/(6807:7184): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 21:59:43:465 Sindicato/(6807:7184): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 21:59:45:627 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 21:59:45:636 Sindicato/(6807:7190): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 21:59:45:636 Sindicato/(6807:7190): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 
+[INFO] 22:00:52:515 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 22:00:52:525 Sindicato/(6807:7249): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 22:00:52:525 Sindicato/(6807:7249): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:5 y:5 cantCocineros: 3 cocinero 0 AsadoCompleto recetas: AsadoCompleto - precio: 180Choripan - precio: 100
+[INFO] 22:00:55:564 Sindicato/(6807:6808): [SERVER] Conexion aceptada
+[INFO] 22:00:55:572 Sindicato/(6807:7255): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 22:00:55:572 Sindicato/(6807:7255): Se envio el mensaje RTA_OBTENER_PEDIDO estado: PENDIENTEAsadoCompleto listo:1 pedido:1 

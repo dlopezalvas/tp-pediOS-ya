@@ -584,7 +584,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 			//ENVIAR OBTENER_PEDIDO A SINDICATO
 			enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
-			free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO, OBTENER_PEDIDO);
+			free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 			free(mje_sindicato_OBTENER_PEDIDO);
 			log_info(log_config_ini ,"Se envio a sindicato el mj OBTENER_PEDIDO: ",cod_op);
 
@@ -631,7 +631,7 @@ void process_request(int cod_op, int cliente_fd) {
 				int socket_OBTENER_RECETA = conectar_con_sindicato();
 
 				enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
-				free_struct_mensaje(mje_sindicato_OBTENER_RECETA, OBTENER_RECETA);
+				free_struct_mensaje(mje_sindicato_OBTENER_RECETA->parametros, OBTENER_RECETA);
 				free(mje_sindicato_OBTENER_RECETA);
 
 				//RECIBIR RESPUESTA DE SINDICATO
@@ -723,12 +723,13 @@ void process_request(int cod_op, int cliente_fd) {
 			t_nombre_y_id* sindicato_OBTENER_PEDIDO = malloc(sizeof(t_nombre_y_id));
 			sindicato_OBTENER_PEDIDO->id = *id_CONSULTAR_PEDIDO;
 
-			sindicato_OBTENER_PEDIDO->nombre.nombre = malloc(strlen(cfg_nombre_restaurante));
+			sindicato_OBTENER_PEDIDO->nombre.nombre = malloc(strlen(cfg_nombre_restaurante)+1);
 			strcpy(sindicato_OBTENER_PEDIDO->nombre.nombre, cfg_nombre_restaurante);
 
 
 			t_mensaje* mje_sindicato_OBTENER_PEDIDO = malloc(sizeof(t_mensaje));
 			mje_sindicato_OBTENER_PEDIDO->tipo_mensaje = OBTENER_PEDIDO;
+			mje_sindicato_OBTENER_PEDIDO->id=cfg_id;
 			mje_sindicato_OBTENER_PEDIDO->parametros = sindicato_OBTENER_PEDIDO;
 			enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);
 			free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
@@ -742,7 +743,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 			rta_consultarPedido* rta_CONSULTAR_PEDIDO = malloc(sizeof(rta_consultarPedido));
 
-			rta_CONSULTAR_PEDIDO->restaurante.nombre = malloc(strlen(cfg_nombre_restaurante));
+			rta_CONSULTAR_PEDIDO->restaurante.nombre = malloc(strlen(cfg_nombre_restaurante)+1);
 			strcpy(rta_CONSULTAR_PEDIDO->restaurante.nombre, cfg_nombre_restaurante);
 
 			rta_CONSULTAR_PEDIDO->cantPlatos = rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos;
