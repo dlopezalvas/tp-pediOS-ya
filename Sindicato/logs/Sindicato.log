@@ -242,3 +242,108 @@
 [INFO] 23:02:09:583 Sindicato/(8511:8512): [SERVER] Conexion aceptada
 [INFO] 23:02:09:588 Sindicato/(8511:9417): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
 [INFO] 23:02:09:588 Sindicato/(8511:9417): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 23:05:16:961 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:05:16:2 Sindicato/(8511:9450): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:05:16:2 Sindicato/(8511:9450): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:05:41:318 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:05:41:322 Sindicato/(8511:9461): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:05:41:322 Sindicato/(8511:9461): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:06:34:162 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:06:34:165 Sindicato/(8511:9470): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:06:34:165 Sindicato/(8511:9470): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:07:12:759 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:07:12:761 Sindicato/(8511:9494): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 23:07:12:761 Sindicato/(8511:9494): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 23:14:26:502 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:14:26:513 Sindicato/(8511:9655): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:14:26:514 Sindicato/(8511:9655): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:14:44:768 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:14:44:772 Sindicato/(8511:9666): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:14:44:772 Sindicato/(8511:9666): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:17:34:123 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:17:34:135 Sindicato/(8511:9743): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:17:34:135 Sindicato/(8511:9743): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:17:36:500 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:17:36:505 Sindicato/(8511:9749): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:17:36:505 Sindicato/(8511:9749): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:20:01:746 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:20:01:755 Sindicato/(8511:9820): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:20:01:755 Sindicato/(8511:9820): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:20:07:706 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:20:07:710 Sindicato/(8511:9827): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:20:07:710 Sindicato/(8511:9827): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:20:17:655 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:20:17:660 Sindicato/(8511:9834): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:20:17:660 Sindicato/(8511:9834): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:21:51:701 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:21:51:711 Sindicato/(8511:9913): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:21:51:711 Sindicato/(8511:9913): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:22:17:105 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:22:17:112 Sindicato/(8511:9933): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 23:22:17:112 Sindicato/(8511:9933): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 23:31:03:612 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:31:03:620 Sindicato/(8511:10163): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:31:03:621 Sindicato/(8511:10163): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:31:14:467 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:31:14:471 Sindicato/(8511:10171): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:31:14:471 Sindicato/(8511:10171): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:31:19:236 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:31:19:242 Sindicato/(8511:10175): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:31:19:242 Sindicato/(8511:10175): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:31:32:794 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:31:32:804 Sindicato/(8511:10186): Se recibio el mensaje OBTENER_PEDIDO UGIS 1
+[INFO] 23:31:32:804 Sindicato/(8511:10186): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 23:39:37:518 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:39:37:542 Sindicato/(8511:10433): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:39:37:542 Sindicato/(8511:10433): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:39:47:151 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:39:47:156 Sindicato/(8511:10441): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:39:47:156 Sindicato/(8511:10441): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:41:01:850 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:41:01:865 Sindicato/(8511:10500): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:41:01:865 Sindicato/(8511:10500): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:41:08:173 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:41:08:176 Sindicato/(8511:10507): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:41:08:176 Sindicato/(8511:10507): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:41:17:644 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:41:17:663 Sindicato/(8511:10514): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:41:17:663 Sindicato/(8511:10514): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:42:23:950 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:42:23:960 Sindicato/(8511:10570): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:42:23:960 Sindicato/(8511:10570): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:42:28:115 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:42:28:120 Sindicato/(8511:10576): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:42:28:120 Sindicato/(8511:10576): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:46:56:652 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:46:56:661 Sindicato/(8511:10744): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:46:56:661 Sindicato/(8511:10744): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:46:58:994 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:46:59:23 Sindicato/(8511:10750): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:46:59:23 Sindicato/(8511:10750): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:47:09:309 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:47:09:318 Sindicato/(8511:10757): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:47:09:319 Sindicato/(8511:10757): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:47:37:714 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:47:37:718 Sindicato/(8511:10772): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 23:47:37:718 Sindicato/(8511:10772): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 23:52:48:272 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:52:48:281 Sindicato/(8511:10943): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 23:52:48:281 Sindicato/(8511:10943): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 23:52:59:740 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:52:59:743 Sindicato/(8511:10953): Se recibio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:52:59:743 Sindicato/(8511:10953): Se envio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:53:03:872 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:53:03:876 Sindicato/(8511:10957): Se recibio el mensaje GUARDAR_PEDIDO UGIS 1
+[INFO] 23:53:03:876 Sindicato/(8511:10957): Se envio el mensaje RTA_GUARDAR_PEDIDO OK
+[INFO] 23:53:16:783 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 23:53:16:792 Sindicato/(8511:10970): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 23:53:16:792 Sindicato/(8511:10970): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 00:01:08:145 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 00:01:08:154 Sindicato/(8511:11112): Se recibio el mensaje OBTENER_RESTAURANTE UGIS
+[INFO] 00:01:08:154 Sindicato/(8511:11112): Se envio el mensaje RTA_OBTENER_RESTAURANTE cantHornos 1 x:1 y:2 cantCocineros: 2 cantPedidos: 2 cocinero 0 Empanadas recetas: Milanesa - precio: 500
+[INFO] 00:01:11:445 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 00:01:11:459 Sindicato/(8511:11118): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 00:01:11:459 Sindicato/(8511:11118): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 
+[INFO] 00:01:23:84 Sindicato/(8511:8512): [SERVER] Conexion aceptada
+[INFO] 00:01:23:88 Sindicato/(8511:11126): Se recibio el mensaje OBTENER_PEDIDO UGIS 2
+[INFO] 00:01:23:88 Sindicato/(8511:11126): Se envio el mensaje RTA_OBTENER_PEDIDO estado:PENDIENTE Milanesa listo:1 pedido:1 

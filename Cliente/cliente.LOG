@@ -720,3 +720,71 @@
 [INFO] 22:59:31:708 cliente/(8999:9005): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
 [INFO] 23:02:09:657 cliente/(9407:9415): Se envio el mensaje CONSULTAR_PEDIDO 1
 [INFO] 23:02:09:707 cliente/(9407:9415): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:05:41:267 cliente/(9407:9458): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:05:41:374 cliente/(9407:9458): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:06:34:153 cliente/(9407:9465): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:06:34:170 cliente/(9407:9465): Se recibio el mensaje ERROR
+[INFO] 23:06:49:345 cliente/(9407:9474): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:06:49:358 cliente/(9407:9474): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:07:03:274 cliente/(9407:9485): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
+[INFO] 23:07:03:281 cliente/(9407:9485): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:07:12:753 cliente/(9407:9491): Se envio el mensaje CONSULTAR_PEDIDO 2
+[INFO] 23:07:12:778 cliente/(9407:9491): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:14:44:724 cliente/(9407:9663): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:14:44:810 cliente/(9407:9663): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:17:36:397 cliente/(9407:9746): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:17:36:573 cliente/(9407:9746): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:20:07:664 cliente/(9407:9824): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:20:07:748 cliente/(9407:9824): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:20:17:624 cliente/(9407:9831): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:20:17:674 cliente/(9407:9831): Se recibio el mensaje ERROR
+[INFO] 23:20:31:874 cliente/(9407:9840): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:20:31:898 cliente/(9407:9840): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:21:54:64 cliente/(9407:9916): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:21:54:110 cliente/(9407:9916): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:22:03:272 cliente/(9407:9924): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
+[INFO] 23:22:03:317 cliente/(9407:9924): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:22:17:61 cliente/(9407:9931): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 23:22:17:185 cliente/(9407:9931): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:31:14:420 cliente/(9407:10168): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:31:14:512 cliente/(9407:10168): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:31:19:204 cliente/(9407:10173): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:31:19:256 cliente/(9407:10173): Se recibio el mensaje ERROR
+[INFO] 23:31:23:168 cliente/(9407:10177): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:31:23:212 cliente/(9407:10177): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:31:28:180 cliente/(9407:10182): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
+[INFO] 23:31:28:209 cliente/(9407:10182): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:31:32:775 cliente/(9407:10184): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 23:31:32:882 cliente/(9407:10184): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:39:47:100 cliente/(9407:10438): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:39:47:199 cliente/(9407:10438): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:41:08:132 cliente/(9407:10504): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:41:08:225 cliente/(9407:10504): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:41:17:607 cliente/(9407:10511): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:41:17:689 cliente/(9407:10511): Se recibio el mensaje ERROR
+[INFO] 23:42:28:69 cliente/(9407:10573): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:42:28:144 cliente/(9407:10573): Se recibio el mensaje ERROR
+[INFO] 23:46:58:975 cliente/(9407:10747): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:46:59:73 cliente/(9407:10747): Se recibio el mensaje ERROR
+[INFO] 23:47:09:282 cliente/(9407:10755): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:47:09:360 cliente/(9407:10755): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:47:15:176 cliente/(9407:10759): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:47:15:196 cliente/(9407:10759): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:47:21:380 cliente/(9407:10763): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
+[INFO] 23:47:21:416 cliente/(9407:10763): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:47:37:708 cliente/(9407:10767): Se envio el mensaje CONSULTAR_PEDIDO 2
+[INFO] 23:47:37:728 cliente/(9407:10767): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:52:59:700 cliente/(9407:10950): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:52:59:772 cliente/(9407:10950): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:53:03:836 cliente/(9407:10955): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:53:03:890 cliente/(9407:10955): Se recibio el mensaje ERROR
+[INFO] 23:53:08:72 cliente/(9407:10959): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 23:53:08:98 cliente/(9407:10959): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 23:53:11:769 cliente/(9407:10963): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
+[INFO] 23:53:11:800 cliente/(9407:10963): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:53:16:764 cliente/(9407:10967): Se envio el mensaje CONSULTAR_PEDIDO 2
+[INFO] 23:53:16:848 cliente/(9407:10967): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 00:01:11:411 cliente/(9407:11115): Se envio el mensaje CONSULTAR_PEDIDO 2
+[INFO] 00:01:11:526 cliente/(9407:11115): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 00:01:23:52 cliente/(9407:11123): Se envio el mensaje CONSULTAR_PEDIDO 2
+[INFO] 00:01:23:99 cliente/(9407:11123): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1

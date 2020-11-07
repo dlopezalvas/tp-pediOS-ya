@@ -566,7 +566,7 @@ t_buffer* buffer_rta_consultar_pedido(rta_consultarPedido* consultarPedido){
 	int size_lista_platos = tamanio_lista_pedidos(consultarPedido->platos);
 	consultarPedido->restaurante.largo_nombre= strlen(consultarPedido->restaurante.nombre);
 	buffer->size = size_lista_platos + consultarPedido->restaurante.largo_nombre + sizeof(est_pedido) + sizeof(uint32_t)*2;
-puts(string_itoa(buffer->size));
+
 	void* stream = malloc(buffer -> size);
 	int offset = 0;
 
