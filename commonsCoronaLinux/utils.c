@@ -268,7 +268,7 @@ void free_pasos(t_paso* paso){
 }
 
 void free_restaurante_y_plato(t_restaurante_y_plato* mensaje){
-	list_destroy(mensaje->nombres);
+	list_destroy_and_destroy_elements(mensaje->nombres, (void*) free_nombre);
 	free(mensaje);
 }
 
@@ -315,7 +315,9 @@ void free_plato_listo(m_platoListo* mensaje){
 
 void free_rta_consultar_pedido(rta_consultarPedido* mensaje){
 	list_destroy_and_destroy_elements(mensaje->platos, (void*) free_infoPedidos);
+	free(mensaje->restaurante.nombre);
 	free(mensaje);
+
 }
 
 void free_rta_obtener_pedido(rta_obtenerPedido* mensaje){
