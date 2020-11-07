@@ -49,5 +49,3 @@ void sindicato_initialize(){
 
 	free(metadataFS);
 }
-
-

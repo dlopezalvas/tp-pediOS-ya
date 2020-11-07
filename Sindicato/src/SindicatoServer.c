@@ -10,7 +10,7 @@ void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
 	*confirmacion = _confirmacion;
 	mensaje_a_enviar->parametros = confirmacion;
 	enviar_mensaje(mensaje_a_enviar, cliente);
-	loggear_mensaje_enviado(confirmacion, cod_op, sindicatoDebugLog);
+	loggear_mensaje_enviado(confirmacion, cod_op, sindicatoLog);
 	free_struct_mensaje(confirmacion,cod_op);
 	free(mensaje_a_enviar);
 }
@@ -135,12 +135,6 @@ void internal_serve_client(int socket){
 	if(cod_op != -1 && cod_op != 0){
 		internal_process_request(cod_op, socket);
 	} else{
-		if(cod_op == POSICION_CLIENTE){
-			//TODO:Sincronizar log
-			log_info(sindicatoDebugLog, "[SERVER] Handshake Cliente");
-
-			///TODO: enviar mensaje que no voy a utilizar el socket de escucha
-		}
 		pthread_exit(NULL);
 	}
 }
