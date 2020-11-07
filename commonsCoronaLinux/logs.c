@@ -144,7 +144,7 @@ char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje){
 char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s %s", op_code_to_string(tipo_mensaje),
-			consultar_pedido->restaurante, est_pedido_to_string(consultar_pedido->estadoPedido));
+	     consultar_pedido->restaurante.nombre, est_pedido_to_string(consultar_pedido->estadoPedido));
 	t_elemPedido* plato;
 	consultar_pedido->cantPlatos = consultar_pedido->platos->elements_count;
 	for(int i = 0; i<consultar_pedido->cantPlatos; i++){

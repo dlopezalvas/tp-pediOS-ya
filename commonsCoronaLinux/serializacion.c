@@ -594,6 +594,8 @@ puts(string_itoa(buffer->size));
 	memcpy(stream + offset, consultarPedido->restaurante.nombre, consultarPedido->restaurante.largo_nombre);
 	offset += consultarPedido->restaurante.largo_nombre;
 
+	buffer->stream = stream;
+
 	return buffer;
 }
 
@@ -628,7 +630,7 @@ rta_consultarPedido* deserializar_rta_consultar_pedido(void* buffer){
 	buffer += sizeof(est_pedido);
 	memcpy(&consultarPedido->restaurante.largo_nombre, buffer, sizeof(uint32_t));
 	buffer += sizeof(uint32_t);
-	consultarPedido->restaurante.nombre = malloc(consultarPedido->restaurante.largo_nombre);
+	consultarPedido->restaurante.nombre = malloc(consultarPedido->restaurante.largo_nombre + 1);
 	memcpy(consultarPedido->restaurante.nombre, buffer, consultarPedido->restaurante.largo_nombre);
 	consultarPedido->restaurante.nombre[consultarPedido->restaurante.largo_nombre] = '\0';
 

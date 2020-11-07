@@ -716,3 +716,7 @@
 [INFO] 21:58:35:732 cliente/(6855:7127): Se envio el mensaje CONSULTAR_PEDIDO 1
 [INFO] 21:59:45:591 cliente/(6855:7187): Se envio el mensaje CONSULTAR_PEDIDO 1
 [INFO] 22:00:55:520 cliente/(6855:7252): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 22:59:31:689 cliente/(8999:9005): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 22:59:31:708 cliente/(8999:9005): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:02:09:657 cliente/(9407:9415): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 23:02:09:707 cliente/(9407:9415): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
