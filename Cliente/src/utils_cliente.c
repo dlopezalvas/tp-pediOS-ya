@@ -419,7 +419,7 @@ t_mensaje* llenar_seleccionar_restaurante(char** parametros){
 	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
 	m_seleccionarRestaurante* seleccionarRestaurante = malloc(sizeof(m_seleccionarRestaurante));
 	seleccionarRestaurante->restaurante.nombre = string_duplicate(parametros[1]);
-	seleccionarRestaurante->cliente = atoi(parametros[2]);
+	seleccionarRestaurante->cliente = id_cliente;
 	mensaje->parametros = seleccionarRestaurante;
 	liberar_vector(parametros);
 	return mensaje;

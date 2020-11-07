@@ -107,9 +107,10 @@ char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje){
 
 char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaurante, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d cantCocineros: %d ", op_code_to_string(tipo_mensaje),
+	string_append_with_format(&string_mensaje, "%s cantHornos %d x:%d y:%d cantCocineros: %d cantPedidos: %d ", op_code_to_string(tipo_mensaje),
 			obtener_restaurante->cantHornos, obtener_restaurante->posicion.x,
-			obtener_restaurante->posicion.y, obtener_restaurante->cantCocineros);
+			obtener_restaurante->posicion.y, obtener_restaurante->cantCocineros,
+			obtener_restaurante->cantPedidos);
 	t_nombre* afinidad;
 	obtener_restaurante->cantAfinidades = obtener_restaurante->afinidades->elements_count;
 	for(int i = 0; i<obtener_restaurante->cantAfinidades; i++){
@@ -143,7 +144,7 @@ char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje){
 char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s %s", op_code_to_string(tipo_mensaje),
-			consultar_pedido->restaurante, est_pedido_to_string(consultar_pedido->estadoPedido));
+	     consultar_pedido->restaurante.nombre, est_pedido_to_string(consultar_pedido->estadoPedido));
 	t_elemPedido* plato;
 	consultar_pedido->cantPlatos = consultar_pedido->platos->elements_count;
 	for(int i = 0; i<consultar_pedido->cantPlatos; i++){

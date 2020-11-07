@@ -10,11 +10,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include <commons/string.h>
 #include<commons/log.h>
 #include<commons/config.h>
 #include <../commonsCoronaLinux/utils.h>
+#include <commons/collections/queue.h>
 #include <../commonsCoronaLinux/socket.h>
+#include <../commonsCoronaLinux/logs.h>
 #include <inttypes.h>
 #include <errno.h>
 
@@ -34,6 +37,11 @@ char* cfg_ip_app;
 char* cfg_nombre_restaurante;
 char* cfg_algoritmo_planificacion;
 int cfg_quantum;
+int cfg_id;
+
+void conectarme_con_app();
+
+int socket_app;
 
 
 //LOG
@@ -47,19 +55,33 @@ void* fhilo_servidor_clientes(void* v);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-rta_obtenerRestaurante* metadata_restaurante(int socket);
+void* recibir_respuesta(int socket);
 int conectar_con_sindicato();
 void inicio_de_listas_globales();
+bool mismo_nombre(t_nombre* afinidad1, t_nombre* afinidad2);
+void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
+
 
 //HILOS - SEMAFOROS
 pthread_t hilo_servidor_clientes;
 pthread_t hilo_planificador;
 t_list *  hilos;
+pthread_mutex_t cola_afinidades_mtx;
+t_list* colas_afinidades;
+sem_t hornos_disp;
+sem_t platos_a_hornear_sem;
+pthread_mutex_t platos_block_mtx;
+t_list* platos_block;
+t_list* platos_exec;
+pthread_mutex_t platos_exec_mtx;
+
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
 pthread_mutex_t mutex_pcb;
-t_list *  hilos_pcb;
+t_list *  pcb_platos;
+
+pthread_t hilo_serve_app;
 
 //PCB - PLATOS
 typedef struct{
@@ -71,23 +93,42 @@ typedef struct{
 			uint32_t cantHecha;
 }t_plato_pcb;
 
+
+typedef struct{
+			t_nombre afinidad;
+			t_queue* cola;
+			pthread_mutex_t mutex_cola;
+			sem_t cocineros_disp;
+			sem_t platos_disp;
+			uint32_t cant_cocineros_disp;
+}t_cola_afinidad;
+
+
+typedef struct{
+	t_nombre cocinero;
+	t_nombre afinidad;
+}t_cocinero_afinidad;
+
+
 void* fhilo_plato (t_plato_pcb* v);
 
 //FHILOS
 void* fhilo_planificador (void* v);
+void* fhilo_serve_app (int socket);
 
 
 //METADATA
 rta_obtenerRestaurante* metadata_rest;
-void iniciar_colas_ready_es(rta_obtenerRestaurante* metadata);
+void iniciar_colas_ready_es();
 void delay (int number_of_seconds);
 int id_pedidos;
+
 
 
 //LISTAS
 
 t_list *  list_pedidos;
-t_list *  status_platos;
+
 
 //MENSAJES
 uint32_t recibir_RTA_GUARDAR_PEDIDO(int socket);
@@ -97,6 +138,7 @@ rta_obtenerReceta* recibir_RTA_OBTENER_RECETA(int socket);
 
 //FUNCIONES
 t_restaurante_y_plato* recibir_RTA_CONSULTAR_PLATOS(int socket);
+void agregar_cola_ready(t_plato_pcb* plato);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
