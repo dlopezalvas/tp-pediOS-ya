@@ -141,6 +141,7 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	list_add(restauranteInfo->recetas,recetaPrecio);
 	restauranteInfo->cantHornos = 1;
 	restauranteInfo->cantCocineros = 2;
+	restauranteInfo->cantPedidos = 2;
 
 	return restauranteInfo;
 }

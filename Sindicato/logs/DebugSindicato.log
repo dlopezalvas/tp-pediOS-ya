@@ -60,3 +60,48 @@
 [INFO] 18:59:57:926 DebugSindicato/(7052:7052): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurante
 [INFO] 18:59:57:927 DebugSindicato/(7052:7053): [SERVER] Servidor Creado
 [INFO] 19:00:19:89 DebugSindicato/(7052:7070): AsadoCompleto
+[INFO] 21:49:46:511 DebugSindicato/(6807:6807): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip
+[INFO] 21:49:46:514 DebugSindicato/(6807:6807): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Metadata
+[INFO] 21:49:46:514 DebugSindicato/(6807:6807): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files
+[INFO] 21:49:46:514 DebugSindicato/(6807:6807): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Receta
+[INFO] 21:49:46:514 DebugSindicato/(6807:6807): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurante
+[INFO] 21:49:46:515 DebugSindicato/(6807:6808): [SERVER] Servidor Creado
+[INFO] 21:50:44:806 DebugSindicato/(6807:6863): AsadoCompleto
+[INFO] 21:50:44:806 DebugSindicato/(6807:6863): Choripan
+[INFO] 21:53:04:441 DebugSindicato/(6807:6908): AsadoCompleto
+[INFO] 21:53:17:421 DebugSindicato/(6807:6921): AsadoCompleto
+[INFO] 21:53:44:488 DebugSindicato/(6807:6934): AsadoCompleto
+[INFO] 21:54:00:442 DebugSindicato/(6807:6954): AsadoCompleto
+[INFO] 21:55:25:870 DebugSindicato/(6807:6977): AsadoCompleto
+[INFO] 21:57:52:932 DebugSindicato/(6807:7063): AsadoCompleto
+[INFO] 21:58:26:164 DebugSindicato/(6807:7122): AsadoCompleto
+[INFO] 21:58:35:781 DebugSindicato/(6807:7130): AsadoCompleto
+[INFO] 21:59:45:636 DebugSindicato/(6807:7190): AsadoCompleto
+[INFO] 22:00:55:572 DebugSindicato/(6807:7255): AsadoCompleto
+[INFO] 22:45:39:963 DebugSindicato/(8511:8511): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip
+[INFO] 22:45:39:963 DebugSindicato/(8511:8511): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Metadata
+[INFO] 22:45:39:963 DebugSindicato/(8511:8511): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files
+[INFO] 22:45:39:963 DebugSindicato/(8511:8511): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Receta
+[INFO] 22:45:39:963 DebugSindicato/(8511:8511): [FILESYSTEM] Carpeta existente: /home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurante
+[INFO] 22:45:39:964 DebugSindicato/(8511:8512): [SERVER] Servidor Creado
+[INFO] 22:46:24:110 DebugSindicato/(8511:8564): Milanesa
+[INFO] 22:47:05:375 DebugSindicato/(8511:8575): Milanesa
+[INFO] 22:52:21:330 DebugSindicato/(8511:8692): Milanesa
+[INFO] 22:59:31:598 DebugSindicato/(8511:9008): Milanesa
+[INFO] 23:02:09:588 DebugSindicato/(8511:9417): Milanesa
+[INFO] 23:05:41:322 DebugSindicato/(8511:9461): Milanesa
+[INFO] 23:07:12:761 DebugSindicato/(8511:9494): Milanesa
+[INFO] 23:14:44:772 DebugSindicato/(8511:9666): Milanesa
+[INFO] 23:17:36:505 DebugSindicato/(8511:9749): Milanesa
+[INFO] 23:20:07:710 DebugSindicato/(8511:9827): Milanesa
+[INFO] 23:22:17:112 DebugSindicato/(8511:9933): Milanesa
+[INFO] 23:31:14:471 DebugSindicato/(8511:10171): Milanesa
+[INFO] 23:31:32:804 DebugSindicato/(8511:10186): Milanesa
+[INFO] 23:39:47:156 DebugSindicato/(8511:10441): Milanesa
+[INFO] 23:41:08:176 DebugSindicato/(8511:10507): Milanesa
+[INFO] 23:47:09:319 DebugSindicato/(8511:10757): Milanesa
+[INFO] 23:47:37:718 DebugSindicato/(8511:10772): Milanesa
+[INFO] 23:52:59:743 DebugSindicato/(8511:10953): Milanesa
+[INFO] 23:53:16:792 DebugSindicato/(8511:10970): Milanesa
+[INFO] 00:01:11:459 DebugSindicato/(8511:11118): Milanesa
+[INFO] 00:01:23:88 DebugSindicato/(8511:11126): Milanesa
