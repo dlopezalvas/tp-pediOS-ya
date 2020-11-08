@@ -209,8 +209,10 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 			cola->afinidad.nombre = malloc(strlen(afinidad->nombre)+1);
 			strcpy(cola->afinidad.nombre, afinidad->nombre);
 			cola->cant_cocineros_disp = 0;
-			cola->cola = queue_create();
-			pthread_mutex_init(&(cola->mutex_cola), NULL);
+			cola->ready = queue_create();
+			cola->exec = list_create();
+			pthread_mutex_init(&(cola->mutex_ready), NULL);
+			pthread_mutex_init(&(cola->mutex_exec), NULL);
 			sem_init(&(cola->platos_disp), 0 ,0 );
 			list_add(colas_afinidades, cola);
 		}
@@ -222,8 +224,10 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 		cola = malloc(sizeof(t_cola_afinidad));
 		cola->afinidad.nombre = "Otros";
 		cola->cant_cocineros_disp = cant_cocineros_otros;
-		cola->cola = queue_create();
-		pthread_mutex_init(&(cola->mutex_cola), NULL);
+		cola->ready = queue_create();
+		cola->exec = list_create();
+		pthread_mutex_init(&(cola->mutex_ready), NULL);
+		pthread_mutex_init(&(cola->mutex_exec), NULL);
 		sem_init(&(cola->platos_disp), 0 ,0 );
 		list_add(colas_afinidades, cola);
 	}
@@ -781,11 +785,87 @@ void agregar_cola_ready(t_plato_pcb* plato){
 		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
 		free(afinidad);
 	}
-	pthread_mutex_lock(&(cola_afinidad->mutex_cola));
-	queue_push(cola_afinidad->cola, plato);
+	pthread_mutex_lock(&(cola_afinidad->mutex_ready));
+	queue_push(cola_afinidad->ready, plato);
 	//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
 	sem_post(&(cola_afinidad->platos_disp));
-	pthread_mutex_unlock(&(cola_afinidad->mutex_cola));
+	pthread_mutex_unlock(&(cola_afinidad->mutex_ready));
+}
+
+void planificador_corto_plazo(t_cola_afinidad* strc_cola){
+	t_plato_pcb* plato;
+	while(true){
+		sem_wait(&(strc_cola->platos_disp));
+		for(int i=0; i< strc_cola->cant_cocineros_disp; i++){
+			plato = list_get(strc_cola->exec, i);
+			if(sigue_exec(plato)){
+				
+			}
+		}
+		if(strc_cola->exec->elements_count < strc_cola->cant_cocineros_disp){
+			sem_wait(&(strc_cola->cocineros_disp));
+			pthread_mutex_lock(&(strc_cola->mutex_ready));
+			plato = queue_pop(strc_cola->ready);
+			pthread_mutex_unlock(&(strc_cola->mutex_ready));
+			cambiarEstado(plato, EXEC);
+			pthread_mutex_unlock(&(strc_cola->plato_exec));
+		}
+	}
+}
+
+void cambiarEstado (t_plato_pcb* plato, est_planif nuevoEstado){
+	if(plato->estado == nuevoEstado) return;
+	if(cambioEstadoValido(plato->estado, nuevoEstado)){
+		plato->estado = nuevoEstado;
+		log_info(log_config_ini, "Se cambio al plato %s a la cola %s", plato->comida.nombre, stringEstado(plato->estado));
+	}else{
+		printf("Estado invalido");
+	}
+}
+
+bool cambioEstadoValido(est_planif estadoViejo,est_planif nuevoEstado){
+	switch (estadoViejo){
+	case NEW:
+		if(nuevoEstado == READY) return true;
+		else return false;
+		break;
+	case READY:
+		if(nuevoEstado == EXEC) return true;
+		else return false;
+		break;
+	case EXEC:
+		if(nuevoEstado == READY || nuevoEstado == BLOCK || nuevoEstado == EXIT) return true;
+		else return false;
+		break;
+	case BLOCK:
+		if(nuevoEstado == READY) return true;
+		else return false;
+		break;
+	case EXIT:
+		return false;
+		break;
+	}
+	return false;
+}
+
+char* stringEstado(est_planif estado){
+	switch (estado){
+	case NEW:
+		return "NEW";
+		break;
+	case READY:
+		return "READY";
+		break;
+	case EXEC:
+		return "EXEC";
+		break;
+	case BLOCK:
+		return "BLOCK";
+		break;
+	case EXIT:
+		return "EXIT";
+		break;
+	}
 }
 
 void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){

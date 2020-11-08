@@ -82,6 +82,13 @@ pthread_mutex_t mutex_pcb;
 t_list *  pcb_platos;
 
 pthread_t hilo_serve_app;
+typedef enum{
+	NEW = 0,
+	READY = 1,
+	BLOCK = 2,
+	EXEC = 3,
+	EXIT = 4,
+}est_planif;
 
 //PCB - PLATOS
 typedef struct{
@@ -91,13 +98,17 @@ typedef struct{
 			t_list* pasos;//t_paso
 			uint32_t cantTotal;
 			uint32_t cantHecha;
+			est_planif estado;
 }t_plato_pcb;
 
 
 typedef struct{
 			t_nombre afinidad;
-			t_queue* cola;
-			pthread_mutex_t mutex_cola;
+			t_queue* ready;
+			t_list* exec;
+			pthread_mutex_t plato_exec;
+			pthread_mutex_t mutex_ready;
+			pthread_mutex_t mutex_exec;
 			sem_t cocineros_disp;
 			sem_t platos_disp;
 			uint32_t cant_cocineros_disp;
@@ -139,6 +150,9 @@ rta_obtenerReceta* recibir_RTA_OBTENER_RECETA(int socket);
 //FUNCIONES
 t_restaurante_y_plato* recibir_RTA_CONSULTAR_PLATOS(int socket);
 void agregar_cola_ready(t_plato_pcb* plato);
+char* stringEstado(est_planif estado);
+bool cambioEstadoValido(est_planif estadoViejo,est_planif nuevoEstado);
+void cambiarEstado (t_plato_pcb* plato, est_planif nuevoEstado);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
