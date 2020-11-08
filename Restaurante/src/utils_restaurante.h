@@ -24,6 +24,8 @@
 #include <pthread.h>
 #include <sys/socket.h>
 
+#define REPOSAR "REPOSAR"
+#define HORNEAR "HORNEAR"
 
 //CONFIGURACION
 void cargar_configuracion();
@@ -66,6 +68,7 @@ void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
 pthread_t hilo_servidor_clientes;
 pthread_t hilo_planificador;
 t_list *  hilos;
+t_list * hilos_reposo;
 pthread_mutex_t cola_afinidades_mtx;
 t_list* colas_afinidades;
 sem_t hornos_disp;
@@ -104,15 +107,24 @@ typedef struct{
 
 typedef struct{
 			t_nombre afinidad;
-			t_queue* ready;
-			t_list* exec;
-			pthread_mutex_t plato_exec;
-			pthread_mutex_t mutex_ready;
-			pthread_mutex_t mutex_exec;
-			sem_t cocineros_disp;
-			sem_t platos_disp;
+			t_queue* ready; //cola de platos
+			pthread_mutex_t cola_ready_mtx;
+			sem_t sem_exec; //para saber si hay platos en cola_cocineros_exec
+			sem_t cocineros_disp_sem; //para saber si hay cocineros disp
+			sem_t platos_disp; //para saber si hay platos en ready
 			uint32_t cant_cocineros_disp;
+			t_queue* cola_cocineros_disp; //cola de t_cocinero
+			pthread_mutex_t cola_cocineros_disp_mtx;
+			t_queue* cola_cocineros_exec;
+			pthread_mutex_t cola_cocineros_exec_mtx;
 }t_cola_afinidad;
+
+typedef struct{
+		t_plato_pcb* plato_a_cocinar;
+		pthread_mutex_t mtx_exec; //para que ejecute el cocinero
+		pthread_t hilo;
+}t_cocinero;
+
 
 
 typedef struct{

@@ -210,10 +210,13 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 			strcpy(cola->afinidad.nombre, afinidad->nombre);
 			cola->cant_cocineros_disp = 0;
 			cola->ready = queue_create();
-			cola->exec = list_create();
-			pthread_mutex_init(&(cola->mutex_ready), NULL);
-			pthread_mutex_init(&(cola->mutex_exec), NULL);
+			cola->cola_cocineros_disp = queue_create();
+			cola->cola_cocineros_exec = queue_create();
+			pthread_mutex_init(&(cola->cola_ready_mtx), NULL);
+			pthread_mutex_init(&(cola->cola_cocineros_disp_mtx), NULL);
+			pthread_mutex_init(&(cola->cola_cocineros_exec_mtx), NULL);
 			sem_init(&(cola->platos_disp), 0 ,0 );
+			sem_init(&(cola->sem_exec), 0, 0);
 			list_add(colas_afinidades, cola);
 		}
 		cola->cant_cocineros_disp ++;
@@ -225,16 +228,29 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 		cola->afinidad.nombre = "Otros";
 		cola->cant_cocineros_disp = cant_cocineros_otros;
 		cola->ready = queue_create();
-		cola->exec = list_create();
-		pthread_mutex_init(&(cola->mutex_ready), NULL);
-		pthread_mutex_init(&(cola->mutex_exec), NULL);
+		cola->cola_cocineros_disp = queue_create();
+		cola->cola_cocineros_exec = queue_create();
+		pthread_mutex_init(&(cola->cola_ready_mtx), NULL);
+		pthread_mutex_init(&(cola->cola_cocineros_disp_mtx), NULL);
+		pthread_mutex_init(&(cola->cola_cocineros_exec_mtx), NULL);
 		sem_init(&(cola->platos_disp), 0 ,0 );
+		sem_init(&(cola->sem_exec), 0, 0);
 		list_add(colas_afinidades, cola);
 	}
-
+	pthread_t hilo_cocinero;
+	t_cocinero* cocinero;
 	for(int i = 0;	i < colas_afinidades->elements_count;	i++){
 		cola = list_get(colas_afinidades,i);
-		sem_init(&(cola->cocineros_disp), 0, cola->cant_cocineros_disp);
+		sem_init(&(cola->cocineros_disp_sem), 0, cola->cant_cocineros_disp);
+		for(int j = 0; j < cola->cant_cocineros_disp; j++){
+			cocinero = malloc(sizeof(t_cocinero));
+			pthread_mutex_init(&(cocinero->mtx_exec), NULL);
+			pthread_mutex_lock(&(cocinero->mtx_exec));
+			cocinero->plato_a_cocinar = NULL;
+			pthread_create(&hilo_cocinero, NULL,(void*) cocinar, (void*)cocinero);
+			cocinero->hilo = hilo_cocinero;
+			queue_push(cola->cola_cocineros_disp, cocinero);
+		}
 	}
 
 	sem_init(&hornos_disp, 0, metadata_rest->cantHornos);
@@ -243,10 +259,7 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 	pthread_mutex_init(&platos_block_mtx, NULL);
 	platos_block = list_create();
 
-	//TODO ver si es necesario
-
-	pthread_mutex_init(&platos_exec_mtx, NULL);
-	platos_exec = list_create();
+	//TODO poner semaforo para que termine de inicialziar antes de planificar
 
 	log_info(log_config_ini, "Fin inicializacion colas de ready \n");
 }
@@ -786,7 +799,7 @@ void process_request(int cod_op, int cliente_fd) {
 	case -1:
 		pthread_exit(NULL);
 	}
-free_struct_mensaje(mensaje,cod_op);
+	free_struct_mensaje(mensaje,cod_op);
 }
 
 
@@ -797,38 +810,131 @@ void agregar_cola_ready(t_plato_pcb* plato){
 	bool _mismo_nombre(t_cola_afinidad* cola){
 		return mismo_nombre(afinidad, &(cola->afinidad));
 	}
+	pthread_mutex_lock(&cola_afinidades_mtx);
 	cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+	pthread_mutex_unlock(&cola_afinidades_mtx);
 	if(cola_afinidad == NULL){
 		afinidad = malloc(sizeof(t_nombre));
 		afinidad->nombre = "Otros";
+		pthread_mutex_lock(&cola_afinidades_mtx);
 		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+		pthread_mutex_unlock(&cola_afinidades_mtx);
 		free(afinidad);
 	}
-	pthread_mutex_lock(&(cola_afinidad->mutex_ready));
+	pthread_mutex_lock(&(cola_afinidad->cola_ready_mtx));
 	queue_push(cola_afinidad->ready, plato);
 	//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
 	sem_post(&(cola_afinidad->platos_disp));
-	pthread_mutex_unlock(&(cola_afinidad->mutex_ready));
+	pthread_mutex_unlock(&(cola_afinidad->cola_ready_mtx));
 }
 
-void planificador_corto_plazo(t_cola_afinidad* strc_cola){
+void planificador_ready_a_exec(t_cola_afinidad* strc_cola){
 	t_plato_pcb* plato;
+	t_cocinero* cocinero;
 	while(true){
 		sem_wait(&(strc_cola->platos_disp));
-		for(int i=0; i< strc_cola->cant_cocineros_disp; i++){
-			plato = list_get(strc_cola->exec, i);
-			if(sigue_exec(plato)){
-				
+		sem_wait(&(strc_cola->cocineros_disp_sem));
+		pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+		plato = queue_pop(strc_cola->ready);
+		pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+		cambiarEstado(plato, EXEC);
+		pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+		cocinero = queue_pop(strc_cola->cola_cocineros_disp);
+		pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+		cocinero->plato_a_cocinar = plato;
+		pthread_mutex_unlock(&(cocinero->mtx_exec));
+	}
+}
+
+void planificador_exec(t_cola_afinidad* strc_cola){
+	t_cocinero* cocinero;
+	t_paso* paso_siguiente;
+	pthread_t hilo;
+
+	while(true){
+		sem_wait(&(strc_cola->sem_exec));
+		pthread_mutex_lock(&(strc_cola->cola_cocineros_exec_mtx));
+		cocinero = queue_pop(strc_cola->cola_cocineros_exec);
+		pthread_mutex_unlock(&(strc_cola->cola_cocineros_exec_mtx));
+
+		paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+		if(paso_siguiente->duracion == 0){ //si el paso ya termino
+			list_remove_and_destroy(cocinero->plato_a_cocinar->pasos, (void*)free_pasos);
+			paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+			if(string_equals_ignore_case(paso_siguiente->paso, REPOSAR)){ //si tiene que reposar
+				cambiar_estado(cocinero->plato_a_cocinar, BLOCK);
+				pthread_create(&hilo, NULL,(void*)reposar_plato, (void*)cocinero->plato_a_cocinar);
+				cocinero->plato_a_cocinar = NULL;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+			}else if(string_equals_ignore_case(paso_siguiente->paso, HORNEAR)){ //si tiene que hornear
+				cambiar_estado(cocinero->plato_a_cocinar, BLOCK);
+				//agregar a cola io
+				//signal sem io
+				cocinero->plato_a_cocinar = NULL;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+			}else{
+				cambiar_estado(cocinero->plato_a_cocinar, READY); //si tiene que volver a ready
+				pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+				queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
+				pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+				cocinero->plato_a_cocinar = NULL;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+				sem_post(&(strc_cola->platos_disp));
 			}
+		}else{ //si sigue ejecutando el mismo paso
+			pthread_mutex_unlock(&(cocinero->mtx_exec));
 		}
-		if(strc_cola->exec->elements_count < strc_cola->cant_cocineros_disp){
-			sem_wait(&(strc_cola->cocineros_disp));
-			pthread_mutex_lock(&(strc_cola->mutex_ready));
-			plato = queue_pop(strc_cola->ready);
-			pthread_mutex_unlock(&(strc_cola->mutex_ready));
-			cambiarEstado(plato, EXEC);
-			pthread_mutex_unlock(&(strc_cola->plato_exec));
-		}
+	}
+}
+
+
+void reposar_plato(t_plato_pcb* plato){
+	t_paso* paso = list_remove(plato->pasos);
+	for(int i = 0; i< paso->duracion; i ++){
+		//TODO pthread_mutex_lock(clock??)
+	}
+	free_pasos(paso);
+	t_paso* paso_siguiente = list_get(plato->pasos, 0);
+	if(string_equals_ignore_case(paso_siguiente->paso, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
+		//agregar a cola io
+		//signal sem io
+	}else{
+		agregar_cola_ready(plato);
+	}
+}
+
+void planificador_hornos(){
+
+}
+
+void cocinar(t_cocinero* cocinero){
+	t_cola_afinidad* cola_afinidad;
+	t_nombre* afinidad;
+	bool _mismo_nombre(t_cola_afinidad* cola){
+		return mismo_nombre(afinidad, &(cola->afinidad));
+	}
+	while(1){
+		pthread_mutex_lock(&(cocinero->mtx_exec));
+		//TODO pthread_mutex_lock(clock??)
+		t_paso* paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+		paso_siguiente->duracion --;
+		afinidad = &(cocinero->plato_a_cocinar->comida);
+		pthread_mutex_lock(&cola_afinidades_mtx);
+		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+		pthread_mutex_unlock(&cola_afinidades_mtx);
+		pthread_mutex_lock(&(cola_afinidad->cola_cocineros_exec_mtx));
+		queue_push(cola_afinidad->cola_cocineros_exec, cocinero);
+		pthread_mutex_unlock(&(cola_afinidad->cola_cocineros_exec_mtx));
+		sem_post(&(cola_afinidad->sem_exec));
 	}
 }
 
