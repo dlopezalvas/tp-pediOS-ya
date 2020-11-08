@@ -57,7 +57,7 @@ void* fhilo_servidor_clientes(void* v);
 void esperar_cliente(int servidor);
 void serve_client(int socket);
 void process_request(int cod_op, int cliente_fd);
-void* recibir_respuesta(int socket);
+void* recibir_respuesta(int socket, uint32_t* cod_op);
 int conectar_con_sindicato();
 void inicio_de_listas_globales();
 bool mismo_nombre(t_nombre* afinidad1, t_nombre* afinidad2);
@@ -73,16 +73,13 @@ pthread_mutex_t cola_afinidades_mtx;
 t_list* colas_afinidades;
 sem_t hornos_disp;
 sem_t platos_a_hornear_sem;
-pthread_mutex_t platos_block_mtx;
-t_list* platos_block;
-t_list* platos_exec;
-pthread_mutex_t platos_exec_mtx;
+
+
+
 
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
-pthread_mutex_t mutex_pcb;
-t_list *  pcb_platos;
 
 pthread_t hilo_serve_app;
 typedef enum{
@@ -165,6 +162,10 @@ void agregar_cola_ready(t_plato_pcb* plato);
 char* stringEstado(est_planif estado);
 bool cambioEstadoValido(est_planif estadoViejo,est_planif nuevoEstado);
 void cambiarEstado (t_plato_pcb* plato, est_planif nuevoEstado);
+void reposar_plato(t_plato_pcb* plato);
+void cocinar(t_cocinero* cocinero);
+void terminar_plato(t_plato_pcb* plato);
+void free_pcb_plato(t_plato_pcb* plato);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
