@@ -222,6 +222,24 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 		}
 		cola->cant_cocineros_disp ++;
 	}
+	pthread_t hilo_horno;
+	t_horno* horno;
+	pthread_mutex_init(&ready_hornos_mtx, NULL);
+	pthread_mutex_init(&hornos_disp_mtx, NULL);
+	ready_hornos = queue_create();
+	for(int i = 0; i < metadata_rest->cantHornos; i ++){
+		horno = malloc(sizeof(t_horno));
+		pthread_mutex_init(&(horno->mtx_IO), NULL);
+		horno->plato_a_cocinar = NULL;
+		pthread_create(&hilo_horno, NULL,(void*) hornear, (void*)horno);
+		horno->hilo = hilo_horno;
+		queue_push(hornos_disp, horno);
+	}
+	sem_init(&hornos_disp_sem, 0, metadata_rest->cantHornos);
+	sem_init(&sem_ready_hornos, 0, 0);
+
+	pthread_create(&hilo_horno, NULL,(void*) planificar_hornos, NULL);
+
 
 	uint32_t cant_cocineros_otros = metadata_rest->cantCocineros - metadata_rest->afinidades->elements_count;
 	if(cant_cocineros_otros != 0){
@@ -254,8 +272,8 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 		}
 	}
 
-	sem_init(&hornos_disp, 0, metadata_rest->cantHornos);
-	sem_init(&platos_a_hornear_sem, 0 , 0);
+
+
 
 //	pthread_mutex_init(&platos_block_mtx, NULL);
 //	platos_block = list_create();
@@ -883,8 +901,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					sem_post(&(strc_cola->cocineros_disp_sem));
 				}else if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //si tiene que hornear
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
-					//agregar a cola io
-					//signal sem io
+					pthread_mutex_lock(&ready_hornos_mtx);
+					queue_push(ready_hornos, cocinero->plato_a_cocinar);
+					pthread_mutex_unlock(&ready_hornos_mtx);
+					sem_post(&sem_ready_hornos);
 					cocinero->plato_a_cocinar = NULL;
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
@@ -953,15 +973,49 @@ void reposar_plato(t_plato_pcb* plato){
 	free_pasos(paso);
 	t_paso* paso_siguiente = list_get(plato->pasos, 0);
 	if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
-		//agregar a cola io
-		//signal sem io
+		pthread_mutex_lock(&ready_hornos_mtx);
+		queue_push(ready_hornos, plato);
+		pthread_mutex_unlock(&ready_hornos_mtx);
+		sem_post(&sem_ready_hornos);
 	}else{
 		agregar_cola_ready(plato);
 	}
 }
 
-void planificador_hornos(){
+void planificar_hornos(){
+	t_plato_pcb* plato_a_hornear;
+	t_horno* horno;
+	while(true){
+		sem_wait(&sem_ready_hornos);
+		sem_wait(&hornos_disp_sem);
+		pthread_mutex_lock(&ready_hornos_mtx);
+		plato_a_hornear = queue_pop(ready_hornos);
+		pthread_mutex_unlock(&ready_hornos_mtx);
+		pthread_mutex_lock(&hornos_disp_mtx);
+		horno = queue_pop(hornos_disp);
+		pthread_mutex_unlock(&hornos_disp_mtx);
+		horno->plato_a_cocinar = plato_a_hornear;
+		pthread_mutex_unlock(&(horno->mtx_IO));
+	}
+}
 
+void hornear(t_horno* horno){
+	t_paso* paso;
+	while(true){
+		pthread_mutex_lock(&(horno->mtx_IO));
+		paso = list_remove(horno->plato_a_cocinar->pasos, 0);
+		for(int i = 0; i< paso->duracion; i ++){
+			//TODO pthread_mutex_lock(clock??)
+		}
+		free_pasos(paso);
+//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
+		agregar_cola_ready(horno->plato_a_cocinar);
+		horno->plato_a_cocinar = NULL;
+		pthread_mutex_lock(&hornos_disp_mtx);
+		queue_push(hornos_disp, horno);
+		pthread_mutex_unlock(&hornos_disp_mtx);
+		sem_post(&hornos_disp_sem);
+	}
 }
 
 void cocinar(t_cocinero* cocinero){

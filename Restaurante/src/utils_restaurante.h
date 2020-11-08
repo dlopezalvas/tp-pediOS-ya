@@ -71,9 +71,13 @@ t_list *  hilos;
 t_list * hilos_reposo;
 pthread_mutex_t cola_afinidades_mtx;
 t_list* colas_afinidades;
-sem_t hornos_disp;
-sem_t platos_a_hornear_sem;
 
+sem_t hornos_disp_sem;
+t_queue* ready_hornos; //cola de platos
+sem_t sem_ready_hornos;
+pthread_mutex_t ready_hornos_mtx;
+t_queue* hornos_disp;
+pthread_mutex_t hornos_disp_mtx;
 
 
 
@@ -130,6 +134,13 @@ typedef struct{
 }t_cocinero_afinidad;
 
 
+typedef struct{
+		t_plato_pcb* plato_a_cocinar;
+		pthread_mutex_t mtx_IO; //para que ejecute I/O
+		pthread_t hilo;
+}t_horno;
+
+
 void* fhilo_plato (t_plato_pcb* v);
 
 //FHILOS
@@ -166,6 +177,8 @@ void reposar_plato(t_plato_pcb* plato);
 void cocinar(t_cocinero* cocinero);
 void terminar_plato(t_plato_pcb* plato);
 void free_pcb_plato(t_plato_pcb* plato);
+void planificar_hornos();
+void hornear(t_horno* horno);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
