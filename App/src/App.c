@@ -3,9 +3,9 @@
 int main(int argc, char* argv[]) {
 
 	// modos de debug
-		modo_noComanda = true;
-		modo_noRest = true;
-		modo_mock = true;
+		modo_noComanda = false;
+		modo_noRest = false;
+		modo_mock = false;
 
 	// configuracion situacional de loggers
 		logger_obligatorio_consolaActiva = false;

@@ -130,18 +130,18 @@ void conectarme_con_app(){
 	if(socket_app !=-1){
 		t_mensaje* mensaje_inicial_app = malloc(sizeof(t_mensaje));
 
-		m_restaurante* m_restaurante = malloc(sizeof(m_restaurante));
+		m_restaurante* mje_restaurante = malloc(sizeof(m_restaurante));
 
-		m_restaurante->nombre.nombre = string_duplicate(cfg_nombre_restaurante);
-		m_restaurante->posicion.x = metadata_rest->posicion.x;
-		m_restaurante->posicion.y = metadata_rest->posicion.y;
+		mje_restaurante->nombre.nombre = string_duplicate(cfg_nombre_restaurante);
+		mje_restaurante->posicion.x = metadata_rest->posicion.x;
+		mje_restaurante->posicion.y = metadata_rest->posicion.y;
 
 
 		//mandar t_mje
 
 		mensaje_inicial_app->id = cfg_id;
 		mensaje_inicial_app->tipo_mensaje = POSICION_RESTAUNTE;
-		mensaje_inicial_app->parametros = m_restaurante;
+		mensaje_inicial_app->parametros = mje_restaurante;
 		//crear un hilo que reciba mjes de este socket
 		pthread_create(&hilo_serve_app, NULL,(void*) fhilo_serve_app, (void*)socket_app);
 		log_info(log_config_ini, "Se inicio el socket de escucha con app \n");
