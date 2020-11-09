@@ -3,6 +3,7 @@
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
 void internal_console_free(char* read, char** command){
+
 	int position = 0;
 
 	while(command[position] != NULL){
@@ -106,6 +107,7 @@ void internal_console_init(){
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 void sindicato_console_initialize(){
+
 	printf("Initializing console\n");
 	printf("Type help for more comands\n");
 

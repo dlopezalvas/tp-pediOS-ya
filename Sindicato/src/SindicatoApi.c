@@ -2,6 +2,15 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+void internal_api_free_array(char** array,int qtyBitsReserved){
+
+	for(int position = 0; position < (qtyBitsReserved - 1); position++){
+		free(array[position]);
+	}
+
+	free(array);
+}
+
 void internal_api_createFileSystemFolders(){
 	/* Create mount point of the FS */
 	sindicato_utils_create_folder(sindicatoMountPoint, false);
@@ -52,7 +61,7 @@ void internal_api_bitmap_create(){
 
 	int blocks = metadataFS->blocks/8;
 
-	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);  //uso open porque necesito el int para el mmap
+	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);
 
 	ftruncate(bitarrayFile, blocks);
 
@@ -79,6 +88,8 @@ void internal_api_initialize_blocks(){
 	for(int i = 1; i <= (int)metadataFS->blocks; i++){
 		filePath = sindicato_utils_build_block_path(i);
 
+		/* Los archivos se abren con  "a" para que no overrideen el valor que tengan guardados
+		 * en caso de reconexion */
 		bloqueFS = fopen(filePath, "a");
 
 		fclose(bloqueFS);
@@ -88,14 +99,45 @@ void internal_api_initialize_blocks(){
 	log_info(sindicatoDebugLog,"[FILESYSTEM] Bloques inicializados");
 }
 
-int internal_api_get_free_block(){
-	for(int i = 1; i <= metadataFS->blocks; i++){
-		if(!bitarray_test_bit(bitarray,i)){
+void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
+
+	int block = 0;
+	int qtyBitsReserved = positionThatFailed - 1;
+
+	for(int i = 0; i < qtyBitsReserved; i++){
+
+		block = atoi(bitsList[i]);
+
+		if(bitarray_test_bit(bitarray, block)){
+
+			/* BEGIN CRITICAL SECTION bitarray_mtx */
 			pthread_mutex_lock(&bitarray_mtx);
-			bitarray_set_bit(bitarray,i);
+
+			bitarray_clean_bit(bitarray, block);
 			msync(bitarray, sizeof(bitarray), MS_SYNC);
+
 			pthread_mutex_unlock(&bitarray_mtx);
-			return i;
+			/* END   CRITICAL SECTION bitarray_mtx */
+		}
+	}
+
+	log_info(sindicatoDebugLog, "[FILESYSTEM] %d bloques reservados fueron liberados en bitmap.",qtyBitsReserved);
+}
+
+int internal_api_get_free_block(){
+
+	for(int blockNumber = 1; blockNumber <= metadataFS->blocks; blockNumber++){
+		if(!bitarray_test_bit(bitarray, blockNumber)){
+			/* BEGIN CRITICAL SECTION bitarray_mtx */
+			pthread_mutex_lock(&bitarray_mtx);
+
+			bitarray_set_bit(bitarray, blockNumber);
+			msync(bitarray, sizeof(bitarray), MS_SYNC);
+
+			pthread_mutex_unlock(&bitarray_mtx);
+			/* END   CRITICAL SECTION bitarray_mtx */
+
+			return blockNumber;
 		}
 	}
 
@@ -103,16 +145,18 @@ int internal_api_get_free_block(){
 }
 
 char** internal_api_get_free_blocks(int blocksNeeded){
-	int freeBlock;
+
 	char* stringAux;
+
+	int freeBlock = 0;
 	char** blocks = malloc(blocksNeeded*sizeof(int));
 
 	for(int i = 1; i <= blocksNeeded; i++){
 		freeBlock = internal_api_get_free_block();
 		if(freeBlock == -1){
 			log_error(sindicatoDebugLog, "[FILESYSTEM] ERROR: No hay bloques disponibles");
-			//TODO: Debo liberar los bloques reservados en caso de que se quede sin bloques disponibles
-			free(blocks);
+			internal_api_free_bits_reserved(blocks, i);
+			internal_api_free_array(blocks, i);
 			return NULL;
 		}
 
@@ -142,8 +186,6 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 void sindicato_api_send_response_of_operation(t_responseMessage* response){
 	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
 	enviar_mensaje(response->message, response->socket);
-
-	//ya estoy habilitado para hacer los free();
 }
 
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
@@ -154,8 +196,6 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 
 	/* DELETE THIS: datos dummies solo para TEST */
 	plato->nombre = "Milanesa";
-	log_info(sindicatoDebugLog, plato->nombre);
-
 
 	list_add(platos->nombres, plato);
 	platos->cantElementos = platos->nombres->elements_count;
@@ -203,7 +243,6 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 	pedidoElem->cantHecha = 1;
 	pedidoElem->cantTotal = 1;
 	pedidoElem->comida.nombre = "Milanesa";
-	log_info(sindicatoDebugLog, pedidoElem->comida.nombre);
 
 	pedido->cantPedidos = 1;
 	pedido->estadoPedido = PENDIENTE;
@@ -236,6 +275,7 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	list_add(restauranteInfo->recetas,recetaPrecio);
 	restauranteInfo->cantHornos = 1;
 	restauranteInfo->cantCocineros = 2;
+	restauranteInfo->cantPedidos = 2;
 
 	return restauranteInfo;
 }
@@ -285,4 +325,9 @@ void sindicato_api_afip_initialize(){
 	internal_api_bitmap_create();
 
 	internal_api_initialize_blocks();
+
+	/* DELETE THIS, Test only*/
+	internal_api_get_free_blocks(9);
+
+	internal_api_get_free_blocks(3);
 }

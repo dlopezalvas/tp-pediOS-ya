@@ -10,6 +10,7 @@ int main(void) {
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 void sindicato_initialize(){
+
 	sindicatoConfig = leer_config(SINDICATO_PATH_CONFIG);
 
 	/* logs folder creation */

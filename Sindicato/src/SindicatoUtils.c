@@ -95,4 +95,3 @@ void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
 	free(responseMessage->message);
 	free(responseMessage);
 }
-

@@ -179,6 +179,7 @@ typedef struct{
 	t_list* recetas; //lista de receta con precio
 	uint32_t cantHornos;
 	uint32_t cantCocineros;
+	uint32_t cantPedidos;
 }rta_obtenerRestaurante;
 
 typedef struct{
