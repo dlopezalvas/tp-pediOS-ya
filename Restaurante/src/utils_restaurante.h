@@ -42,6 +42,7 @@ char* cfg_nombre_restaurante;
 char* cfg_algoritmo_planificacion;
 int cfg_quantum;
 int cfg_id;
+int cfg_retardo_ciclo_CPU;
 
 void conectarme_con_app();
 
@@ -80,8 +81,12 @@ sem_t sem_ready_hornos;
 pthread_mutex_t ready_hornos_mtx;
 t_queue* hornos_disp;
 pthread_mutex_t hornos_disp_mtx;
-
-
+pthread_mutex_t mutex_EXEC;
+pthread_mutex_t mutex_REPOSANDO;
+pthread_mutex_t mutex_HORNEANDO;
+t_list* platos_EXEC;
+t_list* platos_REPOSANDO;
+t_list* platos_HORNEANDO;
 
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
@@ -105,6 +110,7 @@ typedef struct{
 			uint32_t cantTotal;
 			uint32_t cantHecha;
 			est_planif estado;
+			pthread_mutex_t mutex_clock;
 }t_plato_pcb;
 
 
