@@ -60,6 +60,7 @@ void internal_api_bitmap_create(){
 	char* bitmapPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Bitmap.bin");
 
 	int blocks = metadataFS->blocks/8;
+	//TODO: validar multiplo de 8
 
 	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);
 
@@ -85,7 +86,7 @@ void internal_api_initialize_blocks(){
 	char* filePath;
 	FILE* bloqueFS;
 
-	for(int i = 1; i <= (int)metadataFS->blocks; i++){
+	for(int i = 0; i < (int)metadataFS->blocks; i++){
 		filePath = sindicato_utils_build_block_path(i);
 
 		/* Los archivos se abren con  "a" para que no overrideen el valor que tengan guardados
@@ -102,7 +103,7 @@ void internal_api_initialize_blocks(){
 void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 
 	int block = 0;
-	int qtyBitsReserved = positionThatFailed - 1;
+	int qtyBitsReserved = positionThatFailed;
 
 	for(int i = 0; i < qtyBitsReserved; i++){
 
@@ -126,7 +127,7 @@ void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 
 int internal_api_get_free_block(){
 
-	for(int blockNumber = 1; blockNumber <= metadataFS->blocks; blockNumber++){
+	for(int blockNumber = 0; blockNumber < metadataFS->blocks; blockNumber++){
 		if(!bitarray_test_bit(bitarray, blockNumber)){
 			/* BEGIN CRITICAL SECTION bitarray_mtx */
 			pthread_mutex_lock(&bitarray_mtx);
@@ -151,7 +152,7 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 	int freeBlock = 0;
 	char** blocks = malloc(blocksNeeded*sizeof(int));
 
-	for(int i = 1; i <= blocksNeeded; i++){
+	for(int i = 0; i < blocksNeeded; i++){
 		freeBlock = internal_api_get_free_block();
 		if(freeBlock == -1){
 			log_error(sindicatoDebugLog, "[FILESYSTEM] ERROR: No hay bloques disponibles");
@@ -161,14 +162,106 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 		}
 
 		stringAux = string_itoa(freeBlock);
-		blocks[i-1] = string_new();
-		string_append(&blocks[i-1], stringAux);
+		blocks[i] = string_new();
+		string_append(&blocks[i], stringAux);
 		free(stringAux);
 	}
 
 	log_info(sindicatoDebugLog, "[FILESYSTEM] %d bloques fueron seteados en bitmap.",blocksNeeded);
 
 	return blocks;
+}
+
+char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blocksNeeded){
+	char** stringSplitted = malloc(blocksNeeded*sizeof(char)*stringMaxSize);
+
+	int splitFrom = 0;
+	int qtyToSplit = stringMaxSize;
+
+	for(int i = 0; i < blocksNeeded; i++){
+
+		stringSplitted[i] = string_substring(stringtoSplit,splitFrom,qtyToSplit);
+
+		splitFrom = splitFrom + qtyToSplit;
+
+		if(splitFrom + qtyToSplit > strlen(stringtoSplit))
+			qtyToSplit = strlen(stringtoSplit) - splitFrom;
+	}
+
+	return stringSplitted;
+}
+
+int internal_api_calculate_blocks_needed(char* fullString){
+
+	int blocksNeeded = 0;
+	int stringLenght = string_length(fullString);
+	int blockSizeString = (int)(metadataFS->block_size - 4);
+
+	blocksNeeded = stringLenght/blockSizeString;
+	if(stringLenght%blockSizeString)
+		blocksNeeded++;
+
+	return blocksNeeded;
+}
+
+void internal_api_write_block(char* stringToWrite){
+
+	char* blockFullPath;
+	int sizeString;
+	int stringBlockSize;
+	uint32_t pointerNextBlock;
+
+	int qtyblocksNeeded = internal_api_calculate_blocks_needed(stringToWrite);
+
+	char** blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
+	if(blocksToWrite == NULL)
+		return;
+
+	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
+	char** stringToWriteSplitted = internal_api_split_string(stringToWrite, stringBlockSize, qtyblocksNeeded);
+
+	for(int i = 0; i < qtyblocksNeeded; i++){
+		blockFullPath = sindicato_utils_build_block_path(atoi(blocksToWrite[i]));
+
+		int block = open(blockFullPath, O_RDWR | O_CREAT, 0700);
+		ftruncate(block, metadataFS->block_size);
+
+		char* mappedBlock = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+		if(i < (qtyblocksNeeded -1))
+			pointerNextBlock = (uint32_t)atoi(blocksToWrite[i+1]);
+
+		sizeString = strlen(stringToWriteSplitted[i]);
+
+		/* Write string spplited in block */
+		memcpy(mappedBlock, stringToWriteSplitted[i], sizeString);
+		memcpy(mappedBlock + sizeString, &pointerNextBlock , sizeof(uint32_t));
+
+		msync(mappedBlock, metadataFS->block_size, MS_SYNC);
+
+		munmap(mappedBlock, metadataFS->block_size);
+		close(block);
+	}
+}
+
+void internal_api_write(){
+
+	char* blockPath = string_new();
+	string_append(&blockPath, "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Blocks/1.afip");
+	char* stringToWrite = "CANTIDAD_COCINEROS=5\nPOSICION=[4,10]\nAFINIDAD_COCINEROS=[Mil";
+	int blockSize = metadataFS->block_size/8;
+
+	int block = open(blockPath, O_RDWR | O_CREAT, 0700);
+	ftruncate(block, blockSize);
+
+	char* mappedBlock = mmap(0, blockSize, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+	uint32_t pointer = 2;
+	memcpy(mappedBlock, stringToWrite, strlen(stringToWrite));
+	memcpy(mappedBlock + strlen(stringToWrite), &pointer , sizeof(uint32_t));
+	msync(mappedBlock, blockSize, MS_SYNC);
+
+	munmap(mappedBlock, blockSize);
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
@@ -327,7 +420,5 @@ void sindicato_api_afip_initialize(){
 	internal_api_initialize_blocks();
 
 	/* DELETE THIS, Test only*/
-	internal_api_get_free_blocks(9);
-
-	internal_api_get_free_blocks(3);
+	internal_api_write_block("CANTIDAD_COCINEROS=5\nPOSICION=[4,5]\nAFINIDAD_COCINEROS=[Milanesas]\nPLATOS=[Milanesas,Empanadas,Ensalada]\nPRECIO_PLATOS=[200,50,150]\nCANTIDAD_HORNOS=2");
 }
