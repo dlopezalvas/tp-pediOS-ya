@@ -41,7 +41,7 @@ void cargar_configuracion(){
 	log_info(log_config_ini, "\t\tcfg_quantum: %d \n",cfg_quantum);
 
 	//id de restaurante
-	cfg_id = config_get_int_value(config,"ID");;
+	cfg_id = config_get_int_value(config,"ID");
 
 }
 
@@ -85,8 +85,8 @@ void iniciar_restaurante(){
 		//Recibir respuesta obtener restaurante
 
 		log_info(log_config_ini, "estoy por recibir el mj\n");
-
-		buffer = recibir_respuesta(conexion_sindicato);
+		uint32_t cod_op;
+		buffer = recibir_respuesta(conexion_sindicato, &cod_op);
 		metadata_rest = buffer;
 
 		liberar_conexion(conexion_sindicato);
@@ -176,6 +176,7 @@ void inicio_de_listas_globales(){
 
 	//LSITA DE HILOS CLIENTE
 	hilos = list_create();
+	hilos_reposo = list_create();
 
 }
 
@@ -209,40 +210,76 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 			cola->afinidad.nombre = malloc(strlen(afinidad->nombre)+1);
 			strcpy(cola->afinidad.nombre, afinidad->nombre);
 			cola->cant_cocineros_disp = 0;
-			cola->cola = queue_create();
-			pthread_mutex_init(&(cola->mutex_cola), NULL);
+			cola->ready = queue_create();
+			cola->cola_cocineros_disp = queue_create();
+			cola->cola_cocineros_exec = queue_create();
+			pthread_mutex_init(&(cola->cola_ready_mtx), NULL);
+			pthread_mutex_init(&(cola->cola_cocineros_disp_mtx), NULL);
+			pthread_mutex_init(&(cola->cola_cocineros_exec_mtx), NULL);
 			sem_init(&(cola->platos_disp), 0 ,0 );
+			sem_init(&(cola->sem_exec), 0, 0);
 			list_add(colas_afinidades, cola);
 		}
 		cola->cant_cocineros_disp ++;
 	}
+	pthread_t hilo_horno;
+	t_horno* horno;
+	pthread_mutex_init(&ready_hornos_mtx, NULL);
+	pthread_mutex_init(&hornos_disp_mtx, NULL);
+	ready_hornos = queue_create();
+	for(int i = 0; i < metadata_rest->cantHornos; i ++){
+		horno = malloc(sizeof(t_horno));
+		pthread_mutex_init(&(horno->mtx_IO), NULL);
+		horno->plato_a_cocinar = NULL;
+		pthread_create(&hilo_horno, NULL,(void*) hornear, (void*)horno);
+		horno->hilo = hilo_horno;
+		queue_push(hornos_disp, horno);
+	}
+	sem_init(&hornos_disp_sem, 0, metadata_rest->cantHornos);
+	sem_init(&sem_ready_hornos, 0, 0);
+
+	pthread_create(&hilo_horno, NULL,(void*) planificar_hornos, NULL);
+
 
 	uint32_t cant_cocineros_otros = metadata_rest->cantCocineros - metadata_rest->afinidades->elements_count;
 	if(cant_cocineros_otros != 0){
 		cola = malloc(sizeof(t_cola_afinidad));
 		cola->afinidad.nombre = "Otros";
 		cola->cant_cocineros_disp = cant_cocineros_otros;
-		cola->cola = queue_create();
-		pthread_mutex_init(&(cola->mutex_cola), NULL);
+		cola->ready = queue_create();
+		cola->cola_cocineros_disp = queue_create();
+		cola->cola_cocineros_exec = queue_create();
+		pthread_mutex_init(&(cola->cola_ready_mtx), NULL);
+		pthread_mutex_init(&(cola->cola_cocineros_disp_mtx), NULL);
+		pthread_mutex_init(&(cola->cola_cocineros_exec_mtx), NULL);
 		sem_init(&(cola->platos_disp), 0 ,0 );
+		sem_init(&(cola->sem_exec), 0, 0);
 		list_add(colas_afinidades, cola);
 	}
-
+	pthread_t hilo_cocinero;
+	t_cocinero* cocinero;
 	for(int i = 0;	i < colas_afinidades->elements_count;	i++){
 		cola = list_get(colas_afinidades,i);
-		sem_init(&(cola->cocineros_disp), 0, cola->cant_cocineros_disp);
+		sem_init(&(cola->cocineros_disp_sem), 0, cola->cant_cocineros_disp);
+		for(int j = 0; j < cola->cant_cocineros_disp; j++){
+			cocinero = malloc(sizeof(t_cocinero));
+			pthread_mutex_init(&(cocinero->mtx_exec), NULL);
+			pthread_mutex_lock(&(cocinero->mtx_exec));
+			cocinero->plato_a_cocinar = NULL;
+			cocinero->ciclos_ejecutando = 0;
+			pthread_create(&hilo_cocinero, NULL,(void*) cocinar, (void*)cocinero);
+			cocinero->hilo = hilo_cocinero;
+			queue_push(cola->cola_cocineros_disp, cocinero);
+		}
 	}
 
-	sem_init(&hornos_disp, 0, metadata_rest->cantHornos);
-	sem_init(&platos_a_hornear_sem, 0 , 0);
 
-	pthread_mutex_init(&platos_block_mtx, NULL);
-	platos_block = list_create();
 
-	//TODO ver si es necesario
 
-	pthread_mutex_init(&platos_exec_mtx, NULL);
-	platos_exec = list_create();
+//	pthread_mutex_init(&platos_block_mtx, NULL);
+//	platos_block = list_create();
+
+	//TODO poner semaforo para que termine de inicialziar antes de planificar
 
 	log_info(log_config_ini, "Fin inicializacion colas de ready \n");
 }
@@ -377,7 +414,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 			//RECIBO RESPUESTA DE SINDICATO
 			t_restaurante_y_plato* rta_sindicato_CONSULTAR_PLATOS;
-			rta_sindicato_CONSULTAR_PLATOS = recibir_respuesta(socket_CONSULTAR_PLATOS);
+			uint32_t error_cod_op;
+			rta_sindicato_CONSULTAR_PLATOS = recibir_respuesta(socket_CONSULTAR_PLATOS, &error_cod_op);
 
 			//ENVIAR RESPUESTA DE SINDICATO A CLIENTE
 
@@ -457,7 +495,8 @@ void process_request(int cod_op, int cliente_fd) {
 			free(_GUARDAR_PEDIDO);
 
 			//RECIBIR RESPUESTA DE SINDICATO
-			uint32_t* rta_sindicato_GUARDAR_PEDIDO = recibir_respuesta(socket_GUARDAR_PEDIDO);
+			uint32_t error_cod_op;
+			uint32_t* rta_sindicato_GUARDAR_PEDIDO = recibir_respuesta(socket_GUARDAR_PEDIDO, &error_cod_op);
 
 			liberar_conexion(socket_GUARDAR_PEDIDO);
 			//recibo un ok/fail pero al cliente le envio el id del pedido creado
@@ -529,9 +568,9 @@ void process_request(int cod_op, int cliente_fd) {
 				free_struct_mensaje(mje_sindicato_GUARDAR_PLATO->parametros, GUARDAR_PLATO);
 				free(mje_sindicato_GUARDAR_PLATO);
 
-
+				uint32_t error_cod_op;
 				//RECIBIR RESPUESTA DE SINDICATO
-				uint32_t* rta_sindicato_GUARDAR_PLATO = recibir_respuesta(socket_GUARDAR_PLATO);// TODO
+				uint32_t* rta_sindicato_GUARDAR_PLATO = recibir_respuesta(socket_GUARDAR_PLATO, &error_cod_op);// TODO
 
 				//recibo un ok/fail y al cliente le mando el mismo ok/fail
 				//ENVIAR RESTA AL CLIENTE CON EL ID DEL PEDIDO CREADO
@@ -601,8 +640,8 @@ void process_request(int cod_op, int cliente_fd) {
 				log_info(log_config_ini ,"Se envio a sindicato el mj OBTENER_PEDIDO: ",cod_op);
 
 				//RECIBIR RESPUESTA DE SINDICATO
-
-				rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_OBTENER_PEDIDO);// TODO
+				uint32_t error_cod_op;
+				rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_OBTENER_PEDIDO, &error_cod_op);// TODO
 				log_info(log_config_ini ,"Se recibio rta de sindicato el mj OBTENER_PEDIDO: ",cod_op);
 				liberar_conexion(socket_OBTENER_PEDIDO);
 
@@ -647,7 +686,7 @@ void process_request(int cod_op, int cliente_fd) {
 					free(mje_sindicato_OBTENER_RECETA);
 
 					//RECIBIR RESPUESTA DE SINDICATO
-					rta_sindicato_RTA_OBTENER_RECETA = recibir_respuesta(socket_OBTENER_RECETA);// TODO
+					rta_sindicato_RTA_OBTENER_RECETA = recibir_respuesta(socket_OBTENER_RECETA, &error_cod_op);// TODO
 
 					liberar_conexion(socket_OBTENER_RECETA);
 
@@ -672,9 +711,6 @@ void process_request(int cod_op, int cliente_fd) {
 					log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos);
 					//log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos); PASOS list get
 
-					//				pthread_mutex_lock(&mutex_pcb);
-					//				list_add(pcb_platos, plato_pcb);
-					//				pthread_mutex_unlock(&mutex_pcb);
 					agregar_cola_ready(plato_pcb);
 
 				}
@@ -749,7 +785,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 			//RECIBIR RESPUESTA DE SINDICATO
-			rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);// TODO
+			uint32_t error_cod_op;
+			rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO, &error_cod_op);// TODO
 
 			liberar_conexion( socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);
 
@@ -782,7 +819,7 @@ void process_request(int cod_op, int cliente_fd) {
 	case -1:
 		pthread_exit(NULL);
 	}
-free_struct_mensaje(mensaje,cod_op);
+	free_struct_mensaje(mensaje,cod_op);
 }
 
 
@@ -793,18 +830,289 @@ void agregar_cola_ready(t_plato_pcb* plato){
 	bool _mismo_nombre(t_cola_afinidad* cola){
 		return mismo_nombre(afinidad, &(cola->afinidad));
 	}
+	pthread_mutex_lock(&cola_afinidades_mtx);
 	cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+	pthread_mutex_unlock(&cola_afinidades_mtx);
 	if(cola_afinidad == NULL){
 		afinidad = malloc(sizeof(t_nombre));
 		afinidad->nombre = "Otros";
+		pthread_mutex_lock(&cola_afinidades_mtx);
 		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+		pthread_mutex_unlock(&cola_afinidades_mtx);
 		free(afinidad);
 	}
-	pthread_mutex_lock(&(cola_afinidad->mutex_cola));
-	queue_push(cola_afinidad->cola, plato);
+	pthread_mutex_lock(&(cola_afinidad->cola_ready_mtx));
+	queue_push(cola_afinidad->ready, plato);
 	//LE AVISO AL HILO PLANIFICADOR QUE TIENE UN PEDIDO CON PLATOS A PLANIFICAR
 	sem_post(&(cola_afinidad->platos_disp));
-	pthread_mutex_unlock(&(cola_afinidad->mutex_cola));
+	pthread_mutex_unlock(&(cola_afinidad->cola_ready_mtx));
+}
+
+void planificador_ready_a_exec(t_cola_afinidad* strc_cola){
+	t_plato_pcb* plato;
+	t_cocinero* cocinero;
+	while(true){
+		sem_wait(&(strc_cola->platos_disp));
+		sem_wait(&(strc_cola->cocineros_disp_sem));
+		pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+		plato = queue_pop(strc_cola->ready);
+		pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+		cambiarEstado(plato, EXEC);
+		pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+		cocinero = queue_pop(strc_cola->cola_cocineros_disp);
+		pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+		cocinero->plato_a_cocinar = plato;
+		pthread_mutex_unlock(&(cocinero->mtx_exec));
+	}
+}
+
+void planificador_exec(t_cola_afinidad* strc_cola){
+	t_cocinero* cocinero;
+	t_paso* paso_siguiente;
+	pthread_t hilo;
+
+	while(true){
+		sem_wait(&(strc_cola->sem_exec));
+		pthread_mutex_lock(&(strc_cola->cola_cocineros_exec_mtx));
+		cocinero = queue_pop(strc_cola->cola_cocineros_exec);
+		pthread_mutex_unlock(&(strc_cola->cola_cocineros_exec_mtx));
+
+		paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+		if(paso_siguiente->duracion == 0){ //si el paso ya termino
+			list_remove_and_destroy_element(cocinero->plato_a_cocinar->pasos,0, (void*)free_pasos);
+			if(list_is_empty(cocinero->plato_a_cocinar->pasos)){
+				pthread_create(&hilo, NULL,(void*)terminar_plato, (void*)cocinero->plato_a_cocinar);
+				list_add(hilos_reposo, &hilo);
+				cocinero->plato_a_cocinar = NULL;
+				cocinero->ciclos_ejecutando = 0;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+			}
+			else{
+				paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+				if(string_equals_ignore_case(paso_siguiente->paso.nombre, REPOSAR)){ //si tiene que reposar
+					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
+					pthread_create(&hilo, NULL,(void*)reposar_plato, (void*)cocinero->plato_a_cocinar);
+					list_add(hilos_reposo, &hilo);
+					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
+					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+					queue_push(strc_cola->cola_cocineros_disp, cocinero);
+					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+					sem_post(&(strc_cola->cocineros_disp_sem));
+				}else if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //si tiene que hornear
+					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
+					pthread_mutex_lock(&ready_hornos_mtx);
+					queue_push(ready_hornos, cocinero->plato_a_cocinar);
+					pthread_mutex_unlock(&ready_hornos_mtx);
+					sem_post(&sem_ready_hornos);
+					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
+					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+					queue_push(strc_cola->cola_cocineros_disp, cocinero);
+					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+					sem_post(&(strc_cola->cocineros_disp_sem));
+				}else{
+					cambiarEstado(cocinero->plato_a_cocinar, READY); //si tiene que volver a ready
+					pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+					queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
+					pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
+					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+					queue_push(strc_cola->cola_cocineros_disp, cocinero);
+					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+					sem_post(&(strc_cola->cocineros_disp_sem));
+					sem_post(&(strc_cola->platos_disp));
+				}
+			}
+		}else{ //si sigue ejecutando el mismo paso
+			if(string_equals_ignore_case(cfg_algoritmo_planificacion, RR) && cocinero->ciclos_ejecutando == cfg_quantum){
+				cambiarEstado(cocinero->plato_a_cocinar, READY); //si tiene que volver a ready por fin de quantum
+				pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+				queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
+				pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+				cocinero->plato_a_cocinar = NULL;
+				cocinero->ciclos_ejecutando = 0;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+				sem_post(&(strc_cola->platos_disp));
+			}else{
+			pthread_mutex_unlock(&(cocinero->mtx_exec));
+			}
+		}
+	}
+}
+
+
+void terminar_plato(t_plato_pcb* plato){
+	int socket_app_plato_listo = iniciar_cliente(cfg_ip_app, cfg_puerto_app);
+	if(socket_app_plato_listo == -1){
+		//TODO error
+	}else{
+		uint32_t cod_op;
+		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+		mensaje->id = cfg_id;
+		mensaje->tipo_mensaje = PLATO_LISTO;
+		m_platoListo * plato_listo = malloc(sizeof(m_platoListo));
+		plato_listo->comida.nombre = string_duplicate(plato->comida.nombre);
+		plato_listo->restaurante.nombre = string_duplicate(cfg_nombre_restaurante);
+		plato_listo->idPedido = plato->id_pedido;
+		mensaje->parametros = plato_listo;
+		enviar_mensaje(mensaje, socket_app_plato_listo);
+		free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
+		free(mensaje);
+		uint32_t* rta_plato_listo = recibir_respuesta(socket_app_plato_listo, &cod_op);
+		if(cod_op == RTA_PLATO_LISTO){
+			loggear_mensaje_recibido(rta_plato_listo, cod_op, log_config_ini);
+			free_struct_mensaje(rta_plato_listo, cod_op);
+		}else{
+			//error TODO
+		}
+		liberar_conexion(socket_app_plato_listo);
+	}
+	free_pcb_plato(plato);
+}
+
+void free_pcb_plato(t_plato_pcb* plato){
+	list_destroy_and_destroy_elements(plato->pasos, (void*) free_pasos);
+	free(plato->comida.nombre);
+	free(plato);
+}
+
+void reposar_plato(t_plato_pcb* plato){
+	t_paso* paso = list_remove(plato->pasos, 0);
+	for(int i = 0; i< paso->duracion; i ++){
+		//TODO pthread_mutex_lock(clock??)
+	}
+	free_pasos(paso);
+	t_paso* paso_siguiente = list_get(plato->pasos, 0);
+	if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
+		pthread_mutex_lock(&ready_hornos_mtx);
+		queue_push(ready_hornos, plato);
+		pthread_mutex_unlock(&ready_hornos_mtx);
+		sem_post(&sem_ready_hornos);
+	}else{
+		agregar_cola_ready(plato);
+	}
+}
+
+void planificar_hornos(){
+	t_plato_pcb* plato_a_hornear;
+	t_horno* horno;
+	while(true){
+		sem_wait(&sem_ready_hornos);
+		sem_wait(&hornos_disp_sem);
+		pthread_mutex_lock(&ready_hornos_mtx);
+		plato_a_hornear = queue_pop(ready_hornos);
+		pthread_mutex_unlock(&ready_hornos_mtx);
+		pthread_mutex_lock(&hornos_disp_mtx);
+		horno = queue_pop(hornos_disp);
+		pthread_mutex_unlock(&hornos_disp_mtx);
+		horno->plato_a_cocinar = plato_a_hornear;
+		pthread_mutex_unlock(&(horno->mtx_IO));
+	}
+}
+
+void hornear(t_horno* horno){
+	t_paso* paso;
+	while(true){
+		pthread_mutex_lock(&(horno->mtx_IO));
+		paso = list_remove(horno->plato_a_cocinar->pasos, 0);
+		for(int i = 0; i< paso->duracion; i ++){
+			//TODO pthread_mutex_lock(clock??)
+		}
+		free_pasos(paso);
+//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
+		agregar_cola_ready(horno->plato_a_cocinar);
+		horno->plato_a_cocinar = NULL;
+		pthread_mutex_lock(&hornos_disp_mtx);
+		queue_push(hornos_disp, horno);
+		pthread_mutex_unlock(&hornos_disp_mtx);
+		sem_post(&hornos_disp_sem);
+	}
+}
+
+void cocinar(t_cocinero* cocinero){
+	t_cola_afinidad* cola_afinidad;
+	t_nombre* afinidad;
+	bool _mismo_nombre(t_cola_afinidad* cola){
+		return mismo_nombre(afinidad, &(cola->afinidad));
+	}
+	while(1){
+		pthread_mutex_lock(&(cocinero->mtx_exec));
+		//TODO pthread_mutex_lock(clock??)
+		t_paso* paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
+		paso_siguiente->duracion --;
+		cocinero->ciclos_ejecutando ++;
+		afinidad = &(cocinero->plato_a_cocinar->comida);
+		pthread_mutex_lock(&cola_afinidades_mtx);
+		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
+		pthread_mutex_unlock(&cola_afinidades_mtx);
+		pthread_mutex_lock(&(cola_afinidad->cola_cocineros_exec_mtx));
+		queue_push(cola_afinidad->cola_cocineros_exec, cocinero);
+		pthread_mutex_unlock(&(cola_afinidad->cola_cocineros_exec_mtx));
+		sem_post(&(cola_afinidad->sem_exec));
+	}
+}
+
+void cambiarEstado (t_plato_pcb* plato, est_planif nuevoEstado){
+	if(plato->estado == nuevoEstado) return;
+	if(cambioEstadoValido(plato->estado, nuevoEstado)){
+		plato->estado = nuevoEstado;
+		log_info(log_config_ini, "Se cambio al plato %s a la cola %s", plato->comida.nombre, stringEstado(plato->estado));
+	}else{
+		printf("Estado invalido");
+	}
+}
+
+bool cambioEstadoValido(est_planif estadoViejo,est_planif nuevoEstado){
+	switch (estadoViejo){
+	case NEW:
+		if(nuevoEstado == READY) return true;
+		else return false;
+		break;
+	case READY:
+		if(nuevoEstado == EXEC) return true;
+		else return false;
+		break;
+	case EXEC:
+		if(nuevoEstado == READY || nuevoEstado == BLOCK || nuevoEstado == EXIT) return true;
+		else return false;
+		break;
+	case BLOCK:
+		if(nuevoEstado == READY) return true;
+		else return false;
+		break;
+	case EXIT:
+		return false;
+		break;
+	}
+	return false;
+}
+
+char* stringEstado(est_planif estado){
+	switch (estado){
+	case NEW:
+		return "NEW";
+		break;
+	case READY:
+		return "READY";
+		break;
+	case EXEC:
+		return "EXEC";
+		break;
+	case BLOCK:
+		return "BLOCK";
+		break;
+	case EXIT:
+		return "EXIT";
+		break;
+	}
 }
 
 void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
@@ -829,13 +1137,13 @@ void delay (int number_of_seconds){
 	while (clock() < start_time + milli_seconds);
 }
 
-void* recibir_respuesta(int socket){
-	op_code cod_op = 999;
+void* recibir_respuesta(int socket, uint32_t* cod_op){ //TODO cambiar en las demas llamadas  poner cod op en -1?
+//	op_code cod_op = 999;
 	uint32_t id_proceso;
 	void* mensaje=NULL;
 	int error = 0;
-	int _recv = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
-	log_info(log_config_ini, "cod op: %d\n",cod_op);
+	int _recv = recv(socket, cod_op, sizeof(op_code), MSG_WAITALL);
+	log_info(log_config_ini, "cod op: %d\n", *cod_op);
 
 	if(_recv == 0 || _recv == -1){
 		//error
@@ -853,8 +1161,8 @@ void* recibir_respuesta(int socket){
 		//error
 	}
 
-	mensaje = deserializar_mensaje(buffer, cod_op);
-	loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
+	mensaje = deserializar_mensaje(buffer, *cod_op);
+	loggear_mensaje_recibido(mensaje, *cod_op, log_config_ini);
 	free(buffer);
 	return mensaje;
 }
