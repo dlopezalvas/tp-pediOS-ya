@@ -266,6 +266,7 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 			pthread_mutex_init(&(cocinero->mtx_exec), NULL);
 			pthread_mutex_lock(&(cocinero->mtx_exec));
 			cocinero->plato_a_cocinar = NULL;
+			cocinero->ciclos_ejecutando = 0;
 			pthread_create(&hilo_cocinero, NULL,(void*) cocinar, (void*)cocinero);
 			cocinero->hilo = hilo_cocinero;
 			queue_push(cola->cola_cocineros_disp, cocinero);
@@ -883,6 +884,7 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				pthread_create(&hilo, NULL,(void*)terminar_plato, (void*)cocinero->plato_a_cocinar);
 				list_add(hilos_reposo, &hilo);
 				cocinero->plato_a_cocinar = NULL;
+				cocinero->ciclos_ejecutando = 0;
 				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 				queue_push(strc_cola->cola_cocineros_disp, cocinero);
 				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
@@ -895,6 +897,7 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					pthread_create(&hilo, NULL,(void*)reposar_plato, (void*)cocinero->plato_a_cocinar);
 					list_add(hilos_reposo, &hilo);
 					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
 					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
@@ -906,6 +909,7 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					pthread_mutex_unlock(&ready_hornos_mtx);
 					sem_post(&sem_ready_hornos);
 					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
 					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
@@ -916,6 +920,7 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
 					pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
 					cocinero->plato_a_cocinar = NULL;
+					cocinero->ciclos_ejecutando = 0;
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
 					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
@@ -924,7 +929,21 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				}
 			}
 		}else{ //si sigue ejecutando el mismo paso
+			if(string_equals_ignore_case(cfg_algoritmo_planificacion, RR) && cocinero->ciclos_ejecutando == cfg_quantum){
+				cambiarEstado(cocinero->plato_a_cocinar, READY); //si tiene que volver a ready por fin de quantum
+				pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
+				queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
+				pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
+				cocinero->plato_a_cocinar = NULL;
+				cocinero->ciclos_ejecutando = 0;
+				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
+				queue_push(strc_cola->cola_cocineros_disp, cocinero);
+				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+				sem_post(&(strc_cola->cocineros_disp_sem));
+				sem_post(&(strc_cola->platos_disp));
+			}else{
 			pthread_mutex_unlock(&(cocinero->mtx_exec));
+			}
 		}
 	}
 }
@@ -1029,6 +1048,7 @@ void cocinar(t_cocinero* cocinero){
 		//TODO pthread_mutex_lock(clock??)
 		t_paso* paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
 		paso_siguiente->duracion --;
+		cocinero->ciclos_ejecutando ++;
 		afinidad = &(cocinero->plato_a_cocinar->comida);
 		pthread_mutex_lock(&cola_afinidades_mtx);
 		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);

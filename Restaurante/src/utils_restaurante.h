@@ -26,6 +26,8 @@
 
 #define REPOSAR "REPOSAR"
 #define HORNEAR "HORNEAR"
+#define RR "RR"
+#define FIFO "FIFO"
 
 //CONFIGURACION
 void cargar_configuracion();
@@ -124,6 +126,7 @@ typedef struct{
 		t_plato_pcb* plato_a_cocinar;
 		pthread_mutex_t mtx_exec; //para que ejecute el cocinero
 		pthread_t hilo;
+		uint32_t ciclos_ejecutando;
 }t_cocinero;
 
 
