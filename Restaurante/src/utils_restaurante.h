@@ -192,6 +192,8 @@ void terminar_plato(t_plato_pcb* plato);
 void free_pcb_plato(t_plato_pcb* plato);
 void planificar_hornos();
 void hornear(t_horno* horno);
+void planificador_ready_a_exec(t_cola_afinidad* strc_cola);
+void planificador_exec(t_cola_afinidad* strc_cola);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
