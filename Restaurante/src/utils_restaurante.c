@@ -83,6 +83,8 @@ void iniciar_restaurante(){
 		obt_restaurante->parametros = nombre_restaurante;
 		log_info(log_config_ini, "estoy por enviar el mj\n");
 		enviar_mensaje(obt_restaurante, conexion_sindicato);
+		loggear_mensaje_enviado(obt_restaurante->parametros, obt_restaurante->tipo_mensaje, log_config_ini);
+
 		free_struct_mensaje(nombre_restaurante, OBTENER_RESTAURANTE);
 		free(obt_restaurante);
 		//Recibir respuesta obtener restaurante
@@ -157,7 +159,7 @@ void conectarme_con_app(){
 		enviar_mensaje(mensaje_inicial_app,socket_app);
 		free_struct_mensaje(mensaje_inicial_app->parametros, POSICION_RESTAUNTE);
 		free(mensaje_inicial_app);
-		log_info(log_config_ini, "Se envio el mj a app \n");
+		log_info(log_config_ini, "Se envio el handshake a app \n");
 
 	}else{
 		log_info(log_config_ini, "App no disponible \n");
@@ -384,6 +386,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 	mensaje = deserializar_mensaje(buffer, cod_op);
 
+	loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
+
 	if(cod_op != STRC_MENSAJE_VACIO) free(buffer);
 	uint32_t confirmacion;
 
@@ -401,7 +405,6 @@ void process_request(int cod_op, int cliente_fd) {
 
 		t_nombre* nombre_resturante = mensaje;
 
-		//loggear_mensaje_recibido(nombre_resturante, cod_op, log_config_ini);
 		log_info(log_config_ini ,"Se esta conusltando por el resto: %s: ",nombre_resturante->nombre);
 
 
@@ -417,6 +420,9 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_RTA_CONSULTAR_PLATOS->id = cfg_id;
 			cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje = ERROR;
 			enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
+
+			loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_config_ini);
+
 			free(cliente_RTA_CONSULTAR_PLATOS);
 
 			log_info(log_config_ini,"\tSe envio el mj ERROR al cliente \n");
@@ -430,6 +436,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 			//ENVIO A SINDICATO
 			enviar_mensaje(sindicato_CONSULTAR_PLATOS,socket_CONSULTAR_PLATOS);
+
+			loggear_mensaje_enviado(sindicato_CONSULTAR_PLATOS->parametros, sindicato_CONSULTAR_PLATOS->tipo_mensaje, log_config_ini);
 			//free_struct_mensaje(sindicato_CONSULTAR_PLATOS->parametros, CONSULTAR_PLATOS);
 			free(sindicato_CONSULTAR_PLATOS);
 
@@ -445,6 +453,9 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_RTA_CONSULTAR_PLATOS->id = cfg_id;
 
 			enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
+
+			loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_config_ini);
+
 			//free_struct_mensaje(cliente_RTA_CONSULTAR_PLATOS->parametros, RTA_CONSULTAR_PLATOS);
 			free(cliente_RTA_CONSULTAR_PLATOS);
 			free_struct_mensaje(rta_sindicato_CONSULTAR_PLATOS,RTA_CONSULTAR_PLATOS);
@@ -507,11 +518,15 @@ void process_request(int cod_op, int cliente_fd) {
 
 			log_info(log_config_ini, "\tEstoy por enviar el mj por sindicato caido \n");
 			enviar_mensaje(cliente_rta_CREAR_PEDIDO,cliente_fd);
-			log_info(log_config_ini,"\tSe envio el mj ERROR al cliente \n");
+
+			loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_config_ini);
 			free(cliente_rta_CREAR_PEDIDO);
 
 		}else{
 			enviar_mensaje(_GUARDAR_PEDIDO,socket_GUARDAR_PEDIDO);
+
+			loggear_mensaje_enviado(_GUARDAR_PEDIDO->parametros, _GUARDAR_PEDIDO->tipo_mensaje, log_config_ini);
+
 			free_struct_mensaje(_GUARDAR_PEDIDO->parametros, GUARDAR_PEDIDO);
 			free(_GUARDAR_PEDIDO);
 
@@ -529,13 +544,15 @@ void process_request(int cod_op, int cliente_fd) {
 				cliente_rta_CREAR_PEDIDO->parametros = ok_CREAR_PEDIDO;
 				cliente_rta_CREAR_PEDIDO->id = cfg_id;
 				enviar_mensaje(cliente_rta_CREAR_PEDIDO, cliente_fd);
-				log_info(log_config_ini ,"Se envio: RTA_CREAR_PEDIDO ",cod_op);
+				loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_config_ini);
 				free_struct_mensaje(cliente_rta_CREAR_PEDIDO->parametros,RTA_CREAR_PEDIDO);
 			}else{
 				t_mensaje* msj_error = malloc(sizeof(t_mensaje));
 				msj_error->id = cfg_id;
 				msj_error->tipo_mensaje = ERROR;
 				enviar_mensaje(msj_error, cliente_fd);
+				loggear_mensaje_enviado(msj_error->parametros, msj_error->tipo_mensaje, log_config_ini);
+
 				free(msj_error);
 
 			}
@@ -586,6 +603,8 @@ void process_request(int cod_op, int cliente_fd) {
 				mje_sindicato_GUARDAR_PLATO->id = cfg_id;
 
 				enviar_mensaje(mje_sindicato_GUARDAR_PLATO,socket_GUARDAR_PLATO);
+				loggear_mensaje_enviado(mje_sindicato_GUARDAR_PLATO->parametros, mje_sindicato_GUARDAR_PLATO->tipo_mensaje, log_config_ini);
+
 				free_struct_mensaje(mje_sindicato_GUARDAR_PLATO->parametros, GUARDAR_PLATO);
 				free(mje_sindicato_GUARDAR_PLATO);
 
@@ -656,6 +675,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 				//ENVIAR OBTENER_PEDIDO A SINDICATO
 				enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
+				loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_config_ini);
+
 				free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 				free(mje_sindicato_OBTENER_PEDIDO);
 				log_info(log_config_ini ,"Se envio a sindicato el mj OBTENER_PEDIDO: ",cod_op);
@@ -703,6 +724,8 @@ void process_request(int cod_op, int cliente_fd) {
 					int socket_OBTENER_RECETA = conectar_con_sindicato();
 
 					enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
+					loggear_mensaje_enviado(mje_sindicato_OBTENER_RECETA->parametros, mje_sindicato_OBTENER_RECETA->tipo_mensaje, log_config_ini);
+
 					free_struct_mensaje(mje_sindicato_OBTENER_RECETA->parametros, OBTENER_RECETA);
 					free(mje_sindicato_OBTENER_RECETA);
 
@@ -733,6 +756,8 @@ void process_request(int cod_op, int cliente_fd) {
 					free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA);
 
 					//cargo lista de pcb
+					log_debug(log_oficial, "[CREAR_PLATO]: Se creo el PCB del plato %s con ID: %d ", plato_pcb->comida.nombre, plato_pcb->id_plato);
+
 					log_info(log_config_ini,"\tPCB id: %d \n",plato_pcb->id_pedido);
 					log_info(log_config_ini,"\tPCB nombe plato: %s \n",plato_pcb->comida.nombre);
 					log_info(log_config_ini,"\tPCB cant de platos: %d \n",plato_pcb->cantTotal);
@@ -790,7 +815,8 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_rta_CONSULTAR_PEDIDO->id=cfg_id;
 			cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje = ERROR;
 			enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
-			log_info(log_config_ini,"\tSe envio el mj ERROR al cliente \n");
+			loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_config_ini);
+
 
 
 		}else{
@@ -809,6 +835,8 @@ void process_request(int cod_op, int cliente_fd) {
 			mje_sindicato_OBTENER_PEDIDO->id=cfg_id;
 			mje_sindicato_OBTENER_PEDIDO->parametros = sindicato_OBTENER_PEDIDO;
 			enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);
+			loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_config_ini);
+
 			free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 			free(mje_sindicato_OBTENER_PEDIDO);
 
@@ -832,6 +860,7 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_rta_CONSULTAR_PEDIDO->parametros = rta_CONSULTAR_PEDIDO;
 			cliente_rta_CONSULTAR_PEDIDO->id = cfg_id;
 			enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
+			loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_config_ini);
 
 			free_struct_mensaje(cliente_rta_CONSULTAR_PEDIDO->parametros, RTA_CONSULTAR_PEDIDO);
 			free(cliente_rta_CONSULTAR_PEDIDO);
@@ -919,6 +948,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 
 		paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
 		if(paso_siguiente->duracion == 0){ //si el paso ya termino
+
+			log_debug(log_oficial, "[FINALIZACION_OPERACION]: El plato %s con ID: %d terminó de %s", cocinero->plato_a_cocinar->comida.nombre,
+					cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+
 			list_remove_and_destroy_element(cocinero->plato_a_cocinar->pasos,0, (void*)free_pasos);
 			if(list_is_empty(cocinero->plato_a_cocinar->pasos)){
 				pthread_create(&hilo, NULL,(void*)terminar_plato, (void*)cocinero->plato_a_cocinar);
@@ -940,6 +973,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
 				if(string_equals_ignore_case(paso_siguiente->paso.nombre, REPOSAR)){ //si tiene que reposar
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
+
+					log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
+							cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+
 					pthread_create(&hilo, NULL,(void*)reposar_plato, (void*)cocinero->plato_a_cocinar);
 					list_add(hilos_reposo, &hilo);
 					cocinero->plato_a_cocinar = NULL;
@@ -959,6 +996,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					sem_post(&(strc_cola->cocineros_disp_sem));
 				}else if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //si tiene que hornear
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
+
+					log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
+							cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+
 					pthread_mutex_lock(&ready_hornos_mtx);
 					queue_push(ready_hornos, cocinero->plato_a_cocinar);
 					pthread_mutex_unlock(&ready_hornos_mtx);
@@ -980,6 +1021,9 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					sem_post(&(strc_cola->cocineros_disp_sem));
 				}else{
 					cambiarEstado(cocinero->plato_a_cocinar, READY); //si tiene que volver a ready
+
+					//TODO ver que se loguea
+
 					pthread_mutex_lock(&(strc_cola->cola_ready_mtx));
 					queue_push(strc_cola->ready, cocinero->plato_a_cocinar);
 					pthread_mutex_unlock(&(strc_cola->cola_ready_mtx));
@@ -1038,6 +1082,8 @@ void terminar_plato(t_plato_pcb* plato){
 		plato_listo->idPedido = plato->id_pedido;
 		mensaje->parametros = plato_listo;
 		enviar_mensaje(mensaje, socket_app_plato_listo);
+		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_config_ini);
+
 		free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
 		free(mensaje);
 		uint32_t* rta_plato_listo = recibir_respuesta(socket_app_plato_listo, &cod_op);
@@ -1048,8 +1094,12 @@ void terminar_plato(t_plato_pcb* plato){
 			//error TODO
 		}
 		liberar_conexion(socket_app_plato_listo);
+
+		log_debug(log_oficial, "[PLATO_LISTO]: Finalizó el plato %s con ID: %d", plato->comida.nombre, plato->id_plato);
 	}
 	free_pcb_plato(plato);
+
+
 }
 
 void free_pcb_plato(t_plato_pcb* plato){
@@ -1067,12 +1117,20 @@ void reposar_plato(t_plato_pcb* plato){
 
 
 	for(int i = 0; i< paso->duracion; i ++){
-		pthread_mutex_trylock(plato->mutex_clock);
-		pthread_mutex_lock(plato->mutex_clock);
+		pthread_mutex_trylock(&plato->mutex_clock);
+		pthread_mutex_lock(&plato->mutex_clock);
 	}
 	free_pasos(paso);
 	t_paso* paso_siguiente = list_get(plato->pasos, 0);
+
+	log_debug(log_oficial, "[FINALIZACION_OPERACION]: El plato %s con ID: %d terminó de REPOSAR", plato->comida.nombre,
+			plato->id_plato);
+
 	if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
+
+		log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", plato->comida.nombre,
+				plato->id_plato, paso_siguiente->paso.nombre);
+
 		pthread_mutex_lock(&ready_hornos_mtx);
 		queue_push(ready_hornos, plato);
 		pthread_mutex_unlock(&ready_hornos_mtx);
@@ -1111,10 +1169,13 @@ void hornear(t_horno* horno){
 		pthread_mutex_lock(&(horno->mtx_IO));
 		paso = list_remove(horno->plato_a_cocinar->pasos, 0);
 		for(int i = 0; i< paso->duracion; i ++){
-			pthread_mutex_trylock(horno->plato_a_cocinar->mutex_clock);
-			pthread_mutex_lock(horno->plato_a_cocinar->mutex_clock);
+			pthread_mutex_trylock(&horno->plato_a_cocinar->mutex_clock);
+			pthread_mutex_lock(&horno->plato_a_cocinar->mutex_clock);
 		}
 		free_pasos(paso);
+
+		log_debug(log_oficial, "[FINALIZACION_OPERACION]: El plato %s con ID: %d terminó de HORNEAR", horno->plato_a_cocinar->comida.nombre,
+				horno->plato_a_cocinar->id_plato);
 		//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
 		agregar_cola_ready(horno->plato_a_cocinar);
 		horno->plato_a_cocinar = NULL;
@@ -1133,8 +1194,8 @@ void cocinar(t_cocinero* cocinero){
 	}
 	while(1){
 		pthread_mutex_lock(&(cocinero->mtx_exec));
-		pthread_mutex_trylock(cocinero->plato_a_cocinar->mutex_clock);
-		pthread_mutex_lock(cocinero->plato_a_cocinar->mutex_clock);
+		pthread_mutex_trylock(&cocinero->plato_a_cocinar->mutex_clock);
+		pthread_mutex_lock(&cocinero->plato_a_cocinar->mutex_clock);
 
 		t_paso* paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
 		paso_siguiente->duracion --;
@@ -1300,13 +1361,13 @@ void* fhilo_clock(void* __sin_uso__) {
 				++ciclo_display_counter
 		);
 		for (unsigned index_EXEC = 0; index_EXEC < list_size(platos_EXEC); index_EXEC++) {
-			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_EXEC, index_EXEC))->mutex_clock);
+			pthread_mutex_unlock(&((t_plato_pcb*)list_get(platos_EXEC, index_EXEC))->mutex_clock);
 		}
 		for (unsigned index_REPOSANDO = 0; index_REPOSANDO < list_size(platos_REPOSANDO); index_REPOSANDO++) {
-			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_REPOSANDO, index_REPOSANDO))->mutex_clock);
+			pthread_mutex_unlock(&((t_plato_pcb*)list_get(platos_REPOSANDO, index_REPOSANDO))->mutex_clock);
 		}
 		for (unsigned index_HORNEANDO = 0; index_HORNEANDO < list_size(platos_HORNEANDO); index_HORNEANDO++) {
-			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_HORNEANDO, index_HORNEANDO))->mutex_clock);
+			pthread_mutex_unlock(&((t_plato_pcb*)list_get(platos_HORNEANDO, index_HORNEANDO))->mutex_clock);
 		}
 		pthread_mutex_unlock(&mutex_HORNEANDO);
 		pthread_mutex_unlock(&mutex_REPOSANDO);
