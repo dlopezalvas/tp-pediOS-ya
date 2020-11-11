@@ -102,7 +102,9 @@ void iniciar_restaurante(){
 		iniciar_colas_ready_es (metadata_rest);
 
 		//CREAR PROCESO PLANIFICADOR
-		pthread_t hiloPlanificador2;
+		pthread_t hiloClock;
+		pthread_create(&hiloClock, NULL,(void*) fhilo_clock, NULL);
+
 
 
 		//CREAR PROCESO SERVIDOR DE CLIENTES
@@ -1357,7 +1359,7 @@ int  conectar_con_sindicato(){
 
 //CLOCK
 
-void* fhilo_clock(void* __sin_uso__) {
+void fhilo_clock() {
 	unsigned ciclo_display_counter = 0;
 	while (true) {
 		pthread_mutex_lock(&mutex_EXEC);

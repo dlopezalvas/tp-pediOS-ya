@@ -194,6 +194,7 @@ void planificar_hornos();
 void hornear(t_horno* horno);
 void planificador_ready_a_exec(t_cola_afinidad* strc_cola);
 void planificador_exec(t_cola_afinidad* strc_cola);
+void fhilo_clock();
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */
