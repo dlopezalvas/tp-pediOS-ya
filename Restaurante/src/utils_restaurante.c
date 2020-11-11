@@ -386,22 +386,21 @@ void process_request(int cod_op, int cliente_fd) {
 
 	mensaje = deserializar_mensaje(buffer, cod_op);
 
-	loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
 	if(cod_op != STRC_MENSAJE_VACIO) free(buffer);
-	uint32_t confirmacion;
+	t_confirmacion confirmacion;
 
 	switch (cod_op) {
 
 	case POSICION_CLIENTE:
 		log_info(log_config_ini ,"pos cliente: %d",cod_op);
-		enviar_confirmacion(0, cliente_fd, RTA_POSICION_CLIENTE);
+		enviar_confirmacion(FAIL, cliente_fd, RTA_POSICION_CLIENTE);
 
 		break;
 
 	case CONSULTAR_PLATOS:
 
-		log_info(log_config_ini ,"Se recibio el mj CONSULTAR_PLATOS: ",cod_op);
+		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
 		t_nombre* nombre_resturante = mensaje;
 
@@ -470,7 +469,7 @@ void process_request(int cod_op, int cliente_fd) {
 	case CREAR_PEDIDO:
 
 
-		log_info(log_config_ini ,"Se recibio el mj CREAR_PEDIDO: ",cod_op);
+		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
 		//esta es la respuesta al cliente, pero el mj responde el id de pedido
 		//uint32_t* ok = malloc(sizeof(uint32_t));
@@ -537,7 +536,7 @@ void process_request(int cod_op, int cliente_fd) {
 			liberar_conexion(socket_GUARDAR_PEDIDO);
 			//recibo un ok/fail pero al cliente le envio el id del pedido creado
 			//ENVIAR RESTA AL CLIENTE CON EL ID DEL PEDIDO CREADO
-			if((*rta_sindicato_GUARDAR_PEDIDO) == 0){
+			if((*rta_sindicato_GUARDAR_PEDIDO) == OK){
 				uint32_t* ok_CREAR_PEDIDO = malloc(sizeof(uint32_t));
 				*ok_CREAR_PEDIDO = id_pedido;
 				cliente_rta_CREAR_PEDIDO->tipo_mensaje = RTA_CREAR_PEDIDO;
@@ -565,8 +564,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 		break;
 	case AGREGAR_PLATO:
-		log_info(log_config_ini ,"Se recibio el mj AGREGAR_PLATO: ",cod_op);
-		confirmacion = 0;
+		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
+		confirmacion = FAIL;
 
 
 		//A través del envío del mensaje Guardar Plato al Módulo Sindicato, agrega un plato correspondiente a un pedido específico, que se encontrará relacionado con el
@@ -630,10 +629,10 @@ void process_request(int cod_op, int cliente_fd) {
 		break;
 
 	case CONFIRMAR_PEDIDO:
-		log_info(log_config_ini ,"Se recibio el mj CONFIRMAR_PEDIDO: ",cod_op);
 
 		//DESERIALIZO EL MJ
 
+		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 		t_nombre_y_id* id_CONFIRMAR_PEDIDO = mensaje;
 		log_info(log_config_ini ,"Se quiere CONFIRMAR_PEDIDO de resto: %s  con id: %d",id_CONFIRMAR_PEDIDO->nombre.nombre,id_CONFIRMAR_PEDIDO->id);
 
@@ -651,7 +650,7 @@ void process_request(int cod_op, int cliente_fd) {
 		rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO;
 
 		//CONEXION CON SINDICATO
-		confirmacion = 0;
+		confirmacion = FAIL;
 		if(id_CONFIRMAR_PEDIDO->id <= id_pedidos){
 
 			int socket_OBTENER_PEDIDO = conectar_con_sindicato();
@@ -679,12 +678,10 @@ void process_request(int cod_op, int cliente_fd) {
 
 				free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 				free(mje_sindicato_OBTENER_PEDIDO);
-				log_info(log_config_ini ,"Se envio a sindicato el mj OBTENER_PEDIDO: ",cod_op);
 
 				//RECIBIR RESPUESTA DE SINDICATO
 				uint32_t error_cod_op;
 				rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_OBTENER_PEDIDO, &error_cod_op);// TODO
-				log_info(log_config_ini ,"Se recibio rta de sindicato el mj OBTENER_PEDIDO: ",cod_op);
 				liberar_conexion(socket_OBTENER_PEDIDO);
 
 				//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
@@ -774,7 +771,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 				//respondo al cliente -- consultar en que casos se debe mandar fail
 				//esta es la respuesta al cliente,
-				confirmacion = 1;
+				confirmacion = OK;
 			}
 		}
 		//RESPONDO AL CLIENTE
@@ -795,7 +792,7 @@ void process_request(int cod_op, int cliente_fd) {
 		liberar_conexion(cliente_fd);
 		break;
 	case CONSULTAR_PEDIDO:
-		log_info(log_config_ini ,"Se recibio el mj CONSULTAR_PEDIDO: ",cod_op);
+		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
 		//DESERIALIZO EL MJ
 		uint32_t* id_CONSULTAR_PEDIDO = mensaje;
@@ -1266,7 +1263,7 @@ char* stringEstado(est_planif estado){
 	}
 }
 
-void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
+void enviar_confirmacion(t_confirmacion _confirmacion, int cliente, op_code cod_op){
 	t_mensaje* mensaje_a_enviar = malloc(sizeof(t_mensaje));
 	mensaje_a_enviar->tipo_mensaje = cod_op;
 	mensaje_a_enviar->id = cfg_id;

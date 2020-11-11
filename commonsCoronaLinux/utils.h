@@ -128,8 +128,8 @@ typedef enum {
 }error_flag_t;
 
 typedef enum {
-	CONFIRM_OK = 1,
-	CONFIRM_FAIL = 0
+	OK = 1,
+	FAIL = 0
 } t_confirmacion;
 
 typedef struct{
