@@ -2009,7 +2009,7 @@ void responder_ERROR(int socket) {
 
 
 void qr_free_form(qr_form_t* form) {
-    if (!(form->error_flag)) {
+    if (!*(form->error_flag)) {
         free_struct_mensaje(form->m_recibir->parametros, form->m_recibir->tipo_mensaje);
         free(form->m_recibir);
     }
@@ -2044,6 +2044,8 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
     uint32_t id_recibida;
     int size = 0;
     int _recv_op, _recv_id;
+    void* stream;
+    int error;
 
     log_debug(logger_mensajes, "[Q (\"%s\")] Comenzando hilo...", rest->nombre);
 
@@ -2091,10 +2093,20 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
         form->m_recibir->id = id_recibida;
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Recibiendo mensaje: (3/3) parametros", rest->nombre);
-        form->m_recibir->parametros = deserializar_mensaje(
-            recibir_mensaje(rest->socket, &size),
-            cod_op
-        );
+
+        stream = recibir_mensaje(rest->socket, &error);
+
+        if (error) {
+            log_debug(logger_mensajes, "[Q (\"%s\")] Hubo un error en la recepcion del stream", rest->nombre);
+            *(form->error_flag) = FLAG_ERROR;
+            form->m_recibir->parametros = NULL;
+        } else {
+            form->m_recibir->parametros = deserializar_mensaje(
+                stream,
+                cod_op
+            );
+        }
+
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
         pthread_mutex_unlock(form->mutex);
