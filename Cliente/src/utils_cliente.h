@@ -47,6 +47,7 @@
 #define IP "IP"
 
 #define COMANDO_HELP "HELP"
+#define EXIT "EXIT"
 
 typedef struct{
 	int puerto;
