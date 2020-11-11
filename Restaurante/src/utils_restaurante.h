@@ -91,6 +91,9 @@ t_list* platos_HORNEANDO;
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
+uint32_t id_plato_global;
+pthread_mutex_t id_plato_global_mtx;
+
 
 pthread_t hilo_serve_app;
 typedef enum{
@@ -111,6 +114,7 @@ typedef struct{
 			uint32_t cantHecha;
 			est_planif estado;
 			pthread_mutex_t mutex_clock;
+			uint32_t id_plato;
 }t_plato_pcb;
 
 

@@ -117,6 +117,11 @@ void iniciar_restaurante(){
 
 	//INICIO DE LISTAS GLOBALES
 
+	pthread_mutex_init(&id_plato_global_mtx, NULL);
+	id_plato_global = 0;
+
+
+
 	inicio_de_listas_globales();
 
 
@@ -180,6 +185,15 @@ void inicio_de_listas_globales(){
 	//LSITA DE HILOS CLIENTE
 	hilos = list_create();
 	hilos_reposo = list_create();
+
+	platos_EXEC = list_create();
+	platos_REPOSANDO = list_create();
+	platos_HORNEANDO = list_create();
+
+	pthread_mutex_init(&mutex_EXEC, NULL);
+	pthread_mutex_init(&mutex_HORNEANDO, NULL);
+	pthread_mutex_init(&mutex_REPOSANDO, NULL);
+
 
 }
 
@@ -279,8 +293,8 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 
 
 
-//	pthread_mutex_init(&platos_block_mtx, NULL);
-//	platos_block = list_create();
+	//	pthread_mutex_init(&platos_block_mtx, NULL);
+	//	platos_block = list_create();
 
 	//TODO poner semaforo para que termine de inicialziar antes de planificar
 
@@ -289,6 +303,10 @@ Por otro lado, durante la ejecución de un plato puede darse que se requiera env
 
 bool mismo_nombre(t_nombre* afinidad1, t_nombre* afinidad2){
 	return string_equals_ignore_case(afinidad1->nombre,afinidad2->nombre);
+}
+
+bool mismo_id(uint32_t id1, uint32_t id2){
+	return id1 == id2;
 }
 
 void* fhilo_planificador(void* v){
@@ -661,7 +679,7 @@ void process_request(int cod_op, int cliente_fd) {
 				//t_plato_pcb* plato_pcb = malloc(sizeof(t_plato_pcb));//correccion
 				t_plato_pcb* plato_pcb;
 				//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
-
+				pthread_mutex_t clock_plato;
 
 				for (int inicio_plato = 0;
 						inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos;
@@ -703,6 +721,14 @@ void process_request(int cod_op, int cliente_fd) {
 					plato_pcb->cantHecha = plato_n->cantHecha;
 					plato_pcb->cantPasos = rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
 					plato_pcb->pasos = rta_sindicato_RTA_OBTENER_RECETA->pasos;
+					plato_pcb->id_plato = id_plato_global;
+
+					pthread_mutex_init(&clock_plato, NULL);
+					plato_pcb->mutex_clock = clock_plato;
+
+					pthread_mutex_lock(&id_plato_global_mtx);
+					id_plato_global++;
+					pthread_mutex_unlock(&id_plato_global_mtx);
 
 					free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA);
 
@@ -879,6 +905,12 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 	t_paso* paso_siguiente;
 	pthread_t hilo;
 
+	uint32_t id_plato_actual;
+
+	bool _mismo_id(uint32_t id_plato){
+		return mismo_id(id_plato, id_plato_actual);
+	}
+
 	while(true){
 		sem_wait(&(strc_cola->sem_exec));
 		pthread_mutex_lock(&(strc_cola->cola_cocineros_exec_mtx));
@@ -894,16 +926,17 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				cocinero->plato_a_cocinar = NULL;
 				cocinero->ciclos_ejecutando = 0;
 
+				id_plato_actual = cocinero->plato_a_cocinar->id_plato;
+
 				pthread_mutex_lock(&mutex_EXEC);
-				//TODO HACERLO UN REMOVE list_add(platos_EXEC, cocinero->plato_a_cocinar);
+				list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
 				pthread_mutex_unlock(&mutex_EXEC);
 
 				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 				queue_push(strc_cola->cola_cocineros_disp, cocinero);
 				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
 				sem_post(&(strc_cola->cocineros_disp_sem));
-			}
-			else{
+			}else{
 				paso_siguiente = list_get(cocinero->plato_a_cocinar->pasos, 0);
 				if(string_equals_ignore_case(paso_siguiente->paso.nombre, REPOSAR)){ //si tiene que reposar
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
@@ -915,6 +948,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					pthread_mutex_lock(&mutex_REPOSANDO);
 					list_add(platos_REPOSANDO, cocinero->plato_a_cocinar);
 					pthread_mutex_unlock(&mutex_REPOSANDO);
+
+					pthread_mutex_lock(&mutex_EXEC);
+					list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
+					pthread_mutex_unlock(&mutex_EXEC);
 
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
@@ -933,6 +970,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					list_add(platos_HORNEANDO, cocinero->plato_a_cocinar);
 					pthread_mutex_unlock(&mutex_HORNEANDO);
 
+					pthread_mutex_lock(&mutex_EXEC);
+					list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
+					pthread_mutex_unlock(&mutex_EXEC);
+
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
 					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
@@ -947,6 +988,11 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 					pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 					queue_push(strc_cola->cola_cocineros_disp, cocinero);
 					pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+
+					pthread_mutex_lock(&mutex_EXEC);
+					list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
+					pthread_mutex_unlock(&mutex_EXEC);
+
 					sem_post(&(strc_cola->cocineros_disp_sem));
 					sem_post(&(strc_cola->platos_disp));
 				}
@@ -962,10 +1008,15 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				pthread_mutex_lock(&(strc_cola->cola_cocineros_disp_mtx));
 				queue_push(strc_cola->cola_cocineros_disp, cocinero);
 				pthread_mutex_unlock(&(strc_cola->cola_cocineros_disp_mtx));
+
+				pthread_mutex_lock(&mutex_EXEC);
+				list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
+				pthread_mutex_unlock(&mutex_EXEC);
+
 				sem_post(&(strc_cola->cocineros_disp_sem));
 				sem_post(&(strc_cola->platos_disp));
 			}else{
-			pthread_mutex_unlock(&(cocinero->mtx_exec));
+				pthread_mutex_unlock(&(cocinero->mtx_exec));
 			}
 		}
 	}
@@ -1009,6 +1060,12 @@ void free_pcb_plato(t_plato_pcb* plato){
 
 void reposar_plato(t_plato_pcb* plato){
 	t_paso* paso = list_remove(plato->pasos, 0);
+
+	bool _mismo_id(uint32_t id){
+		return mismo_id(id, plato->id_plato);
+	}
+
+
 	for(int i = 0; i< paso->duracion; i ++){
 		pthread_mutex_trylock(plato->mutex_clock);
 		pthread_mutex_lock(plato->mutex_clock);
@@ -1022,6 +1079,12 @@ void reposar_plato(t_plato_pcb* plato){
 		sem_post(&sem_ready_hornos);
 	}else{
 		agregar_cola_ready(plato);
+
+		cambiarEstado(plato, READY);
+
+		pthread_mutex_lock(&mutex_EXEC);
+		list_remove_by_condition(platos_EXEC, (void*)_mismo_id);
+		pthread_mutex_unlock(&mutex_EXEC);
 	}
 }
 
@@ -1052,7 +1115,7 @@ void hornear(t_horno* horno){
 			pthread_mutex_lock(horno->plato_a_cocinar->mutex_clock);
 		}
 		free_pasos(paso);
-//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
+		//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
 		agregar_cola_ready(horno->plato_a_cocinar);
 		horno->plato_a_cocinar = NULL;
 		pthread_mutex_lock(&hornos_disp_mtx);
@@ -1165,7 +1228,7 @@ void delay (int number_of_seconds){
 }
 
 void* recibir_respuesta(int socket, uint32_t* cod_op){ //TODO cambiar en las demas llamadas  poner cod op en -1?
-//	op_code cod_op = 999;
+	//	op_code cod_op = 999;
 	uint32_t id_proceso;
 	void* mensaje=NULL;
 	int error = 0;
@@ -1226,29 +1289,29 @@ int  conectar_con_sindicato(){
 //CLOCK
 
 void* fhilo_clock(void* __sin_uso__) {
-    unsigned ciclo_display_counter = 0;
-    while (true) {
-        pthread_mutex_lock(&mutex_EXEC);
-        pthread_mutex_lock(&mutex_REPOSANDO);
-        pthread_mutex_lock(&mutex_HORNEANDO);
-        log_debug(
-            log_config_ini,
-            "[CLOCK]: -------------------------------------------------------- Ciclo %i",
-            ++ciclo_display_counter
-        );
-        for (unsigned index_EXEC = 0; index_EXEC < list_size(platos_EXEC); index_EXEC++) {
-            pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_EXEC, index_EXEC))->mutex_clock);
-        }
-        for (unsigned index_REPOSANDO = 0; index_REPOSANDO < list_size(platos_REPOSANDO); index_REPOSANDO++) {
-            pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_REPOSANDO, index_REPOSANDO))->mutex_clock);
-        }
-        for (unsigned index_HORNEANDO = 0; index_HORNEANDO < list_size(platos_HORNEANDO); index_HORNEANDO++) {
-        	pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_HORNEANDO, index_HORNEANDO))->mutex_clock);
-        }
-        pthread_mutex_unlock(&mutex_HORNEANDO);
-        pthread_mutex_unlock(&mutex_REPOSANDO);
-        pthread_mutex_unlock(&mutex_EXEC);
-        sleep(cfg_retardo_ciclo_CPU);
-    }
+	unsigned ciclo_display_counter = 0;
+	while (true) {
+		pthread_mutex_lock(&mutex_EXEC);
+		pthread_mutex_lock(&mutex_REPOSANDO);
+		pthread_mutex_lock(&mutex_HORNEANDO);
+		log_debug(
+				log_config_ini,
+				"[CLOCK]: -------------------------------------------------------- Ciclo %i",
+				++ciclo_display_counter
+		);
+		for (unsigned index_EXEC = 0; index_EXEC < list_size(platos_EXEC); index_EXEC++) {
+			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_EXEC, index_EXEC))->mutex_clock);
+		}
+		for (unsigned index_REPOSANDO = 0; index_REPOSANDO < list_size(platos_REPOSANDO); index_REPOSANDO++) {
+			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_REPOSANDO, index_REPOSANDO))->mutex_clock);
+		}
+		for (unsigned index_HORNEANDO = 0; index_HORNEANDO < list_size(platos_HORNEANDO); index_HORNEANDO++) {
+			pthread_mutex_unlock(((t_plato_pcb*)list_get(platos_HORNEANDO, index_HORNEANDO))->mutex_clock);
+		}
+		pthread_mutex_unlock(&mutex_HORNEANDO);
+		pthread_mutex_unlock(&mutex_REPOSANDO);
+		pthread_mutex_unlock(&mutex_EXEC);
+		sleep(cfg_retardo_ciclo_CPU);
+	}
 }
 
