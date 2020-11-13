@@ -338,8 +338,6 @@ int eleccion_victima_clock_mejorado(){
 
 	t_list* en_mp = list_filter(paginas_swap, (void*)esta_en_MP);
 
-	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
-
 	list_sort(en_mp, (void*) ordenar_por_frame);
 
 	while(victima == NULL){
@@ -349,6 +347,8 @@ int eleccion_victima_clock_mejorado(){
 			victima = list_iterate_and_find_from_index(en_mp, (void*)cambiar_uso_cero, (void*)uso_cero_modificado_uno);
 		}
 	}
+
+	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
 
 	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
@@ -894,10 +894,17 @@ t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
 	for(int i = 0; i < list_size(tabla_paginas); i++){
 		stream = malloc(TAMANIO_PAGINA);
 		pagina = list_get(tabla_paginas, i);
-		offset = pagina->pagina_swap * TAMANIO_PAGINA;
-		pthread_mutex_lock(&memoria_swap_mtx);
-		memcpy(stream, memoria_swap + offset, TAMANIO_PAGINA);
-		pthread_mutex_unlock(&memoria_swap_mtx);
+
+
+		if(!pagina->presencia){
+			traer_de_swap(plato);
+		}
+
+		offset = pagina->frame * TAMANIO_PAGINA;
+
+		pthread_mutex_lock(&memoria_principal_mtx);
+		memcpy(stream, memoria_principal + offset, TAMANIO_PAGINA);
+		pthread_mutex_unlock(&memoria_principal_mtx);
 		plato = deserializar_pagina(stream);
 		free(stream);
 		if(string_equals_ignore_case(plato->nombre, comida)){
