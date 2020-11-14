@@ -17,7 +17,7 @@ char* restaurante_y_plato_to_string(t_restaurante_y_plato* restaurante_plato, op
 char* seleccionar_restaurante_to_string(m_seleccionarRestaurante * seleccionar_restaurante, op_code tipo_mensaje);
 char* id_o_confirmacion_to_string(uint32_t * id_confirmacion, op_code tipo_mensaje);
 bool es_id(op_code tipo_mensaje);
-char* bool_to_string(bool confirmacion);
+char* confirmacion_to_string(t_confirmacion confirmacion);
 char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje);
 char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaurante, op_code tipo_mensaje);
 char* nombre_y_id_to_string(t_nombre_y_id * nombre_id, op_code tipo_mensaje);

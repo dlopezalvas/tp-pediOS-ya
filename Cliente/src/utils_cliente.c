@@ -30,8 +30,12 @@ void iniciar_consola(){
 
 		char* linea = readline(">");
 
-		while(strncmp(linea, "", 1) != 0){
-			if(linea){
+		while(string_is_empty(linea) || !string_equals_ignore_case(linea, EXIT)){
+			if(string_is_empty(linea)){
+				free(linea);
+				linea = readline(">");
+				continue;
+			}else{
 				add_history(linea);
 			}
 
@@ -47,6 +51,7 @@ void iniciar_consola(){
 			}
 
 			free(linea);
+
 			linea = readline(">");
 		}
 		free(linea);
@@ -91,7 +96,12 @@ void seleccionar_proceso(){
 		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato \n");
 		linea = readline(">");
 		string_to_upper(linea);
-	}while (!validar_proceso(linea));
+	}while (!validar_proceso(linea) && !string_equals_ignore_case(linea, EXIT));
+
+	if(string_equals_ignore_case(linea, EXIT)){
+		free(linea);
+		pthread_exit(NULL);
+	}
 	proceso = linea;
 }
 

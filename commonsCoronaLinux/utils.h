@@ -127,6 +127,11 @@ typedef enum {
     FLAG_ERROR = 1
 }error_flag_t;
 
+typedef enum {
+	OK = 1,
+	FAIL = 0
+} t_confirmacion;
+
 typedef struct{
 	op_code tipo_mensaje;
 	uint32_t id;
