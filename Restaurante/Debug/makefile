@@ -26,7 +26,7 @@ endif
 all: Restaurante
 
 dependents:
-	-cd /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug && $(MAKE) clean all
+	-cd /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug && $(MAKE) all
 
 # Tool invocations
 Restaurante: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug/libcommonsCoronaLinux.so

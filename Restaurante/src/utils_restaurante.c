@@ -1211,7 +1211,8 @@ void hornear(t_horno* horno){
 
 		log_debug(log_oficial, "[FINALIZACION_OPERACION]: El plato %s con ID: %d terminó de HORNEAR", horno->plato_a_cocinar->comida.nombre,
 				horno->plato_a_cocinar->id_plato);
-		//		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0); TODO ver si hay que verificar algo
+		t_paso* paso_siguiente = list_get(horno->plato_a_cocinar->pasos, 0);
+
 
 		id_plato_actual = horno->plato_a_cocinar->id_plato;
 
@@ -1219,7 +1220,20 @@ void hornear(t_horno* horno){
 		list_remove_by_condition(platos_HORNEANDO, (void*)_mismo_id);
 		pthread_mutex_unlock(&mutex_HORNEANDO);
 
-		agregar_cola_ready(horno->plato_a_cocinar);
+
+		if(string_equals_ignore_case(paso_siguiente->paso.nombre, REPOSAR)){ //si tiene que reposar
+			log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", horno->plato_a_cocinar->comida.nombre,
+					horno->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+
+			pthread_mutex_lock(&mutex_REPOSANDO);
+			list_add(platos_REPOSANDO, horno->plato_a_cocinar);
+			pthread_mutex_unlock(&mutex_REPOSANDO);
+			pthread_t hilo;
+			pthread_create(&hilo, NULL,(void*)reposar_plato, (void*)horno->plato_a_cocinar);
+			list_add(hilos_reposo, &hilo);
+		}else{
+			agregar_cola_ready(horno->plato_a_cocinar);
+		}
 		horno->plato_a_cocinar = NULL;
 		pthread_mutex_lock(&hornos_disp_mtx);
 		queue_push(hornos_disp, horno);
