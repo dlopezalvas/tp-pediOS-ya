@@ -11,17 +11,17 @@ t_log* sindicato_utils_iniciar_debug_logger(t_config* config){
 	return logger;
 }
 
-void sindicato_utils_create_folder(char* path, bool logsFolder){
+void sindicato_utils_create_folder(char* path, bool recordLog){
 	struct stat st = {0};
 
 	/* Validate if the folder exists to create the folder */
 	if(stat(path, &st) == -1){
 		if(mkdir(path,0777) == 0){
-			if(!logsFolder)
+			if(recordLog)
 				log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta creada: %s",path);
 		}
 	}else{
-		if(!logsFolder)
+		if(recordLog)
 			log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta existente: %s", path);
 	}
 }
@@ -30,6 +30,25 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	char* pathBuilded = string_duplicate(path);
 	string_append(&pathBuilded, toAppend);
 	return pathBuilded;
+}
+
+char* sindicato_utils_build_file_full_path(char* path, char* name){
+
+	char* fileName = sindicato_utils_build_path("/", name);
+	string_append(&fileName, ".");
+	string_append(&fileName, metadataFS->magic_number);
+
+	char* folderPath = sindicato_utils_build_path(path, "/");
+	string_append(&folderPath, name);
+
+	sindicato_utils_create_folder(folderPath, true);
+
+	char* fullPath = sindicato_utils_build_path(folderPath, fileName);
+
+	free(fileName);
+	free(folderPath);
+
+	return fullPath;
 }
 
 char* sindicato_utils_build_block_path(int blockNumber){

@@ -2,43 +2,40 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
-void internal_api_free_array(char** array,int qtyBitsReserved){
+/* ********** INITIALIZE BASIC COMPONENTS ********** */
 
-	for(int position = 0; position < (qtyBitsReserved - 1); position++){
-		free(array[position]);
-	}
-
-	free(array);
-}
+/* ***** FS FOLDERS ***** */
 
 void internal_api_createFileSystemFolders(){
 	/* Create mount point of the FS */
-	sindicato_utils_create_folder(sindicatoMountPoint, false);
+	sindicato_utils_create_folder(sindicatoMountPoint, true);
 
 	/* Create folder "Metadata" in {mount_point} */
 	char* sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
-	sindicato_utils_create_folder(sindicatoMetadataPath, false);
+	sindicato_utils_create_folder(sindicatoMetadataPath, true);
 	free(sindicatoMetadataPath);
 
 	/* Create folder "Files" in {mount_point} */
 	char* sindicatoFilesPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files");
-	sindicato_utils_create_folder(sindicatoFilesPath, false);
+	sindicato_utils_create_folder(sindicatoFilesPath, true);
 	free(sindicatoFilesPath);
 
 	/* Create folder "Blocks" in {mount_point} */
 	sindicatoBlocksPath = sindicato_utils_build_path(sindicatoMountPoint, "/Blocks");
-	sindicato_utils_create_folder(sindicatoBlocksPath, false);
+	sindicato_utils_create_folder(sindicatoBlocksPath, true);
+
 
 	/* Create folder "Receta" in {mount_point}/Files */
-	char* sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas");
-	sindicato_utils_create_folder(sindicatoRecetaPath, false);
-	free(sindicatoRecetaPath);
+	sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas");
+	sindicato_utils_create_folder(sindicatoRecetaPath, true);
+
 
 	/* Create folder "Restaurante" in {mount_point}/Files */
-	char* sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes");
-	sindicato_utils_create_folder(sindicatoRestaurantePath, false);
-	free(sindicatoRestaurantePath);
+	sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes");
+	sindicato_utils_create_folder(sindicatoRestaurantePath, true);
 }
+
+/* ***** FS METADATA ***** */
 
 void internal_api_initialize_metadata(){
 	char* metadaPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP");
@@ -55,6 +52,8 @@ void internal_api_initialize_metadata(){
 
 	free(metadaPathFS);
 }
+
+/* ***** FS BITMAP ***** */
 
 void internal_api_bitmap_create(){
 	char* bitmapPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Bitmap.bin");
@@ -82,6 +81,8 @@ void internal_api_bitmap_create(){
 	free(bitmapPathFS);
 }
 
+/* ***** FS BLOCKS ***** */
+
 void internal_api_initialize_blocks(){
 	char* filePath;
 	FILE* bloqueFS;
@@ -99,6 +100,44 @@ void internal_api_initialize_blocks(){
 
 	log_info(sindicatoDebugLog,"[FILESYSTEM] Bloques inicializados");
 }
+
+/* ********** INTERNAL UTILS ********** */
+
+void internal_api_free_array(char** array,int qtyBitsReserved){
+
+	for(int position = 0; position < (qtyBitsReserved - 1); position++){
+		free(array[position]);
+	}
+
+	free(array);
+}
+
+char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blocksNeeded){
+	char** stringSplitted = malloc(blocksNeeded*sizeof(char)*stringMaxSize);
+
+	int splitFrom = 0;
+	int qtyToSplit = stringMaxSize;
+
+	for(int i = 0; i < blocksNeeded; i++){
+
+		stringSplitted[i] = string_substring(stringtoSplit,splitFrom,qtyToSplit);
+
+		splitFrom = splitFrom + qtyToSplit;
+
+		if(splitFrom + qtyToSplit > strlen(stringtoSplit))
+			qtyToSplit = strlen(stringtoSplit) - splitFrom;
+	}
+
+	return stringSplitted;
+}
+
+/* ********** FS FILES ********** */
+
+void internal_api_write_info_file(int stringLenght, char* initialBlock){
+
+}
+
+/* ********** FS BLOCKS ********** */
 
 void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 
@@ -172,25 +211,6 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 	return blocks;
 }
 
-char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blocksNeeded){
-	char** stringSplitted = malloc(blocksNeeded*sizeof(char)*stringMaxSize);
-
-	int splitFrom = 0;
-	int qtyToSplit = stringMaxSize;
-
-	for(int i = 0; i < blocksNeeded; i++){
-
-		stringSplitted[i] = string_substring(stringtoSplit,splitFrom,qtyToSplit);
-
-		splitFrom = splitFrom + qtyToSplit;
-
-		if(splitFrom + qtyToSplit > strlen(stringtoSplit))
-			qtyToSplit = strlen(stringtoSplit) - splitFrom;
-	}
-
-	return stringSplitted;
-}
-
 int internal_api_calculate_blocks_needed(char* fullString){
 
 	int blocksNeeded = 0;
@@ -204,7 +224,7 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
-void internal_api_write_block(char* stringToWrite){
+int internal_api_write_block(char* stringToWrite){
 
 	char* blockFullPath;
 	int sizeString;
@@ -215,10 +235,14 @@ void internal_api_write_block(char* stringToWrite){
 
 	char** blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
 	if(blocksToWrite == NULL)
-		return;
+		return -1; //error
+
+	//TODO: modo escritura, modo update
 
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
 	char** stringToWriteSplitted = internal_api_split_string(stringToWrite, stringBlockSize, qtyblocksNeeded);
+
+	internal_api_write_info_file(strlen(stringToWrite), blocksToWrite[0]);
 
 	for(int i = 0; i < qtyblocksNeeded; i++){
 		blockFullPath = sindicato_utils_build_block_path(atoi(blocksToWrite[i]));
@@ -242,26 +266,40 @@ void internal_api_write_block(char* stringToWrite){
 		munmap(mappedBlock, metadataFS->block_size);
 		close(block);
 	}
+
+	//TODO: IMPORTANTE Return the initial block
+	return atoi(blocksToWrite[0]);
 }
+//restPath, initialBlock, restToSave
+void internal_api_create_info_file(char* filePath, int initialBlock, char* stringSaved){
 
-void internal_api_write(){
+	/* if the file does not exist then create a new one with default keys in blank*/
+	if(access(filePath, F_OK) != 0){
 
-	char* blockPath = string_new();
-	string_append(&blockPath, "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Blocks/1.afip");
-	char* stringToWrite = "CANTIDAD_COCINEROS=5\nPOSICION=[4,10]\nAFINIDAD_COCINEROS=[Mil";
-	int blockSize = metadataFS->block_size/8;
+		FILE *file = fopen(filePath, "w+");
 
-	int block = open(blockPath, O_RDWR | O_CREAT, 0700);
-	ftruncate(block, blockSize);
+		fprintf(file, "SIZE=\n");
+		fprintf(file, "INITIAL_BLOCK=\n");
 
-	char* mappedBlock = mmap(0, blockSize, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+		fclose(file);
+	}
 
-	uint32_t pointer = 2;
-	memcpy(mappedBlock, stringToWrite, strlen(stringToWrite));
-	memcpy(mappedBlock + strlen(stringToWrite), &pointer , sizeof(uint32_t));
-	msync(mappedBlock, blockSize, MS_SYNC);
 
-	munmap(mappedBlock, blockSize);
+	char* strInitialBlock = string_itoa(initialBlock);
+	char* strSize = string_itoa(strlen(stringSaved));
+
+	/* update the file using config */
+	t_config* config = config_create(filePath);
+
+	config_set_value(config, "SIZE", strSize);
+	config_set_value(config, "INITIAL_BLOCK", strInitialBlock);
+
+	config_save(config);
+
+	config_destroy(config);
+
+	free(strSize);
+	free(strInitialBlock);
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
@@ -269,10 +307,87 @@ void internal_api_write(){
 /* Console functions */
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
+
+	char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
+		char* stringBuilded = string_new();
+
+		string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
+		string_append(&stringBuilded,cantCocineros);
+		string_append(&stringBuilded,"\n");
+
+		string_append(&stringBuilded,"POSICION=");
+		string_append(&stringBuilded,posXY);
+		string_append(&stringBuilded,"\n");
+
+		string_append(&stringBuilded,"AFINIDAD_COCINEROS=");
+		string_append(&stringBuilded,afinidadCocinero);
+		string_append(&stringBuilded,"\n");
+
+		string_append(&stringBuilded,"PLATOS=");
+		string_append(&stringBuilded,platos);
+		string_append(&stringBuilded,"\n");
+
+		string_append(&stringBuilded,"PRECIO_PLATOS=");
+		string_append(&stringBuilded,precioPlatos);
+		string_append(&stringBuilded,"\n");
+
+		string_append(&stringBuilded,"CANTIDAD_HORNOS=");
+		string_append(&stringBuilded,cantHornos);
+		string_append(&stringBuilded,"\n");
+
+		char* cantidadPedidos = "1";
+		//TODO: IMPORTANTE Definir como calcular los pedidos en el FS
+
+		string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
+		string_append(&stringBuilded,cantidadPedidos);
+
+		return stringBuilded;
+	}
+
+	char* restToSave = internal_api_build_string_rest(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
+
+	//TODO: validar que no sea -1
+	int initialBlock = internal_api_write_block(restToSave);
+
+	/* Create "info" file */
+
+	char* restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre);
+
+	internal_api_create_info_file(restPath, initialBlock, restToSave);
+
+	free(restPath);
+	free(restToSave);
 }
 
 void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
+
+	char* internal_api_build_string_receta(char* pasos, char* tiempoPasos){
+			char* stringBuilded = string_new();
+
+			string_append(&stringBuilded,"PASOS=");
+			string_append(&stringBuilded,pasos);
+			string_append(&stringBuilded,"\n");
+
+			string_append(&stringBuilded,"TIEMPO_PASOS=");
+			string_append(&stringBuilded,tiempoPasos);
+
+			return stringBuilded;
+		}
+
+	char* recetaToSave = internal_api_build_string_receta(pasos, tiempoPasos);
+
+	int initialBlock = internal_api_write_block(recetaToSave);
+
+
+	/* Create "info" file */
+
+	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre);
+
+	internal_api_create_info_file(restPath, initialBlock, recetaToSave);
+
+	free(restPath);
+	free(recetaToSave);
 }
 
 /* Server functions */
@@ -418,7 +533,4 @@ void sindicato_api_afip_initialize(){
 	internal_api_bitmap_create();
 
 	internal_api_initialize_blocks();
-
-	/* DELETE THIS, Test only*/
-	internal_api_write_block("CANTIDAD_COCINEROS=5\nPOSICION=[4,5]\nAFINIDAD_COCINEROS=[Milanesas]\nPLATOS=[Milanesas,Empanadas,Ensalada]\nPRECIO_PLATOS=[200,50,150]\nCANTIDAD_HORNOS=2");
 }
