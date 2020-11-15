@@ -363,17 +363,17 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
 	char* internal_api_build_string_receta(char* pasos, char* tiempoPasos){
-			char* stringBuilded = string_new();
+		char* stringBuilded = string_new();
 
-			string_append(&stringBuilded,"PASOS=");
-			string_append(&stringBuilded,pasos);
-			string_append(&stringBuilded,"\n");
+		string_append(&stringBuilded,"PASOS=");
+		string_append(&stringBuilded,pasos);
+		string_append(&stringBuilded,"\n");
 
-			string_append(&stringBuilded,"TIEMPO_PASOS=");
-			string_append(&stringBuilded,tiempoPasos);
+		string_append(&stringBuilded,"TIEMPO_PASOS=");
+		string_append(&stringBuilded,tiempoPasos);
 
-			return stringBuilded;
-		}
+		return stringBuilded;
+	}
 
 	char* recetaToSave = internal_api_build_string_receta(pasos, tiempoPasos);
 
@@ -533,4 +533,253 @@ void sindicato_api_afip_initialize(){
 	internal_api_bitmap_create();
 
 	internal_api_initialize_blocks();
+
+//	f_restaurante* restaurante = read_blocks(0, 188);
+//
+//	puts("cocineros");
+//	puts(string_itoa(restaurante->cantidad_cocineros));
+//	puts("hornos");
+//	puts(string_itoa(restaurante->cantidad_hornos));
+}
+
+void* read_blocks(int initial_block, int size){
+	char* path_block;
+
+	int blocks_amount = ceil((float) size / ((float) metadataFS->block_size - 4));
+
+	int next_block = initial_block;
+
+	int offset = 0;
+
+	char* data = malloc(size);
+
+	for(int i = 0; i < blocks_amount; i++){
+
+		path_block = sindicato_utils_build_block_path(next_block);
+
+		int block = open(path_block, O_RDWR | O_CREAT, 0700);
+		ftruncate(block, metadataFS->block_size);
+
+		char* mappedBlock = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+
+		if(i < blocks_amount - 1){
+			memcpy(data + offset, mappedBlock, metadataFS->block_size - 4);
+			memcpy(&next_block, mappedBlock + metadataFS->block_size - 4,  4);
+			offset += metadataFS->block_size - 4;
+			size -= metadataFS->block_size - 4;
+		}else{
+			memcpy(data + offset, mappedBlock, size);
+		}
+
+		munmap(mappedBlock, metadataFS->block_size);
+		close(block);
+	}
+
+	char** array_data = string_split(data, "\n");
+
+	free(data);
+
+	t_config* config_data = array_data_to_config(array_data);
+
+	void* strc_data = config_to_strc(config_data);
+
+	config_destroy(config_data);
+
+	return strc_data;
+}
+
+void* config_to_strc(t_config* config_data){
+
+	switch(config_to_file_type(config_data)){
+	case F_RESTAURANTE:
+		return config_to_restaurante(config_data);
+	case F_RECETA:
+		return config_to_receta(config_data);
+	case F_PEDIDO:
+		return config_to_pedido(config_data);
+	default:
+		return NULL;
+	}
+}
+
+t_file_type config_to_file_type(t_config* config){
+	if(config_has_property(config, D_PASOS)){
+		return F_RECETA;
+	}else if(config_has_property(config, D_CANTIDAD_COCINEROS)){
+		return F_RESTAURANTE;
+	}else if(config_has_property(config, D_ESTADO_PEDIDO)){
+		return F_PEDIDO;
+	}else{
+		return -1;
+	}
+}
+
+f_restaurante* config_to_restaurante(t_config* config_data){
+	f_restaurante* restaurante = malloc(sizeof(f_restaurante));
+
+	restaurante->cantidad_hornos = config_get_int_value(config_data, D_CANTIDAD_HORNOS);
+	restaurante->cantidad_cocineros = config_get_int_value(config_data, D_CANTIDAD_COCINEROS);
+	restaurante->cantidad_pedidos = config_get_int_value(config_data, D_CANTIDAD_PEDIDOS);
+
+	char** aux_array = config_get_array_value(config_data, D_POSICION);
+
+	restaurante->posicion.x = atoi(aux_array[0]);
+	restaurante->posicion.y = atoi(aux_array[1]);
+
+	liberar_vector(aux_array);
+
+	restaurante->afinidad_cocineros = list_create();
+
+	aux_array = config_get_array_value(config_data, D_AFINIDAD_COCINEROS);
+
+	int i = 0;
+
+	t_nombre* name;
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(restaurante->afinidad_cocineros, name);
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	restaurante->platos = list_create();
+
+	aux_array = config_get_array_value(config_data, D_PLATOS);
+
+	i = 0;
+
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(restaurante->platos, name);
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	restaurante->precios = list_create();
+
+	aux_array = config_get_array_value(config_data, D_PRECIO_PLATOS);
+
+	i = 0;
+
+	while(aux_array[i] != NULL){
+		list_add(restaurante->precios, atoi(aux_array[i]));
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	return restaurante;
+}
+
+f_receta* config_to_receta(t_config* config_data){
+	f_receta* receta = malloc(sizeof(f_receta));
+
+	receta->pasos = list_create();
+
+	char** aux_pasos = config_get_array_value(config_data, D_PASOS);
+
+	char** aux_tiempos = config_get_array_value(config_data, D_TIEMPO_PASOS);
+
+	int i = 0;
+
+	t_paso* paso;
+
+	while(aux_pasos[i] != NULL){
+		paso = malloc(sizeof(t_paso));
+
+		paso->paso.nombre = string_duplicate(aux_pasos[i]);
+		paso->duracion = atoi(aux_tiempos[i]);
+
+		list_add(receta->pasos, paso);
+		i++;
+	}
+
+	liberar_vector(aux_pasos);
+	liberar_vector(aux_tiempos);
+
+	return receta;
+}
+
+f_pedido* config_to_pedido(t_config* config_data){
+	f_pedido* pedido = malloc(sizeof(f_pedido));
+
+	pedido->estado_pedido = string_to_est_pedido(config_get_string_value(config_data, D_ESTADO_PEDIDO));
+	pedido->precio_total = config_get_int_value(config_data, D_PRECIO_TOTAL);
+	pedido->platos = list_create();
+
+	char** aux_array = config_get_array_value(config_data, D_PLATOS);
+
+	int i = 0;
+
+	t_nombre* name;
+
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(pedido->platos, name);
+		i++;
+	}
+
+	i = 0;
+
+	liberar_vector(aux_array);
+
+	pedido->cantidad_lista = list_create();
+	aux_array = config_get_array_value(config_data, D_CANTIDAD_LISTA);
+
+	while(aux_array[i] != NULL){
+		list_add(pedido->cantidad_lista, atoi(aux_array[i]));
+		i++;
+	}
+
+	i = 0;
+
+	liberar_vector(aux_array);
+
+	pedido->cantidad_platos = list_create();
+	aux_array = config_get_array_value(config_data, D_CANTIDAD_PLATOS);
+
+	while(aux_array[i] != NULL){
+		list_add(pedido->cantidad_platos, atoi(aux_array[i]));
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	return pedido;
+}
+
+est_pedido string_to_est_pedido(char* string){
+	if(string_equals_ignore_case(string, E_CONFIRMADO)){
+		return CONFIRMADO;
+	}else if(string_equals_ignore_case(string, E_PENDIENTE)){
+		return PENDIENTE;
+	}else if(string_equals_ignore_case(string, E_TERMINADO)){
+		return TERMINADO;
+	}else{
+		return -1;
+	}
+}
+
+t_config* array_data_to_config(char** lineas){
+	t_config* config_datos = config_create(sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Metadata.AFIP"));
+
+	int i = 0;
+
+	while(lineas[i]!=NULL){ //por cada "posicion", hay una linea del vector "lineas" (separado por \n)
+		char** key_valor = string_split(lineas[i], "=");
+		config_set_value(config_datos, key_valor[0], key_valor[1]); //separo la posicion de la cantidad (a traves del =)y seteo como key la posicion con su valor cantidad
+		liberar_vector(key_valor);
+		i++;
+	}
+	return config_datos;
 }

@@ -3,6 +3,55 @@
 
 #include "SindicatoUtils.h"
 
+#define D_CANTIDAD_COCINEROS "CANTIDAD_COCINEROS"
+#define D_POSICION "POSICION"
+#define D_AFINIDAD_COCINEROS "AFINIDAD_COCINEROS"
+#define D_PLATOS "PLATOS"
+#define D_PRECIO_PLATOS "PRECIO_PLATOS"
+#define D_CANTIDAD_HORNOS "CANTIDAD_HORNOS"
+#define D_CANTIDAD_PEDIDOS "CANTIDAD_PEDIDOS"
+
+
+#define D_PASOS "PASOS"
+#define D_TIEMPO_PASOS "TIEMPO_PASOS"
+
+#define D_ESTADO_PEDIDO "ESTADO_PEDIDO"
+#define D_LISTA_PLATOS "LISTA_PLATOS"
+#define D_CANTIDAD_PLATOS "CANTIDAD_PLATOS"
+#define D_CANTIDAD_LISTA "CANTIDAD_LISTA"
+#define D_PRECIO_TOTAL "PRECIO_TOTAL"
+
+#define E_CONFIRMADO "CONFIRMADO"
+#define E_PENDIENTE "PENDIENTE"
+#define E_TERMINADO "TERMINADO"
+
+typedef enum{
+	F_RECETA = 0,
+	F_PEDIDO = 1,
+	F_RESTAURANTE = 2,
+}t_file_type;
+
+typedef struct{
+	int cantidad_cocineros;
+	t_coordenadas posicion;
+	t_list* afinidad_cocineros; //lista de t_nombre (afinidades)
+	t_list* platos; //lista de t_nombre (platos)
+	t_list* precios; //lista de precios
+	int cantidad_hornos;
+	int cantidad_pedidos;
+}f_restaurante;
+
+typedef struct{
+	t_list* pasos; //lista de t_paso
+}f_receta;
+
+typedef struct{
+	est_pedido estado_pedido;
+	t_list* platos; //lista de t_nombre (platos)
+	t_list* cantidad_platos; //lista de int
+	t_list* cantidad_lista; //lista de int
+	int precio_total;
+}f_pedido;
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 /* Console functions */
@@ -23,5 +72,15 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido);
 
 /* Main functions */
 void sindicato_api_afip_initialize();
+
+//TODO ordenar
+void* read_blocks(int initial_block, int size);
+void* config_to_strc(t_config* config_data);
+t_file_type config_to_file_type(t_config* config);
+f_restaurante* config_to_restaurante(t_config* config_data);
+f_receta* config_to_receta(t_config* config_data);
+f_pedido* config_to_pedido(t_config* config_data);
+est_pedido string_to_est_pedido(char* string);
+t_config* array_data_to_config(char** lineas);
 
 #endif /* SINDICATOAPI_H_ */
