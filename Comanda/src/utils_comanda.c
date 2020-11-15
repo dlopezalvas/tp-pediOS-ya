@@ -53,6 +53,8 @@ void iniciar_comanda(){
 	puntero_clock = 0;
 	pthread_mutex_init(&puntero_clock_mtx, NULL);
 
+	pthread_mutex_init(&tablas_paginas_mtx, NULL);
+
 }
 
 void inicializar_swap(){
@@ -248,9 +250,10 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 
 						plato->frame = guardar_en_mp(plato_a_guardar);
 
-
 						pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+						pthread_mutex_lock(&tablas_paginas_mtx);
 						list_add(pedido->tabla_paginas, plato);
+						pthread_mutex_unlock(&tablas_paginas_mtx);
 						pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 						pthread_mutex_lock(&paginas_swap_mtx);
@@ -310,9 +313,9 @@ int seleccionar_frame_mp(){
 
 	if(frame_disponible == -1){
 		log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se inicio el algoritmo de seleccion de victima");
+
 		switch(algoritmo_reemplazo){
 		case LRU:
-			puts("entro a lru");
 			frame_disponible = eleccion_victima_LRU();
 			break;
 		case CLOCK_MEJORADO:
@@ -332,13 +335,13 @@ int eleccion_victima_clock_mejorado(){
 		return pagina1->frame < pagina2->frame;
 	}
 
+	pthread_mutex_lock(&tablas_paginas_mtx);
+
 	pthread_mutex_lock(&puntero_clock_mtx);
 
 	pthread_mutex_lock(&paginas_swap_mtx);
 
 	t_list* en_mp = list_filter(paginas_swap, (void*)esta_en_MP);
-
-	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
 
 	list_sort(en_mp, (void*) ordenar_por_frame);
 
@@ -350,11 +353,16 @@ int eleccion_victima_clock_mejorado(){
 		}
 	}
 
+	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
+
 	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 	pthread_mutex_unlock(&puntero_clock_mtx);
 
 	liberar_frame(victima);
+
+	pthread_mutex_lock(&tablas_paginas_mtx);
+
 	list_destroy(en_mp);
 
 	return victima->frame;
@@ -398,7 +406,11 @@ void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(
 		return NULL;
 	}
 
-	puntero_clock = pagina->frame;
+	puntero_clock = pagina->frame + 1;
+
+	if(puntero_clock >= self->elements_count){
+		puntero_clock = 0;
+	}
 
 	return pagina;
 
@@ -416,6 +428,8 @@ int eleccion_victima_LRU(){
 
 	t_pagina* victima;
 
+	pthread_mutex_lock(&tablas_paginas_mtx);
+
 	pthread_mutex_lock(&paginas_swap_mtx);
 
 	list_sort(paginas_swap, (void*)lru);
@@ -427,6 +441,8 @@ int eleccion_victima_LRU(){
 	pthread_mutex_unlock(&paginas_swap_mtx);
 
 	liberar_frame(victima);
+
+	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	return victima->frame;
 
@@ -687,22 +703,23 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 			pthread_mutex_unlock(&(restaurante->tabla_segmentos_mtx));
 
 			if(estado_pedido == CONFIRMADO){
-				pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 				pagina = buscarPlato(pedido->tabla_paginas, mensaje->comida.nombre);
-				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 				if(pagina != NULL){
+					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+					pthread_mutex_lock(&tablas_paginas_mtx);
 					if(!pagina->presencia){
 						traer_de_swap(pagina);
 						pagina->presencia = true;
 					}
 
-					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 					if(actualizar_plato_mp(pagina, 0, 1)){
 						confirmacion = OK;//cantLista le suma 1
 						log_info(log_comanda, "[ERROR] No pueden estar listos mas %s de los pedidos", mensaje->comida.nombre);
 					}
-					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
+					pthread_mutex_unlock(&tablas_paginas_mtx);
+					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 
 				}else{
 					log_info(log_comanda, "[ERROR] No existe el plato %s", mensaje->comida.nombre);
@@ -753,14 +770,13 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 			t_plato* plato;
 
 			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+			pthread_mutex_lock(&tablas_paginas_mtx);
 			int cantidad_platos = pedido->tabla_paginas->elements_count;
-			pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 			for(int i = 0; i < cantidad_platos; i++){
 
 				plato_a_deserializar = malloc(TAMANIO_PAGINA);
 
-				pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 				pagina = list_get(pedido->tabla_paginas, i);
 
 				pagina->ultimo_acceso = time(NULL);
@@ -771,7 +787,6 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 				}
 				offset = pagina->frame * TAMANIO_PAGINA;
 
-				pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 				pthread_mutex_lock(&memoria_principal_mtx);
 				memcpy(plato_a_deserializar, memoria_principal + offset, TAMANIO_PAGINA);
@@ -791,6 +806,8 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 				free(plato);
 
 			}
+			pthread_mutex_unlock(&tablas_paginas_mtx);
+			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 
 			mensaje_a_enviar->tipo_mensaje = RTA_OBTENER_PEDIDO;
 			mensaje_a_enviar->parametros = rtaObtenerPedido;
@@ -891,13 +908,22 @@ t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
 
 	int offset;
 
+	pthread_mutex_lock(&tablas_paginas_mtx);
+
 	for(int i = 0; i < list_size(tabla_paginas); i++){
 		stream = malloc(TAMANIO_PAGINA);
 		pagina = list_get(tabla_paginas, i);
-		offset = pagina->pagina_swap * TAMANIO_PAGINA;
-		pthread_mutex_lock(&memoria_swap_mtx);
-		memcpy(stream, memoria_swap + offset, TAMANIO_PAGINA);
-		pthread_mutex_unlock(&memoria_swap_mtx);
+
+
+		if(!pagina->presencia){
+			traer_de_swap(pagina);
+		}
+
+		offset = pagina->frame * TAMANIO_PAGINA;
+
+		pthread_mutex_lock(&memoria_principal_mtx);
+		memcpy(stream, memoria_principal + offset, TAMANIO_PAGINA);
+		pthread_mutex_unlock(&memoria_principal_mtx);
 		plato = deserializar_pagina(stream);
 		free(stream);
 		if(string_equals_ignore_case(plato->nombre, comida)){
@@ -907,6 +933,9 @@ t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
 			free(plato);
 		}
 	}
+
+	pthread_mutex_unlock(&tablas_paginas_mtx);
+
 	return NULL;
 }
 

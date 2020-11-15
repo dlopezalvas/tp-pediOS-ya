@@ -171,7 +171,9 @@ int id_pedidos;
 
 //LISTAS
 
-t_list *  list_pedidos;
+t_list *  list_pedidos_confirm;
+pthread_mutex_t list_pedidos_confirm_mtx;
+
 
 
 //MENSAJES

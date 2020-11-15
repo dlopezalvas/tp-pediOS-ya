@@ -39,6 +39,8 @@ pthread_mutex_t hilos_operaciones_mtx;
 t_list* paginas_swap;
 pthread_mutex_t paginas_swap_mtx;
 
+pthread_mutex_t tablas_paginas_mtx;
+
 typedef struct{
 	char* nombre;
 	t_list* tabla_segmentos;

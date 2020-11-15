@@ -121,14 +121,6 @@ void iniciar_restaurante(){
 		log_info(log_config_ini, "\tFin proceso, sindicato no disponible \n");
 	}
 
-	//INICIO DE LISTAS GLOBALES
-
-	pthread_mutex_init(&id_plato_global_mtx, NULL);
-	id_plato_global = 0;
-
-
-
-
 
 
 }
@@ -187,12 +179,19 @@ void* fhilo_serve_app(int socket){
 	}
 }
 void inicio_de_listas_globales(){
+	//INICIO DE LISTAS GLOBALES
+
+	pthread_mutex_init(&id_plato_global_mtx, NULL);
+	id_plato_global = 0;
 
 	//LSITA DE HILOS CLIENTE
 	hilos = list_create();
 	hilos_reposo = list_create();
 
+
 	hornos_disp = queue_create();
+	list_pedidos_confirm= list_create();
+	pthread_mutex_init(&list_pedidos_confirm_mtx, NULL);
 
 	platos_EXEC = list_create();
 	platos_REPOSANDO = list_create();
@@ -202,6 +201,7 @@ void inicio_de_listas_globales(){
 	pthread_mutex_init(&mutex_HORNEANDO, NULL);
 	pthread_mutex_init(&mutex_REPOSANDO, NULL);
 	pthread_mutex_init(&hornos_disp_mtx, NULL);
+
 
 
 }
@@ -401,6 +401,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 	if(cod_op != STRC_MENSAJE_VACIO) free(buffer);
 	t_confirmacion confirmacion;
+	uint32_t confirmado;
 
 	switch (cod_op) {
 
@@ -589,7 +590,7 @@ void process_request(int cod_op, int cliente_fd) {
 		log_info(log_config_ini ,"Se quiere AGREGAR_PLATO en resto: %s y id: %d",mj_agregar_plato->nombre.nombre,mj_agregar_plato->id);
 
 		//VALIDACION DE ID PEDIDO Y RESTAURANTE
-		if(mj_agregar_plato->id <= id_pedidos){
+		if((mj_agregar_plato->id <= id_pedidos)&& (mj_agregar_plato->id > confirmado)){
 			log_info(log_config_ini, "\tEl pedido corresponde a este restaurante \n");
 
 			//CONEXION CON SINDICATO
@@ -633,7 +634,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		}else{
-			log_info(log_config_ini ,"El id de pedido no corresponde a este restaurante");
+			log_info(log_config_ini ,"El id de pedido no corresponde a este restaurante o el pedido ya fue confirmado \n");
+
 		}
 		enviar_confirmacion(confirmacion, cliente_fd, RTA_AGREGAR_PLATO);
 		liberar_conexion(cliente_fd);
@@ -661,9 +663,16 @@ void process_request(int cod_op, int cliente_fd) {
 		//estructura de respuesta al cliente
 		rta_obtenerPedido* rta_sindicato_RTA_OBTENER_PEDIDO;
 
+
+
 		//CONEXION CON SINDICATO
 		confirmacion = FAIL;
-		if(id_CONFIRMAR_PEDIDO->id <= id_pedidos){
+		//VALIDAR QUE NO SE CONFIRME UN PEDIDO YA CONFIRMADO
+
+		confirmado=  list_get(list_pedidos_confirm,list_pedidos_confirm->elements_count-1);
+
+
+		if((id_CONFIRMAR_PEDIDO->id <= id_pedidos) && (id_CONFIRMAR_PEDIDO->id > confirmado)){
 
 			int socket_OBTENER_PEDIDO = conectar_con_sindicato();
 
@@ -776,7 +785,12 @@ void process_request(int cod_op, int cliente_fd) {
 					log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos);
 					//log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos); PASOS list get
 
+					pthread_mutex_lock(&list_pedidos_confirm_mtx);
+					list_add(list_pedidos_confirm,plato_pcb->id_pedido);
+					pthread_mutex_unlock(&list_pedidos_confirm_mtx);
+
 					agregar_cola_ready(plato_pcb);
+
 
 				}
 
@@ -788,6 +802,7 @@ void process_request(int cod_op, int cliente_fd) {
 				confirmacion = OK;
 			}
 		}
+
 		//RESPONDO AL CLIENTE
 		//OK o FAIL
 		enviar_confirmacion(confirmacion,cliente_fd, RTA_CONFIRMAR_PEDIDO);
