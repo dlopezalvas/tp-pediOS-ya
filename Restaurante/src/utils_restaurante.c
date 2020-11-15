@@ -401,6 +401,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 	if(cod_op != STRC_MENSAJE_VACIO) free(buffer);
 	t_confirmacion confirmacion;
+	uint32_t confirmado;
 
 	switch (cod_op) {
 
@@ -589,7 +590,7 @@ void process_request(int cod_op, int cliente_fd) {
 		log_info(log_config_ini ,"Se quiere AGREGAR_PLATO en resto: %s y id: %d",mj_agregar_plato->nombre.nombre,mj_agregar_plato->id);
 
 		//VALIDACION DE ID PEDIDO Y RESTAURANTE
-		if(mj_agregar_plato->id <= id_pedidos){
+		if((mj_agregar_plato->id <= id_pedidos)&& (mj_agregar_plato->id > confirmado)){
 			log_info(log_config_ini, "\tEl pedido corresponde a este restaurante \n");
 
 			//CONEXION CON SINDICATO
@@ -633,7 +634,8 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		}else{
-			log_info(log_config_ini ,"El id de pedido no corresponde a este restaurante");
+			log_info(log_config_ini ,"El id de pedido no corresponde a este restaurante o el pedido ya fue confirmado \n");
+
 		}
 		enviar_confirmacion(confirmacion, cliente_fd, RTA_AGREGAR_PLATO);
 		liberar_conexion(cliente_fd);
@@ -667,7 +669,7 @@ void process_request(int cod_op, int cliente_fd) {
 		confirmacion = FAIL;
 		//VALIDAR QUE NO SE CONFIRME UN PEDIDO YA CONFIRMADO
 
-		uint32_t confirmado=  list_get(list_pedidos_confirm,list_pedidos_confirm->elements_count-1);
+		confirmado=  list_get(list_pedidos_confirm,list_pedidos_confirm->elements_count-1);
 
 
 		if((id_CONFIRMAR_PEDIDO->id <= id_pedidos) && (id_CONFIRMAR_PEDIDO->id > confirmado)){
