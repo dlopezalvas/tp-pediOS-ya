@@ -392,6 +392,15 @@ void process_request(int cod_op, int cliente_fd) {
 	int size = 0;
 	int id_proceso;
 	void* mensaje = NULL;
+
+	uint32_t confirmado;
+	bool esta_confirmado;
+
+	bool _mismo_id(uint32_t _id){
+		return mismo_id(_id, confirmado);
+	}
+
+
 	recv(cliente_fd, &id_proceso, sizeof(uint32_t), MSG_WAITALL);
 
 	void* buffer = recibir_mensaje(cliente_fd, &size);
@@ -401,7 +410,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 	if(cod_op != STRC_MENSAJE_VACIO) free(buffer);
 	t_confirmacion confirmacion;
-	uint32_t confirmado;
+
 
 	switch (cod_op) {
 
@@ -580,7 +589,6 @@ void process_request(int cod_op, int cliente_fd) {
 		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 		confirmacion = FAIL;
 
-
 		//A través del envío del mensaje Guardar Plato al Módulo Sindicato, agrega un plato correspondiente a un pedido específico, que se encontrará relacionado con el
 		//Restaurante que envió dicho mensaje. Solo se podrá crear platos sobre pedidos existentes.
 
@@ -589,8 +597,14 @@ void process_request(int cod_op, int cliente_fd) {
 		t_nombre_y_id* mj_agregar_plato = mensaje;
 		log_info(log_config_ini ,"Se quiere AGREGAR_PLATO en resto: %s y id: %d",mj_agregar_plato->nombre.nombre,mj_agregar_plato->id);
 
+		confirmado = mj_agregar_plato->id;
+
+		pthread_mutex_lock(&list_pedidos_confirm_mtx);
+		esta_confirmado = list_any_satisfy(list_pedidos_confirm, (void*) _mismo_id);
+		pthread_mutex_unlock(&list_pedidos_confirm_mtx);
+
 		//VALIDACION DE ID PEDIDO Y RESTAURANTE
-		if((mj_agregar_plato->id <= id_pedidos)&& (mj_agregar_plato->id > confirmado)){
+		if((mj_agregar_plato->id <= id_pedidos)&& !esta_confirmado){
 			log_info(log_config_ini, "\tEl pedido corresponde a este restaurante \n");
 
 			//CONEXION CON SINDICATO
@@ -669,10 +683,14 @@ void process_request(int cod_op, int cliente_fd) {
 		confirmacion = FAIL;
 		//VALIDAR QUE NO SE CONFIRME UN PEDIDO YA CONFIRMADO
 
-		confirmado=  list_get(list_pedidos_confirm,list_pedidos_confirm->elements_count-1);
+		confirmado = id_CONFIRMAR_PEDIDO->id;
 
 
-		if((id_CONFIRMAR_PEDIDO->id <= id_pedidos) && (id_CONFIRMAR_PEDIDO->id > confirmado)){
+		pthread_mutex_lock(&list_pedidos_confirm_mtx);
+		esta_confirmado = list_any_satisfy(list_pedidos_confirm, (void*) _mismo_id);
+		pthread_mutex_unlock(&list_pedidos_confirm_mtx);
+
+		if((id_CONFIRMAR_PEDIDO->id <= id_pedidos) && !esta_confirmado){
 
 			int socket_OBTENER_PEDIDO = conectar_con_sindicato();
 
@@ -1343,6 +1361,9 @@ char* stringEstado(est_planif estado){
 		break;
 	case EXIT:
 		return "EXIT";
+		break;
+	default:
+		return "";
 		break;
 	}
 }
