@@ -403,7 +403,7 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_nombre* plato = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	plato->nombre = "Milanesa";
+	plato->nombre = string_duplicate("Milanesa");
 
 	list_add(platos->nombres, plato);
 	platos->cantElementos = platos->nombres->elements_count;
@@ -450,7 +450,7 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 	/* DELETE THIS: datos dummies solo para TEST */
 	pedidoElem->cantHecha = 1;
 	pedidoElem->cantTotal = 1;
-	pedidoElem->comida.nombre = "Milanesa";
+	pedidoElem->comida.nombre = string_duplicate("Milanesa");
 
 	pedido->cantPedidos = 1;
 	pedido->estadoPedido = PENDIENTE;
@@ -470,10 +470,11 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	t_nombre* afinidad = malloc(sizeof(t_nombre));
 
 	/* DELETE THIS: datos dummies solo para TEST */
-	recetaPrecio->receta.nombre = "Milanesa";
+
+	recetaPrecio->receta.nombre = string_duplicate("Milanesa");
 	recetaPrecio->precio = 500;
 
-	afinidad->nombre = "Empanadas";
+	afinidad->nombre = string_duplicate("MilanesaMejor");
 
 	restauranteInfo->cantAfinidades = 1;
 	list_add(restauranteInfo->afinidades, afinidad);
@@ -504,7 +505,7 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 
 	t_paso* paso = malloc(sizeof(t_paso));
 	paso->duracion = 1;
-	paso->paso.nombre = "Milanesear";
+	paso->paso.nombre = string_duplicate("Milanesear");
 	puts(paso->paso.nombre);
 
 	/* DELETE THIS: datos dummies solo para TEST */
