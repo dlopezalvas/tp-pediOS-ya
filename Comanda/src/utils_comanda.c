@@ -3,7 +3,7 @@
 void iniciar_comanda(){
 
 	config_comanda = leer_config(PATH);
-	log_comanda = log_create("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Comanda/comanda.LOG","comanda",1,LOG_LEVEL_INFO);
+	log_comanda = iniciar_logger(config_comanda);
 
 	if(string_equals_ignore_case(config_get_string_value(config_comanda, ALGORITMO_REEMPLAZO), "LRU")) algoritmo_reemplazo = LRU;
 	else if(string_equals_ignore_case(config_get_string_value(config_comanda, ALGORITMO_REEMPLAZO), "CLOCK_MEJ")) algoritmo_reemplazo = CLOCK_MEJORADO;
