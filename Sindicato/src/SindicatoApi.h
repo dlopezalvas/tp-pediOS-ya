@@ -26,10 +26,16 @@
 #define E_TERMINADO "TERMINADO"
 
 typedef enum{
-	F_RECETA = 0,
-	F_PEDIDO = 1,
-	F_RESTAURANTE = 2,
-}t_file_type;
+	TYPE_RECETA = 0,
+	TYPE_PEDIDO = 1,
+	TYPE_RESTAURANTE = 2,
+}file_type;
+
+typedef enum{
+	MODE_ADD = 0,
+	MODE_UPDATE = 1,
+	MODE_READ = 2,
+}mode_fs;
 
 typedef struct{
 	int cantidad_cocineros;
@@ -39,11 +45,11 @@ typedef struct{
 	t_list* precios; //lista de precios
 	int cantidad_hornos;
 	int cantidad_pedidos;
-}f_restaurante;
+}t_restaurante_file;
 
 typedef struct{
 	t_list* pasos; //lista de t_paso
-}f_receta;
+}t_receta_file;
 
 typedef struct{
 	est_pedido estado_pedido;
@@ -51,7 +57,14 @@ typedef struct{
 	t_list* cantidad_platos; //lista de int
 	t_list* cantidad_lista; //lista de int
 	int precio_total;
-}f_pedido;
+}t_pedido_file;
+
+typedef struct{
+	uint32_t initialBlock;
+	int stringSize;
+}t_initialBlockInfo;
+
+
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 /* Console functions */
@@ -72,15 +85,5 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido);
 
 /* Main functions */
 void sindicato_api_afip_initialize();
-
-//TODO ordenar
-void* read_blocks(int initial_block, int size);
-void* config_to_strc(t_config* config_data);
-t_file_type config_to_file_type(t_config* config);
-f_restaurante* config_to_restaurante(t_config* config_data);
-f_receta* config_to_receta(t_config* config_data);
-f_pedido* config_to_pedido(t_config* config_data);
-est_pedido string_to_est_pedido(char* string);
-t_config* array_data_to_config(char** lineas);
 
 #endif /* SINDICATOAPI_H_ */

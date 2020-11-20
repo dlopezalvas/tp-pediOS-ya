@@ -36,6 +36,7 @@ t_config* metadataConfig;
 
 int sindicatoPort;
 char* sindicatoMountPoint;
+char* sindicatoMetadataPath;
 char* sindicatoBlocksPath;
 char* sindicatoRecetaPath;
 char* sindicatoRestaurantePath;
