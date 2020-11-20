@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lcommonsCoronaLinux -lreadline -lcommons -lpthread
+LIBS := -lcommonsCoronaLinux -lm -lreadline -lcommons -lpthread
 
