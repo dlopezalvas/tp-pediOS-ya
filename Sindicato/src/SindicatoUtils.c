@@ -79,39 +79,37 @@ char* sindicato_utils_build_block_path(int blockNumber){
 bool sindicato_utils_verify_if_file_exist(char* path){
 
 	if(access(path, F_OK) != -1){
-		log_info(sindicatoDebugLog, "[FILESYSTEM] - No existe el path %s", path);
+		log_info(sindicatoDebugLog, "[FILESYSTEM] - Existe el path %s", path);
 		return true;
 	}else{
-		log_error(sindicatoDebugLog,  "[FILESYSTEM] - Existe el path %s", path);
+		log_error(sindicatoDebugLog,  "[FILESYSTEM] - No existe el path %s", path);
 		return false;
 	}
 }
 
-bool sindicato_utils_verify_if_exist(char* fileName, file_type fileType){
+bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, file_type fileType){
 
-	char* FilePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, true, NULL);
+	char* filePath;
 
 	switch(fileType){
 		case(TYPE_RECETA):
-				//Provisorio
-				return true;
+			filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, fileName, false, NULL);
+			break;
 		case(TYPE_PEDIDO):
-				//Provisorio
-				return true;
+			filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, false, restauranteOfPedido);
+			break;
 		case(TYPE_RESTAURANTE):
-
-			if(sindicato_utils_verify_if_file_exist(FilePath)){
-				free(FilePath);
-				return true;
-			} else {
-				free(FilePath);
-				return false;
-			}
-		default:
-			//Provisorio
-			return true;
+			filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, true, NULL);
+			break;
 	}
 
+	if(sindicato_utils_verify_if_file_exist(filePath)){
+		free(filePath);
+		return true;
+	} else {
+		free(filePath);
+		return false;
+	}
 }
 
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){

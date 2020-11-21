@@ -517,6 +517,8 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
+//armar una lista auxiliar y convertirla en char**
+//Agregarlo como parametro
 char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize){
 	char* blockPath;
 
@@ -553,7 +555,6 @@ char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize){
 
 	return blockData;
 }
-
 
 int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLock, mode_fs mode){
 
@@ -675,6 +676,7 @@ void* internal_api_read_blocks(int initialBlock, int stringSize){
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
+	//TODO: pasar la funcion como interna de api y poner la cantidad de pedidos como variable, en crear restaurante va hardcode con 0 (puaj)
 	char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 		char* stringBuilded = string_new();
 
@@ -773,17 +775,7 @@ void sindicato_api_send_response_of_operation(t_responseMessage* response){
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_nombre* restaurante = consultaPatos;
 
-	/*char* restauranteFilePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, restaurante->nombre, true, NULL);
-	if(sindicato_utils_verify_if_file_exist(restauranteFilePath)){
-		log_info(sindicatoDebugLog, "%s existe", restauranteFilePath);
-	} else {
-		log_error(sindicatoDebugLog,  "%s NO existe", restauranteFilePath);
-		free(restauranteFilePath);
-		free(restaurante);
-		return NULL;
-	}*/
-
-	if(!sindicato_utils_verify_if_exist(restaurante->nombre, TYPE_RESTAURANTE)){
+	if(!sindicato_utils_verify_if_exist(restaurante->nombre, NULL, TYPE_RESTAURANTE)){
 		free(restaurante);
 		return NULL;
 	}
@@ -792,6 +784,7 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
 	platos->nombres = list_create();
 
+	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restaurante->nombre,NULL,TYPE_RESTAURANTE);
 
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
@@ -854,10 +847,24 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 }
 
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
+	t_nombre* restauranteName = restaurante;
+
+	if(!sindicato_utils_verify_if_exist(restauranteName->nombre, NULL, TYPE_RESTAURANTE)){
+		free(restauranteName);
+		return NULL;
+	}
+
 	/* Initialize of restaurante structure */
-	rta_obtenerRestaurante* restauranteInfo = malloc(sizeof(rta_obtenerRestaurante));
-	restauranteInfo->afinidades = list_create();
-	restauranteInfo->recetas = list_create();
+	rta_obtenerRestaurante* rtaRestaurante = malloc(sizeof(rta_obtenerRestaurante));
+	rtaRestaurante->afinidades = list_create();
+	rtaRestaurante->recetas = list_create();
+
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restauranteName->nombre,NULL,TYPE_RESTAURANTE);
+
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+
 
 	/* Elements of list */
 	t_receta* recetaPrecio = malloc(sizeof(t_receta));
@@ -869,17 +876,19 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 
 	afinidad->nombre = string_duplicate("Empanadas");
 
-	restauranteInfo->cantAfinidades = 1;
-	list_add(restauranteInfo->afinidades, afinidad);
-	restauranteInfo->posicion.x = 1;
-	restauranteInfo->posicion.y = 2;
-	restauranteInfo->cantRecetas = 1;
-	list_add(restauranteInfo->recetas,recetaPrecio);
-	restauranteInfo->cantHornos = 1;
-	restauranteInfo->cantCocineros = 2;
-	restauranteInfo->cantPedidos = 2;
+	rtaRestaurante->cantAfinidades = restauranteInfo->afinidad_cocineros->elements_count;
+	//TODO: list_duplicate;
+	rtaRestaurante->afinidades = restauranteInfo->afinidad_cocineros;
+	rtaRestaurante->posicion.x = restauranteInfo->posicion->x;
+	rtaRestaurante->posicion.y = restauranteInfo->posicion->y;
+	rtaRestaurante->cantRecetas = restauranteInfo->platos->elements_count; //dudoso
+	list_add(rtaRestaurante->recetas,recetaPrecio);
+	rtaRestaurante->cantHornos = restauranteInfo->cantidad_hornos;
+	rtaRestaurante->cantCocineros = restauranteInfo->cantidad_cocineros;
+	rtaRestaurante->cantPedidos = restauranteInfo->cantidad_pedidos;
 
-	return restauranteInfo;
+
+	return rtaRestaurante;
 }
 
 uint32_t* sindicato_api_plato_listo(void* plato){
@@ -892,18 +901,28 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 }
 
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
-	// t_nombre* asd;
+	t_nombre* recetaRequested = plato;
+
+	if(!sindicato_utils_verify_if_exist(recetaRequested->nombre, NULL, TYPE_RECETA)){
+		free(recetaRequested);
+		return NULL;
+	}
+
+	/* Initialize of receta structure */
 	rta_obtenerReceta* receta = malloc(sizeof(rta_obtenerReceta));
 	receta->pasos = list_create();
 
-	t_paso* paso = malloc(sizeof(t_paso));
-	paso->duracion = 1;
-	paso->paso.nombre = string_duplicate("Milanesear");
-	puts(paso->paso.nombre);
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(recetaRequested->nombre,NULL,TYPE_RECETA);
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	list_add(receta->pasos,paso);
-	receta->cantPasos = 1;
+	t_receta_file* recetaInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	//TODO: list_duplicate;
+	/* map values retrieved from FS */
+	receta->pasos = recetaInfo->pasos;
+
+	free(initialBLock);
+	free(recetaInfo);
 
 	return receta;
 }
