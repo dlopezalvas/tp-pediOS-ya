@@ -25,12 +25,6 @@
 #define E_TERMINADO "TERMINADO"
 
 typedef enum{
-	TYPE_RECETA = 0,
-	TYPE_PEDIDO = 1,
-	TYPE_RESTAURANTE = 2,
-}file_type;
-
-typedef enum{
 	MODE_ADD = 0,
 	MODE_UPDATE = 1,
 	MODE_READ = 2,

@@ -773,12 +773,17 @@ void sindicato_api_send_response_of_operation(t_responseMessage* response){
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	t_nombre* restaurante = consultaPatos;
 
-	char* restauranteFilePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, restaurante->nombre, true, NULL);
+	/*char* restauranteFilePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, restaurante->nombre, true, NULL);
 	if(sindicato_utils_verify_if_file_exist(restauranteFilePath)){
 		log_info(sindicatoDebugLog, "%s existe", restauranteFilePath);
 	} else {
 		log_error(sindicatoDebugLog,  "%s NO existe", restauranteFilePath);
 		free(restauranteFilePath);
+		free(restaurante);
+		return NULL;
+	}*/
+
+	if(!sindicato_utils_verify_if_exist(restaurante->nombre, TYPE_RESTAURANTE)){
 		free(restaurante);
 		return NULL;
 	}
