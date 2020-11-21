@@ -342,13 +342,46 @@ void internal_api_free_array(char** array){
 
 /* ********** FS FILES ********** */
 
-t_initialBlockInfo* internal_api_get_initial_block_info(char* name, file_type fileType){
+t_initialBlockInfo* internal_api_read_initial_block_info(char* path){
 	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
+
+	t_config* blockInfo = config_create(path);
+
+	initialBlock->initialBlock = (uint32_t) config_get_int_value(blockInfo, "INITIAL_BLOCK");
+	initialBlock->stringSize = config_get_int_value(blockInfo,"SIZE");
+
+	config_destroy(blockInfo);
 
 	return initialBlock;
 }
 
-// restPath, initialBlock, restToSave
+t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restaurateOfPedido, file_type fileType){
+	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
+
+	char* filePath;
+
+	switch(fileType){
+	case(TYPE_RESTAURANTE):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, name, true, NULL);
+		break;
+	case(TYPE_RECETA):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, NULL);
+		break;
+	case(TYPE_PEDIDO):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, restaurateOfPedido);
+		break;
+	default:
+		return NULL;
+		break;
+	}
+
+	initialBlock = internal_api_read_initial_block_info(filePath);
+
+	free(filePath);
+
+	return initialBlock;
+}
+
 void internal_api_create_info_file(char* filePath, int initialBlock, char* stringSaved){
 
 	/* if the file does not exist then create a new one with default keys in blank*/
@@ -467,7 +500,45 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
-int internal_api_write_block(char* stringToWrite, void* initialBLock, mode_fs mode){
+char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize){
+	char* blockPath;
+
+		int offset = 0;
+
+		int blocksQty = ceil((float) stringSize / ((float) (metadataFS->block_size - 4)));
+		int nextBlock = initialBlock;
+
+		char* blockData = malloc(stringSize*sizeof(char)+1);
+		memset(blockData, 0, stringSize*sizeof(char)+1);
+
+		for(int i = 0; i < blocksQty; i++){
+
+			blockPath = sindicato_utils_build_block_path(nextBlock);
+
+			int block = open(blockPath, O_RDWR | O_CREAT, 0700);
+			ftruncate(block, metadataFS->block_size);
+
+			char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+			if(i < blocksQty - 1){
+				memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
+				memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
+				offset += metadataFS->block_size - 4;
+				stringSize -= metadataFS->block_size - 4;
+			}else{
+				memcpy(blockData + offset, blockMapped, stringSize);
+			}
+
+			munmap(blockMapped, metadataFS->block_size);
+			close(block);
+			free(blockPath);
+		}
+
+		return blockData;
+}
+
+
+int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLock, mode_fs mode){
 
 	char* blockFullPath;
 	int sizeString;
@@ -479,13 +550,29 @@ int internal_api_write_block(char* stringToWrite, void* initialBLock, mode_fs mo
 	int qtyblocksNeeded = internal_api_calculate_blocks_needed(stringToWrite);
 
 	if(mode == MODE_ADD){
+
 		blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
 		if(blocksToWrite == NULL)
 			return -1; //error
 	}
 
 	if(mode == MODE_UPDATE){
-		blocksToWrite; //TODO: Armar con los bloques ya existentes y validar si necesito alguno mas
+
+		char* originalStringStored = internal_api_get_string_from_filesystem(initialBLock->initialBlock,initialBLock->stringSize);
+		int qtyBlocksStored = internal_api_calculate_blocks_needed(originalStringStored);
+
+		int blocksMissed = 0;
+
+		if(qtyblocksNeeded > qtyBlocksStored){
+			blocksMissed = qtyblocksNeeded - qtyBlocksStored;
+			//TODO: Obtener el o los bloques faltantes
+		} else if (qtyblocksNeeded < qtyBlocksStored){
+			blocksMissed = qtyBlocksStored - qtyblocksNeeded;
+			//TODO: liberar el ultimo bloque
+
+		}
+		//TODO: Armar con los bloques ya existentes y validar si necesito alguno mas
+
 	}
 
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
@@ -514,7 +601,6 @@ int internal_api_write_block(char* stringToWrite, void* initialBLock, mode_fs mo
 		close(block);
 	}
 
-	// TODO: IMPORTANTE Return the initial block
 	return atoi(blocksToWrite[0]);
 }
 
@@ -566,7 +652,6 @@ void* internal_api_read_blocks(int initialBlock, int stringSize){
 	return strc_data;
 }
 
-
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
 /* Console functions */
@@ -616,7 +701,7 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 
 	/* Create "info" file */
 
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre);
+	char* restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
 
 	internal_api_create_info_file(restPath, initialBlock, restToSave);
 
@@ -647,7 +732,7 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 
 	/* Create "info" file */
 
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre);
+	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre, false, NULL);
 
 	internal_api_create_info_file(restPath, initialBlock, recetaToSave);
 
@@ -799,7 +884,8 @@ void sindicato_api_afip_initialize(){
 
 	internal_api_initialize_blocks();
 
-	t_restaurante_file* restaurante = internal_api_read_blocks(0, 188);
+	/* DELETE THIS */
+	/*t_restaurante_file* restaurante = internal_api_read_blocks(0, 188);
 
 	puts("cocineros");
 	char* cocineros = string_itoa(restaurante->cantidad_cocineros);
@@ -808,7 +894,21 @@ void sindicato_api_afip_initialize(){
 	char* hornos = string_itoa(restaurante->cantidad_hornos);
 	puts(hornos);
 
-	free(cocineros);
+	char* fullString = internal_api_get_string_from_filesystem(0, 188);
+	puts(fullString);
+	free(fullString);
+
+	t_initialBlockInfo* blockInit = internal_api_read_initial_block_info("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurantes/LaParri/LaParri.AFIP");
+	puts(string_itoa((int)blockInit->initialBlock));
+	puts(string_itoa(blockInit->stringSize));
+	free(blockInit);*/
+
+	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Laparri3", true, NULL));
+	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Pedido1", false, "Laparri"));
+	puts(sindicato_utils_build_file_full_path(sindicatoRecetaPath, "Laparri3", false, NULL));
+
+
+	/*free(cocineros);
 	free(hornos);
-	free(restaurante);
+	free(restaurante);*/
 }

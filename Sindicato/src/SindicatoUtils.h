@@ -53,7 +53,7 @@ pthread_mutex_t bitarray_mtx;
 t_log* sindicato_utils_iniciar_debug_logger(t_config* config);
 void sindicato_utils_create_folder(char* path, bool logsFolder);
 char* sindicato_utils_build_path(char* path, char* toAppend);
-char* sindicato_utils_build_file_full_path(char* path, char* name);
+char* sindicato_utils_build_file_full_path(char* path, char* name, bool isRestaurante, char* restaurateOfPedido);
 char* sindicato_utils_build_block_path(int blockNumber);
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
 

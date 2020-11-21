@@ -32,17 +32,27 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	return pathBuilded;
 }
 
-char* sindicato_utils_build_file_full_path(char* path, char* name){
+char* sindicato_utils_build_file_full_path(char* path, char* name, bool isRestaurante, char* restaurateOfPedido){
 
-	char* fileName = sindicato_utils_build_path("/", name);
+	/* Result = "fileName.AFIP" */
+	char* fileName = string_duplicate(name);
 	string_append(&fileName, ".");
 	string_append(&fileName, metadataFS->magic_number);
 
+	/* path */
 	char* folderPath = sindicato_utils_build_path(path, "/");
-	string_append(&folderPath, name);
+	if(isRestaurante){
+		string_append(&folderPath, name);
+		string_append(&folderPath, "/");
+		sindicato_utils_create_folder(folderPath, true);
+	} else {
+		if(restaurateOfPedido != NULL){
+			string_append(&folderPath, restaurateOfPedido);
+			string_append(&folderPath, "/");
+		}
+	}
 
-	sindicato_utils_create_folder(folderPath, true);
-
+	/* path + file name + extension */
 	char* fullPath = sindicato_utils_build_path(folderPath, fileName);
 
 	free(fileName);
@@ -73,39 +83,30 @@ void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
 	switch(responseMessage->message->tipo_mensaje){
 		case RTA_CONSULTAR_PLATOS:
 			free_restaurante_y_plato(responseMessage->message->parametros);
-
 			break;
 		case RTA_GUARDAR_PEDIDO:
 			free_id_o_confirmacion(responseMessage->message->parametros);
-
 			break;
 		case RTA_GUARDAR_PLATO:
 			free_id_o_confirmacion(responseMessage->message->parametros);
-
 			break;
 		case RTA_CONFIRMAR_PEDIDO:
 			free_id_o_confirmacion(responseMessage->message->parametros);
-
 			break;
 		case RTA_OBTENER_PEDIDO:
 			free_rta_obtener_pedido(responseMessage->message->parametros);
-
 			break;
 		case RTA_OBTENER_RESTAURANTE:
 			free_rta_obtener_restaurante(responseMessage->message->parametros);
-
 			break;
 		case RTA_PLATO_LISTO:
 			free_id_o_confirmacion(responseMessage->message->parametros);
-
 			break;
 		case RTA_OBTENER_RECETA:
 			free_rta_obtener_receta(responseMessage->message->parametros);
-
 			break;
 		case RTA_TERMINAR_PEDIDO:
 			free_id_o_confirmacion(responseMessage->message->parametros);
-
 			break;
 		default:
 			break;
