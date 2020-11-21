@@ -32,19 +32,18 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	return pathBuilded;
 }
 
-char* sindicato_utils_build_file_full_path(char* path, char* name, bool isRestaurante, char* restaurateOfPedido){
+char* sindicato_utils_build_file_full_path(char* path, char* fname, bool isRestaurante, char* restaurateOfPedido){
 
 	/* Result = "fileName.AFIP" */
-	char* fileName = string_duplicate(name);
+	char* fileName = string_duplicate(fname);
 	string_append(&fileName, ".");
 	string_append(&fileName, metadataFS->magic_number);
 
 	/* path */
-	char* folderPath = sindicato_utils_build_path(path, "/");
+	char* folderPath = string_duplicate(path);
 	if(isRestaurante){
-		string_append(&folderPath, name);
+		string_append(&folderPath, fname);
 		string_append(&folderPath, "/");
-		sindicato_utils_create_folder(folderPath, true);
 	} else {
 		if(restaurateOfPedido != NULL){
 			string_append(&folderPath, restaurateOfPedido);
@@ -75,6 +74,10 @@ char* sindicato_utils_build_block_path(int blockNumber){
 	free(filePath);
 
 	return filePathComplete;
+}
+
+bool sindicato_utils_verify_if_file_exist(char* path){
+	return access(path, F_OK) != -1 ;
 }
 
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){

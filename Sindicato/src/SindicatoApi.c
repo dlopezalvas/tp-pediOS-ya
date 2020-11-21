@@ -25,11 +25,11 @@ void internal_api_createFileSystemFolders(){
 
 
 	/* Create folder "Receta" in {mount_point}/Files */
-	sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas");
+	sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas/");
 	sindicato_utils_create_folder(sindicatoRecetaPath, true);
 
 	/* Create folder "Restaurante" in {mount_point}/Files */
-	sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes");
+	sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes/");
 	sindicato_utils_create_folder(sindicatoRestaurantePath, true);
 }
 
@@ -355,6 +355,23 @@ t_initialBlockInfo* internal_api_read_initial_block_info(char* path){
 	return initialBlock;
 }
 
+/**
+ * Parametros
+ * 	name: nombre del archivo, sin extension
+ * 	restaurateOfPedido: nombre del restaurante correspondiente al name del pedido, sin extension
+ * 	fileType: tipo de archivo,
+ * 		TYPE_RESTAURANTE
+ * 		TYPE_RECETA
+ * 		TYPE_PEDIDO
+ *
+ * Retorno
+ * 	t_initialBlockInfo initialBlock, corresponde a una estructura con el bloque inicial y largo del bloque
+ * 	Se debe liberar la estructura una vez finalizado su uso.
+ *
+ * Error
+ * 	Retorna NULL
+ */
+
 t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restaurateOfPedido, file_type fileType){
 	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
 
@@ -503,38 +520,38 @@ int internal_api_calculate_blocks_needed(char* fullString){
 char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize){
 	char* blockPath;
 
-		int offset = 0;
+	int offset = 0;
 
-		int blocksQty = ceil((float) stringSize / ((float) (metadataFS->block_size - 4)));
-		int nextBlock = initialBlock;
+	int blocksQty = ceil((float) stringSize / ((float) (metadataFS->block_size - 4)));
+	int nextBlock = initialBlock;
 
-		char* blockData = malloc(stringSize*sizeof(char)+1);
-		memset(blockData, 0, stringSize*sizeof(char)+1);
+	char* blockData = malloc(stringSize*sizeof(char)+1);
+	memset(blockData, 0, stringSize*sizeof(char)+1);
 
-		for(int i = 0; i < blocksQty; i++){
+	for(int i = 0; i < blocksQty; i++){
 
-			blockPath = sindicato_utils_build_block_path(nextBlock);
+		blockPath = sindicato_utils_build_block_path(nextBlock);
 
-			int block = open(blockPath, O_RDWR | O_CREAT, 0700);
-			ftruncate(block, metadataFS->block_size);
+		int block = open(blockPath, O_RDWR | O_CREAT, 0700);
+		ftruncate(block, metadataFS->block_size);
 
-			char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
 
-			if(i < blocksQty - 1){
-				memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
-				memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
-				offset += metadataFS->block_size - 4;
-				stringSize -= metadataFS->block_size - 4;
-			}else{
-				memcpy(blockData + offset, blockMapped, stringSize);
-			}
-
-			munmap(blockMapped, metadataFS->block_size);
-			close(block);
-			free(blockPath);
+		if(i < blocksQty - 1){
+			memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
+			memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
+			offset += metadataFS->block_size - 4;
+			stringSize -= metadataFS->block_size - 4;
+		}else{
+			memcpy(blockData + offset, blockMapped, stringSize);
 		}
 
-		return blockData;
+		munmap(blockMapped, metadataFS->block_size);
+		close(block);
+		free(blockPath);
+	}
+
+	return blockData;
 }
 
 
@@ -699,10 +716,13 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 	// TODO: validar que no sea -1
 	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
 
+
+	/* Create restaurante folder */
+	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, nombre);
+	sindicato_utils_create_folder(restPath, true);
+
 	/* Create "info" file */
-
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
-
+	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
 	internal_api_create_info_file(restPath, initialBlock, restToSave);
 
 	free(restPath);
@@ -742,21 +762,40 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 
 /* Server functions */
 void sindicato_api_send_response_of_operation(t_responseMessage* response){
+
+	if(response->message->parametros == NULL)
+		response->message->tipo_mensaje = ERROR;
+
 	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
 	enviar_mensaje(response->message, response->socket);
 }
 
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
-	/* Initialize of pedido structure */
+	t_nombre* restaurante = consultaPatos;
+
+	char* restauranteFilePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, restaurante->nombre, true, NULL);
+	if(sindicato_utils_verify_if_file_exist(restauranteFilePath)){
+		log_info(sindicatoDebugLog, "%s existe", restauranteFilePath);
+	} else {
+		log_error(sindicatoDebugLog,  "%s NO existe", restauranteFilePath);
+		free(restauranteFilePath);
+		free(restaurante);
+		return NULL;
+	}
+
+	/* Initialize of platos structure */
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
 	platos->nombres = list_create();
-	t_nombre* plato = malloc(sizeof(t_nombre));
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	plato->nombre = string_duplicate("Milanesa");
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restaurante->nombre,NULL,TYPE_RESTAURANTE);
 
-	list_add(platos->nombres, plato);
-	platos->cantElementos = platos->nombres->elements_count;
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	platos->nombres = restauranteInfo->platos;
+	platos->cantElementos = restauranteInfo->platos->elements_count;
+
+	free(restauranteInfo);
+	free(initialBLock);
 
 	return platos;
 }
@@ -903,9 +942,9 @@ void sindicato_api_afip_initialize(){
 	puts(string_itoa(blockInit->stringSize));
 	free(blockInit);*/
 
-	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Laparri3", true, NULL));
+	/*puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Laparri3", true, NULL));
 	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Pedido1", false, "Laparri"));
-	puts(sindicato_utils_build_file_full_path(sindicatoRecetaPath, "Laparri3", false, NULL));
+	puts(sindicato_utils_build_file_full_path(sindicatoRecetaPath, "Laparri3", false, NULL));*/
 
 
 	/*free(cocineros);
