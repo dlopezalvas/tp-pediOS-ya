@@ -1,0 +1,14 @@
+[INFO] 21:22:06:582 cliente/(11057:11069): Se envio el mensaje CONSULTAR_PLATOS ugi
+[INFO] 21:22:06:582 cliente/(11057:11069): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:22:31:543 cliente/(11057:11082): Se envio el mensaje OBTENER_RECETA ugis
+[INFO] 21:22:31:543 cliente/(11057:11082): Se recibio el mensaje RTA_OBTENER_RECETA Milanesear duracion:1
+[INFO] 22:48:49:51 cliente/(12574:12586): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 22:48:49:53 cliente/(12574:12586): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 23:27:01:548 cliente/(12574:13284): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:27:01:550 cliente/(12574:13284): Se recibio el mensaje ERROR
+[INFO] 23:34:17:684 cliente/(12574:13468): Se envio el mensaje CONSULTAR_PLATOS ugis
+[INFO] 23:34:17:688 cliente/(12574:13468): Se recibio el mensaje ERROR
+[INFO] 23:58:28:142 cliente/(12574:14089): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 23:58:28:144 cliente/(12574:14089): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 23:59:30:824 cliente/(12574:14191): Se envio el mensaje CONSULTAR_PEDIDO 1
+[INFO] 23:59:30:826 cliente/(12574:14191): Se recibio el mensaje ERROR
