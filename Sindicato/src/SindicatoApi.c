@@ -338,7 +338,7 @@ void internal_api_free_array(char** array){
 		free(array);
 }
 
-char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos, char* cantPedidos){
+char* internal_api_restaurante_to_string(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos, char* cantPedidos){
 	char* stringBuilded = string_new();
 
 	string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
@@ -369,6 +369,44 @@ char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afi
 
 	string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
 	string_append(&stringBuilded,cantidadPedidos);
+
+	return stringBuilded;
+}
+
+char* internal_api_receta_to_string(char* pasos, char* tiempoPasos){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded,"PASOS=");
+	string_append(&stringBuilded,pasos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"TIEMPO_PASOS=");
+	string_append(&stringBuilded,tiempoPasos);
+
+	return stringBuilded;
+}
+
+char* internal_api_pedido_to_string(char* estado, char* platos, char* cantPlatos,char* cantLista, char* precioTotal){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded, "ESTADO_PEDIDO=");
+	string_append(&stringBuilded, estado);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "LISTA_PLATOS=");
+	string_append(&stringBuilded, platos);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "CANTIDAD_PLATOS=");
+	string_append(&stringBuilded, cantPlatos);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "CANTIDAD_LISTA=");
+	string_append(&stringBuilded, cantLista);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "PRECIO_TOTAL=");
+	string_append(&stringBuilded, precioTotal);
 
 	return stringBuilded;
 }
@@ -591,13 +629,6 @@ char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, 
 	return blockData;
 }
 
-void internal_redimensionar(char** vector, size_t newSize){
-	char** newVector = realloc(vector, newSize*sizeof(char*));
-	free(vector);
-
-	vector = newVector;
-}
-
 int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLock, mode_fs mode){
 
 	char* blockFullPath;
@@ -737,7 +768,7 @@ void* internal_api_read_blocks(int initialBlock, int stringSize){
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
-	char* restToSave = internal_api_build_string_rest(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
+	char* restToSave = internal_api_restaurante_to_string(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
 
 	// TODO: validar que no sea -1
 	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
@@ -757,20 +788,7 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
-	char* internal_api_build_string_receta(char* pasos, char* tiempoPasos){
-		char* stringBuilded = string_new();
-
-		string_append(&stringBuilded,"PASOS=");
-		string_append(&stringBuilded,pasos);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"TIEMPO_PASOS=");
-		string_append(&stringBuilded,tiempoPasos);
-
-		return stringBuilded;
-	}
-
-	char* recetaToSave = internal_api_build_string_receta(pasos, tiempoPasos);
+	char* recetaToSave = internal_api_receta_to_string(pasos, tiempoPasos);
 
 	int initialBlock = internal_api_write_block(recetaToSave, NULL, MODE_ADD);
 
@@ -822,11 +840,40 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 }
 
 uint32_t* sindicato_api_guardar_pedido(void* pedido){
-	// t_nombre_y_id* asd;
+	t_nombre_y_id* pedidoRestaurante = pedido;
 
 	uint32_t* opResult = malloc(sizeof(uint32_t));
-	/* DELETE THIS: datos dummies solo para TEST */
-	(*opResult) = 1;
+	*opResult = 1;
+
+	if(!sindicato_utils_verify_if_exist(pedidoRestaurante->nombre.nombre, NULL, TYPE_RESTAURANTE)){
+		free(pedidoRestaurante);
+		*opResult = 1;
+		return opResult;
+	}
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)pedidoRestaurante->id);
+	string_append(&pedidoName, pedidoNumberString);
+
+	if(sindicato_utils_verify_if_exist(pedidoName, pedidoRestaurante->nombre.nombre, TYPE_PEDIDO)){
+		free(pedidoRestaurante);
+		*opResult = 1;
+		return opResult;
+	}
+
+	char* pedidoString = internal_api_pedido_to_string("Pendiente","","","","0");
+
+	int initialBlock = internal_api_write_block(pedidoString, NULL, MODE_ADD);
+
+	if(initialBlock != -1){
+		/* Create "info" file */
+		char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
+
+		internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+
+		*opResult = 1;
+		return opResult;
+	}
 
 	return opResult;
 }
