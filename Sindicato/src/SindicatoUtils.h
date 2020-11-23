@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <math.h>
 
 #include <commons/bitarray.h>
 
@@ -13,6 +14,12 @@
 #include "../commonsCoronaLinux/utils.h"
 
 #define SINDICATO_PATH_CONFIG "/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/sindicato.config"
+
+typedef enum{
+	TYPE_RECETA = 0,
+	TYPE_PEDIDO = 1,
+	TYPE_RESTAURANTE = 2,
+}file_type;
 
 typedef struct{
 	int socket;
@@ -35,6 +42,7 @@ t_config* metadataConfig;
 
 int sindicatoPort;
 char* sindicatoMountPoint;
+char* sindicatoMetadataPath;
 char* sindicatoBlocksPath;
 char* sindicatoRecetaPath;
 char* sindicatoRestaurantePath;
@@ -51,8 +59,10 @@ pthread_mutex_t bitarray_mtx;
 t_log* sindicato_utils_iniciar_debug_logger(t_config* config);
 void sindicato_utils_create_folder(char* path, bool logsFolder);
 char* sindicato_utils_build_path(char* path, char* toAppend);
-char* sindicato_utils_build_file_full_path(char* path, char* name);
+char* sindicato_utils_build_file_full_path(char* path, char* name, bool isRestaurante, char* restaurateOfPedido);
 char* sindicato_utils_build_block_path(int blockNumber);
+bool sindicato_utils_verify_if_file_exist(char* path);
+bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, file_type fileType);
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
 
 #endif /* SINDICATOUTILS_H_ */

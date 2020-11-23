@@ -32,17 +32,26 @@ char* sindicato_utils_build_path(char* path, char* toAppend){
 	return pathBuilded;
 }
 
-char* sindicato_utils_build_file_full_path(char* path, char* name){
+char* sindicato_utils_build_file_full_path(char* path, char* fname, bool isRestaurante, char* restaurateOfPedido){
 
-	char* fileName = sindicato_utils_build_path("/", name);
+	/* Result = "fileName.AFIP" */
+	char* fileName = string_duplicate(fname);
 	string_append(&fileName, ".");
 	string_append(&fileName, metadataFS->magic_number);
 
-	char* folderPath = sindicato_utils_build_path(path, "/");
-	string_append(&folderPath, name);
+	/* path */
+	char* folderPath = string_duplicate(path);
+	if(isRestaurante){
+		string_append(&folderPath, fname);
+		string_append(&folderPath, "/");
+	} else {
+		if(restaurateOfPedido != NULL){
+			string_append(&folderPath, restaurateOfPedido);
+			string_append(&folderPath, "/");
+		}
+	}
 
-	sindicato_utils_create_folder(folderPath, true);
-
+	/* path + file name + extension */
 	char* fullPath = sindicato_utils_build_path(folderPath, fileName);
 
 	free(fileName);
@@ -65,6 +74,42 @@ char* sindicato_utils_build_block_path(int blockNumber){
 	free(filePath);
 
 	return filePathComplete;
+}
+
+bool sindicato_utils_verify_if_file_exist(char* path){
+
+	if(access(path, F_OK) != -1){
+		log_info(sindicatoDebugLog, "[FILESYSTEM] - Existe el path %s", path);
+		return true;
+	}else{
+		log_error(sindicatoDebugLog,  "[FILESYSTEM] - No existe el path %s", path);
+		return false;
+	}
+}
+
+bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, file_type fileType){
+
+	char* filePath;
+
+	switch(fileType){
+		case(TYPE_RECETA):
+			filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, fileName, false, NULL);
+			break;
+		case(TYPE_PEDIDO):
+			filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, false, restauranteOfPedido);
+			break;
+		case(TYPE_RESTAURANTE):
+			filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, true, NULL);
+			break;
+	}
+
+	if(sindicato_utils_verify_if_file_exist(filePath)){
+		free(filePath);
+		return true;
+	} else {
+		free(filePath);
+		return false;
+	}
 }
 
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){

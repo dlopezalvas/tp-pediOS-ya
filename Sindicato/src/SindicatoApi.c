@@ -11,9 +11,8 @@ void internal_api_createFileSystemFolders(){
 	sindicato_utils_create_folder(sindicatoMountPoint, true);
 
 	/* Create folder "Metadata" in {mount_point} */
-	char* sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
+	sindicatoMetadataPath = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata");
 	sindicato_utils_create_folder(sindicatoMetadataPath, true);
-	free(sindicatoMetadataPath);
 
 	/* Create folder "Files" in {mount_point} */
 	char* sindicatoFilesPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files");
@@ -26,12 +25,11 @@ void internal_api_createFileSystemFolders(){
 
 
 	/* Create folder "Receta" in {mount_point}/Files */
-	sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas");
+	sindicatoRecetaPath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Recetas/");
 	sindicato_utils_create_folder(sindicatoRecetaPath, true);
 
-
 	/* Create folder "Restaurante" in {mount_point}/Files */
-	sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes");
+	sindicatoRestaurantePath = sindicato_utils_build_path(sindicatoMountPoint, "/Files/Restaurantes/");
 	sindicato_utils_create_folder(sindicatoRestaurantePath, true);
 }
 
@@ -59,15 +57,13 @@ void internal_api_bitmap_create(){
 	char* bitmapPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Bitmap.bin");
 
 	int blocks = metadataFS->blocks/8;
-	//TODO: validar multiplo de 8
+	// TODO: validar multiplo de 8
 
 	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);
 
 	ftruncate(bitarrayFile, blocks);
 
 	char* bitarrayMap = mmap(0, blocks, PROT_WRITE | PROT_READ, MAP_SHARED, bitarrayFile, 0);
-
-	//TODO: ver errores en mapeo
 
 	bitarray = bitarray_create_with_mode(bitarrayMap, blocks, LSB_FIRST);
 
@@ -103,13 +99,22 @@ void internal_api_initialize_blocks(){
 
 /* ********** INTERNAL UTILS ********** */
 
-void internal_api_free_array(char** array,int qtyBitsReserved){
+t_config* internal_api_array_to_config(char** stringArray){
+	char* metadataFile = sindicato_utils_build_path(sindicatoMetadataPath, "/Metadata.AFIP");
+	t_config* config = config_create(metadataFile);
 
-	for(int position = 0; position < (qtyBitsReserved - 1); position++){
-		free(array[position]);
+	int i = 0;
+
+	while(stringArray[i] != NULL){ //por cada "posicion", hay una linea del vector "stringArray" (separado por \n)
+		char** key_valor = string_split(stringArray[i], "=");
+		config_set_value(config, key_valor[0], key_valor[1]); //separo la posicion de la cantidad (a traves del =)y seteo como key la posicion con su valor cantidad
+		liberar_vector(key_valor);
+		i++;
 	}
 
-	free(array);
+	free(metadataFile);
+
+	return config;
 }
 
 char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blocksNeeded){
@@ -131,10 +136,369 @@ char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blo
 	return stringSplitted;
 }
 
+est_pedido internal_api_string_to_estado_pedido(char* string){
+	if(string_equals_ignore_case(string, E_CONFIRMADO)){
+		return CONFIRMADO;
+	}else if(string_equals_ignore_case(string, E_PENDIENTE)){
+		return PENDIENTE;
+	}else if(string_equals_ignore_case(string, E_TERMINADO)){
+		return TERMINADO;
+	}else{
+		return -1;
+	}
+}
+
+file_type internal_api_get_file_type(t_config* config){
+	if(config_has_property(config, D_PASOS)){
+		return TYPE_RECETA;
+	}else if(config_has_property(config, D_CANTIDAD_COCINEROS)){
+		return TYPE_RESTAURANTE;
+	}else if(config_has_property(config, D_ESTADO_PEDIDO)){
+		return TYPE_PEDIDO;
+	}else{
+		return -1;
+	}
+}
+
+t_restaurante_file* internal_api_config_to_restaurante(t_config* dataConfig){
+	t_restaurante_file* restaurante = malloc(sizeof(t_restaurante_file));
+
+	restaurante->cantidad_hornos = config_get_int_value(dataConfig, D_CANTIDAD_HORNOS);
+	restaurante->cantidad_cocineros = config_get_int_value(dataConfig, D_CANTIDAD_COCINEROS);
+	restaurante->cantidad_pedidos = config_get_int_value(dataConfig, D_CANTIDAD_PEDIDOS);
+
+	char** aux_array = config_get_array_value(dataConfig, D_POSICION);
+
+	restaurante->posicion.x = atoi(aux_array[0]);
+	restaurante->posicion.y = atoi(aux_array[1]);
+
+	liberar_vector(aux_array);
+
+	restaurante->afinidad_cocineros = list_create();
+
+	aux_array = config_get_array_value(dataConfig, D_AFINIDAD_COCINEROS);
+
+	int i = 0;
+
+	t_nombre* name;
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(restaurante->afinidad_cocineros, name);
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	restaurante->platos = list_create();
+
+	aux_array = config_get_array_value(dataConfig, D_PLATOS);
+
+	i = 0;
+
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(restaurante->platos, name);
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	restaurante->precios = list_create();
+
+	aux_array = config_get_array_value(dataConfig, D_PRECIO_PLATOS);
+
+	i = 0;
+
+	while(aux_array[i] != NULL){
+		list_add(restaurante->precios, (void *) atoi(aux_array[i]));
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	return restaurante;
+}
+
+t_receta_file* internal_api_config_to_receta(t_config* dataConfig){
+	t_receta_file* receta = malloc(sizeof(t_receta_file));
+
+	receta->pasos = list_create();
+
+	char** aux_pasos = config_get_array_value(dataConfig, D_PASOS);
+
+	char** aux_tiempos = config_get_array_value(dataConfig, D_TIEMPO_PASOS);
+
+	int i = 0;
+
+	t_paso* paso;
+
+	while(aux_pasos[i] != NULL){
+		paso = malloc(sizeof(t_paso));
+
+		paso->paso.nombre = string_duplicate(aux_pasos[i]);
+		paso->duracion = atoi(aux_tiempos[i]);
+
+		list_add(receta->pasos, paso);
+		i++;
+	}
+
+	liberar_vector(aux_pasos);
+	liberar_vector(aux_tiempos);
+
+	return receta;
+}
+
+t_pedido_file* internal_api_config_to_pedido(t_config* dataConfig){
+	t_pedido_file* pedido = malloc(sizeof(t_pedido_file));
+
+	pedido->estado_pedido = internal_api_string_to_estado_pedido(config_get_string_value(dataConfig, D_ESTADO_PEDIDO));
+	pedido->precio_total = config_get_int_value(dataConfig, D_PRECIO_TOTAL);
+	pedido->platos = list_create();
+
+	char** aux_array = config_get_array_value(dataConfig, D_PLATOS);
+
+	int i = 0;
+
+	t_nombre* name;
+
+	while(aux_array[i] != NULL){
+		name = malloc(sizeof(t_nombre));
+
+		name->nombre = string_duplicate(aux_array[i]);
+
+		list_add(pedido->platos, name);
+		i++;
+	}
+
+	i = 0;
+
+	liberar_vector(aux_array);
+
+	pedido->cantidad_lista = list_create();
+	aux_array = config_get_array_value(dataConfig, D_CANTIDAD_LISTA);
+
+	while(aux_array[i] != NULL){
+		list_add(pedido->cantidad_lista, (void*) atoi(aux_array[i]));
+		i++;
+	}
+
+	i = 0;
+
+	liberar_vector(aux_array);
+
+	pedido->cantidad_platos = list_create();
+	aux_array = config_get_array_value(dataConfig, D_CANTIDAD_PLATOS);
+
+	while(aux_array[i] != NULL){
+		list_add(pedido->cantidad_platos, (void*) atoi(aux_array[i]));
+		i++;
+	}
+
+	liberar_vector(aux_array);
+
+	return pedido;
+}
+
+void* internal_api_config_to_structure(t_config* dataConfig){
+
+	switch(internal_api_get_file_type(dataConfig)){
+	case TYPE_RESTAURANTE:
+		return internal_api_config_to_restaurante(dataConfig);
+	case TYPE_RECETA:
+		return internal_api_config_to_receta(dataConfig);
+	case TYPE_PEDIDO:
+		return internal_api_config_to_pedido(dataConfig);
+	default:
+		return NULL;
+	}
+}
+
+void internal_api_free_blocks_array(char** array,int qtyBitsReserved){
+
+	for(int position = 0; position < (qtyBitsReserved - 1); position++){
+		free(array[position]);
+	}
+
+	free(array);
+}
+
+void internal_api_free_array(char** array){
+
+		int position = 0;
+
+		while(array[position] != NULL){
+			free(array[position]);
+			position++;
+		}
+
+		free(array);
+}
+
+char* internal_api_restaurante_to_string(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos, char* cantPedidos){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
+	string_append(&stringBuilded,cantCocineros);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"POSICION=");
+	string_append(&stringBuilded,posXY);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"AFINIDAD_COCINEROS=");
+	string_append(&stringBuilded,afinidadCocinero);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"PLATOS=");
+	string_append(&stringBuilded,platos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"PRECIO_PLATOS=");
+	string_append(&stringBuilded,precioPlatos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"CANTIDAD_HORNOS=");
+	string_append(&stringBuilded,cantHornos);
+	string_append(&stringBuilded,"\n");
+
+	char* cantidadPedidos = cantPedidos;
+
+	string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
+	string_append(&stringBuilded,cantidadPedidos);
+
+	return stringBuilded;
+}
+
+char* internal_api_receta_to_string(char* pasos, char* tiempoPasos){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded,"PASOS=");
+	string_append(&stringBuilded,pasos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"TIEMPO_PASOS=");
+	string_append(&stringBuilded,tiempoPasos);
+
+	return stringBuilded;
+}
+
+char* internal_api_pedido_to_string(char* estado, char* platos, char* cantPlatos,char* cantLista, char* precioTotal){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded, "ESTADO_PEDIDO=");
+	string_append(&stringBuilded, estado);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "LISTA_PLATOS=");
+	string_append(&stringBuilded, platos);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "CANTIDAD_PLATOS=");
+	string_append(&stringBuilded, cantPlatos);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "CANTIDAD_LISTA=");
+	string_append(&stringBuilded, cantLista);
+	string_append(&stringBuilded, "\n");
+
+	string_append(&stringBuilded, "PRECIO_TOTAL=");
+	string_append(&stringBuilded, precioTotal);
+
+	return stringBuilded;
+}
+
 /* ********** FS FILES ********** */
 
-void internal_api_write_info_file(int stringLenght, char* initialBlock){
+t_initialBlockInfo* internal_api_read_initial_block_info(char* path){
+	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
 
+	t_config* blockInfo = config_create(path);
+
+	initialBlock->initialBlock = (uint32_t) config_get_int_value(blockInfo, "INITIAL_BLOCK");
+	initialBlock->stringSize = config_get_int_value(blockInfo,"SIZE");
+
+	config_destroy(blockInfo);
+
+	return initialBlock;
+}
+
+/**
+ * Parametros
+ * 	name: nombre del archivo, sin extension
+ * 	restaurateOfPedido: nombre del restaurante correspondiente al name del pedido, sin extension
+ * 	fileType: tipo de archivo,
+ * 		TYPE_RESTAURANTE
+ * 		TYPE_RECETA
+ * 		TYPE_PEDIDO
+ *
+ * Retorno
+ * 	t_initialBlockInfo initialBlock, corresponde a una estructura con el bloque inicial y largo del bloque
+ * 	Se debe liberar la estructura una vez finalizado su uso.
+ *
+ * Error
+ * 	Retorna NULL
+ */
+
+t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restaurateOfPedido, file_type fileType){
+	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
+
+	char* filePath;
+
+	switch(fileType){
+	case(TYPE_RESTAURANTE):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, name, true, NULL);
+		break;
+	case(TYPE_RECETA):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, NULL);
+		break;
+	case(TYPE_PEDIDO):
+		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, restaurateOfPedido);
+		break;
+	default:
+		return NULL;
+		break;
+	}
+
+	initialBlock = internal_api_read_initial_block_info(filePath);
+
+	free(filePath);
+
+	return initialBlock;
+}
+
+void internal_api_write_info_file(char* filePath, int initialBlock, char* stringSaved){
+
+	/* if the file does not exist then create a new one with default keys in blank*/
+	if(access(filePath, F_OK) != 0){
+
+		FILE *file = fopen(filePath, "w+");
+
+		fprintf(file, "SIZE=\n");
+		fprintf(file, "INITIAL_BLOCK=\n");
+
+		fclose(file);
+	}
+
+
+	char* strInitialBlock = string_itoa(initialBlock);
+	char* strSize = string_itoa(strlen(stringSaved));
+
+	/* update the file using config */
+	t_config* config = config_create(filePath);
+
+	config_set_value(config, "SIZE", strSize);
+	config_set_value(config, "INITIAL_BLOCK", strInitialBlock);
+
+	config_save(config);
+
+	config_destroy(config);
+
+	free(strSize);
+	free(strInitialBlock);
 }
 
 /* ********** FS BLOCKS ********** */
@@ -189,14 +553,14 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 	char* stringAux;
 
 	int freeBlock = 0;
-	char** blocks = malloc(blocksNeeded*sizeof(int));
+	char** blocks = malloc(blocksNeeded*sizeof(char*));
 
 	for(int i = 0; i < blocksNeeded; i++){
 		freeBlock = internal_api_get_free_block();
 		if(freeBlock == -1){
 			log_error(sindicatoDebugLog, "[FILESYSTEM] ERROR: No hay bloques disponibles");
 			internal_api_free_bits_reserved(blocks, i);
-			internal_api_free_array(blocks, i);
+			internal_api_free_blocks_array(blocks, i);
 			return NULL;
 		}
 
@@ -224,25 +588,105 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
-int internal_api_write_block(char* stringToWrite){
+char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, char*** blockList){
+	char* blockPath;
+	char* blocksDelimited = string_new();
+
+	int offset = 0;
+
+	int blocksQty = ceil((float) stringSize / ((float) (metadataFS->block_size - 4)));
+	int nextBlock = initialBlock;
+
+	char* blockData = malloc(stringSize*sizeof(char)+1);
+	memset(blockData, 0, stringSize*sizeof(char)+1);
+	string_append_with_format(&blocksDelimited,"%d", nextBlock );
+	for(int i = 0; i < blocksQty; i++){
+
+		blockPath = sindicato_utils_build_block_path(nextBlock);
+
+		int block = open(blockPath, O_RDWR | O_CREAT, 0700);
+		ftruncate(block, metadataFS->block_size);
+
+		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+		if(i < blocksQty - 1){
+			memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
+			memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
+			string_append_with_format(&blocksDelimited,",%d", nextBlock );
+			offset += metadataFS->block_size - 4;
+			stringSize -= metadataFS->block_size - 4;
+		}else{
+			memcpy(blockData + offset, blockMapped, stringSize);
+		}
+
+		munmap(blockMapped, metadataFS->block_size);
+		close(block);
+		free(blockPath);
+	}
+
+	*blockList = string_split(blocksDelimited, ",");
+
+	return blockData;
+}
+
+int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLock, mode_fs mode){
 
 	char* blockFullPath;
 	int sizeString;
 	int stringBlockSize;
 	uint32_t pointerNextBlock;
 
+	char** blocksToWrite;
+
 	int qtyblocksNeeded = internal_api_calculate_blocks_needed(stringToWrite);
 
-	char** blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
-	if(blocksToWrite == NULL)
-		return -1; //error
+	if(mode == MODE_ADD){
 
-	//TODO: modo escritura, modo update
+		blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
+		if(blocksToWrite == NULL)
+			return -1; //error
+	}
+
+	if(mode == MODE_UPDATE){
+		char** originalBlocks;
+		size_t sizeNew;
+
+		char* originalStringStored = internal_api_get_string_from_filesystem(initialBLock->initialBlock,initialBLock->stringSize, &originalBlocks);
+		int qtyBlocksStored = internal_api_calculate_blocks_needed(originalStringStored);
+
+		int blocksMissed = 0;
+
+		if(qtyblocksNeeded > qtyBlocksStored){
+
+			blocksMissed = qtyblocksNeeded - qtyBlocksStored;
+
+			char** newBlocks = internal_api_get_free_blocks(blocksMissed);
+
+			sizeNew = sizeof(originalBlocks) + sizeof(newBlocks);
+			blocksToWrite = malloc(sizeNew * sizeof(char*));
+
+			memcpy(blocksToWrite, originalBlocks, qtyBlocksStored*sizeof(char*));
+			memcpy(blocksToWrite + qtyBlocksStored*sizeof(char*), newBlocks, blocksMissed * sizeof(char*));
+
+			for(int i = 0; i < qtyBlocksStored+qtyblocksNeeded; i++){
+				puts(blocksToWrite[i]);
+			}
+
+			//TODO: Obtener el o los bloques faltantes
+		} else if (qtyblocksNeeded < qtyBlocksStored){
+			blocksMissed = qtyBlocksStored - qtyblocksNeeded;
+			//TODO: liberar el ultimo bloque
+
+		} else {
+			blocksToWrite = originalBlocks;
+		}
+
+		//TODO: Armar con los bloques ya existentes y validar si necesito alguno mas
+
+	}
 
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
 	char** stringToWriteSplitted = internal_api_split_string(stringToWrite, stringBlockSize, qtyblocksNeeded);
-
-	internal_api_write_info_file(strlen(stringToWrite), blocksToWrite[0]);
 
 	for(int i = 0; i < qtyblocksNeeded; i++){
 		blockFullPath = sindicato_utils_build_block_path(atoi(blocksToWrite[i]));
@@ -250,7 +694,7 @@ int internal_api_write_block(char* stringToWrite){
 		int block = open(blockFullPath, O_RDWR | O_CREAT, 0700);
 		ftruncate(block, metadataFS->block_size);
 
-		char* mappedBlock = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
 
 		if(i < (qtyblocksNeeded -1))
 			pointerNextBlock = (uint32_t)atoi(blocksToWrite[i+1]);
@@ -258,48 +702,64 @@ int internal_api_write_block(char* stringToWrite){
 		sizeString = strlen(stringToWriteSplitted[i]);
 
 		/* Write string spplited in block */
-		memcpy(mappedBlock, stringToWriteSplitted[i], sizeString);
-		memcpy(mappedBlock + sizeString, &pointerNextBlock , sizeof(uint32_t));
+		memcpy(blockMapped, stringToWriteSplitted[i], sizeString);
+		memcpy(blockMapped + sizeString, &pointerNextBlock , sizeof(uint32_t));
 
-		msync(mappedBlock, metadataFS->block_size, MS_SYNC);
+		msync(blockMapped, metadataFS->block_size, MS_SYNC);
 
-		munmap(mappedBlock, metadataFS->block_size);
+		munmap(blockMapped, metadataFS->block_size);
 		close(block);
 	}
 
-	//TODO: IMPORTANTE Return the initial block
 	return atoi(blocksToWrite[0]);
 }
-//restPath, initialBlock, restToSave
-void internal_api_create_info_file(char* filePath, int initialBlock, char* stringSaved){
 
-	/* if the file does not exist then create a new one with default keys in blank*/
-	if(access(filePath, F_OK) != 0){
+/* If fails return NULL */
+void* internal_api_read_blocks(int initialBlock, int stringSize){
+	char* blockPath;
 
-		FILE *file = fopen(filePath, "w+");
+	int offset = 0;
 
-		fprintf(file, "SIZE=\n");
-		fprintf(file, "INITIAL_BLOCK=\n");
+	int blocksQty = ceil((float) stringSize / ((float) (metadataFS->block_size - 4)));
+	int nextBlock = initialBlock;
 
-		fclose(file);
+	char* blockData = malloc(stringSize*sizeof(char)+1);
+	memset(blockData, 0, stringSize*sizeof(char)+1);
+
+	for(int i = 0; i < blocksQty; i++){
+
+		blockPath = sindicato_utils_build_block_path(nextBlock);
+
+		int block = open(blockPath, O_RDWR | O_CREAT, 0700);
+		ftruncate(block, metadataFS->block_size);
+
+		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+		if(i < blocksQty - 1){
+			memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
+			memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
+			offset += metadataFS->block_size - 4;
+			stringSize -= metadataFS->block_size - 4;
+		}else{
+			memcpy(blockData + offset, blockMapped, stringSize);
+		}
+
+		munmap(blockMapped, metadataFS->block_size);
+		close(block);
+		free(blockPath);
 	}
 
+	char** blockDataArray = string_split(blockData, "\n");
 
-	char* strInitialBlock = string_itoa(initialBlock);
-	char* strSize = string_itoa(strlen(stringSaved));
+	t_config* dataConfig = internal_api_array_to_config(blockDataArray);
 
-	/* update the file using config */
-	t_config* config = config_create(filePath);
+	void* strc_data = internal_api_config_to_structure(dataConfig);
 
-	config_set_value(config, "SIZE", strSize);
-	config_set_value(config, "INITIAL_BLOCK", strInitialBlock);
+	config_destroy(dataConfig);
+	liberar_vector(blockDataArray);
+	free(blockData);
 
-	config_save(config);
-
-	config_destroy(config);
-
-	free(strSize);
-	free(strInitialBlock);
+	return strc_data;
 }
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
@@ -308,52 +768,18 @@ void internal_api_create_info_file(char* filePath, int initialBlock, char* strin
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
-	char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
-		char* stringBuilded = string_new();
+	char* restToSave = internal_api_restaurante_to_string(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
 
-		string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
-		string_append(&stringBuilded,cantCocineros);
-		string_append(&stringBuilded,"\n");
+	// TODO: validar que no sea -1
+	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
 
-		string_append(&stringBuilded,"POSICION=");
-		string_append(&stringBuilded,posXY);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"AFINIDAD_COCINEROS=");
-		string_append(&stringBuilded,afinidadCocinero);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"PLATOS=");
-		string_append(&stringBuilded,platos);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"PRECIO_PLATOS=");
-		string_append(&stringBuilded,precioPlatos);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"CANTIDAD_HORNOS=");
-		string_append(&stringBuilded,cantHornos);
-		string_append(&stringBuilded,"\n");
-
-		char* cantidadPedidos = "1";
-		//TODO: IMPORTANTE Definir como calcular los pedidos en el FS
-
-		string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
-		string_append(&stringBuilded,cantidadPedidos);
-
-		return stringBuilded;
-	}
-
-	char* restToSave = internal_api_build_string_rest(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
-
-	//TODO: validar que no sea -1
-	int initialBlock = internal_api_write_block(restToSave);
+	/* Create restaurante folder */
+	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, nombre);
+	sindicato_utils_create_folder(restPath, true);
 
 	/* Create "info" file */
-
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre);
-
-	internal_api_create_info_file(restPath, initialBlock, restToSave);
+	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
+	internal_api_write_info_file(restPath, initialBlock, restToSave);
 
 	free(restPath);
 	free(restToSave);
@@ -362,29 +788,16 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
-	char* internal_api_build_string_receta(char* pasos, char* tiempoPasos){
-			char* stringBuilded = string_new();
+	char* recetaToSave = internal_api_receta_to_string(pasos, tiempoPasos);
 
-			string_append(&stringBuilded,"PASOS=");
-			string_append(&stringBuilded,pasos);
-			string_append(&stringBuilded,"\n");
-
-			string_append(&stringBuilded,"TIEMPO_PASOS=");
-			string_append(&stringBuilded,tiempoPasos);
-
-			return stringBuilded;
-		}
-
-	char* recetaToSave = internal_api_build_string_receta(pasos, tiempoPasos);
-
-	int initialBlock = internal_api_write_block(recetaToSave);
+	int initialBlock = internal_api_write_block(recetaToSave, NULL, MODE_ADD);
 
 
 	/* Create "info" file */
 
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre);
+	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre, false, NULL);
 
-	internal_api_create_info_file(restPath, initialBlock, recetaToSave);
+	internal_api_write_info_file(restPath, initialBlock, recetaToSave);
 
 	free(restPath);
 	free(recetaToSave);
@@ -392,37 +805,81 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 
 /* Server functions */
 void sindicato_api_send_response_of_operation(t_responseMessage* response){
+
+	if(response->message->parametros == NULL)
+		response->message->tipo_mensaje = ERROR;
+
 	loggear_mensaje_enviado(response->message->parametros, response->message->tipo_mensaje, sindicatoLog);
 	enviar_mensaje(response->message, response->socket);
 }
 
 t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
-	/* Initialize of pedido structure */
+	t_nombre* restaurante = consultaPatos;
+
+	if(!sindicato_utils_verify_if_exist(restaurante->nombre, NULL, TYPE_RESTAURANTE)){
+		free(restaurante);
+		return NULL;
+	}
+
+	/* Initialize of platos structure */
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
 	platos->nombres = list_create();
-	t_nombre* plato = malloc(sizeof(t_nombre));
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	plato->nombre = string_duplicate("Milanesa");
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restaurante->nombre,NULL,TYPE_RESTAURANTE);
 
-	list_add(platos->nombres, plato);
-	platos->cantElementos = platos->nombres->elements_count;
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	platos->nombres = restauranteInfo->platos;
+	platos->cantElementos = restauranteInfo->platos->elements_count;
+
+	free(restauranteInfo);
+	free(initialBLock);
 
 	return platos;
 }
 
 uint32_t* sindicato_api_guardar_pedido(void* pedido){
-	//t_nombre_y_id* asd;
+	t_nombre_y_id* pedidoRestaurante = pedido;
 
 	uint32_t* opResult = malloc(sizeof(uint32_t));
-	/* DELETE THIS: datos dummies solo para TEST */
-	(*opResult) = 1;
+	*opResult = 1;
+
+	if(!sindicato_utils_verify_if_exist(pedidoRestaurante->nombre.nombre, NULL, TYPE_RESTAURANTE)){
+		free(pedidoRestaurante);
+		*opResult = 1;
+		return opResult;
+	}
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)pedidoRestaurante->id);
+	string_append(&pedidoName, pedidoNumberString);
+
+	if(sindicato_utils_verify_if_exist(pedidoName, pedidoRestaurante->nombre.nombre, TYPE_PEDIDO)){
+		free(pedidoRestaurante);
+		*opResult = 1;
+		return opResult;
+	}
+
+	char* pedidoString = internal_api_pedido_to_string("Pendiente","","","","0");
+
+	int initialBlock = internal_api_write_block(pedidoString, NULL, MODE_ADD);
+
+	if(initialBlock != -1){
+		/* Create "info" file */
+		char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
+
+		internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+
+		*opResult = 1;
+		return opResult;
+	}
 
 	return opResult;
 }
 
 uint32_t* sindicato_api_guardar_plato(void* pedido){
-	//m_guardarPlato* asd;
+	// m_guardarPlato* asd;
 
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	/* DELETE THIS: datos dummies solo para TEST */
@@ -432,7 +889,7 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 }
 
 uint32_t* sindicato_api_confirmar_pedido(void* pedido){
-	//t_nombre_y_id* asd;
+	// t_nombre_y_id* asd;
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	/* DELETE THIS: datos dummies solo para TEST */
 	(*opResult) = 1;
@@ -441,7 +898,7 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 }
 
 rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
-	//t_nombre_y_id* asd;
+	// t_nombre_y_id* asd;
 	rta_obtenerPedido* pedido = malloc(sizeof(rta_obtenerPedido));
 	pedido->infoPedidos = list_create();
 
@@ -460,37 +917,52 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
 }
 
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
+	t_nombre* restauranteName = restaurante;
+
+	if(!sindicato_utils_verify_if_exist(restauranteName->nombre, NULL, TYPE_RESTAURANTE)){
+		free(restauranteName);
+		return NULL;
+	}
+
 	/* Initialize of restaurante structure */
-	rta_obtenerRestaurante* restauranteInfo = malloc(sizeof(rta_obtenerRestaurante));
-	restauranteInfo->afinidades = list_create();
-	restauranteInfo->recetas = list_create();
+	rta_obtenerRestaurante* rtaRestaurante = malloc(sizeof(rta_obtenerRestaurante));
+	rtaRestaurante->afinidades = list_create();
+	rtaRestaurante->recetas = list_create();
 
-	/* Elements of list */
-	t_receta* recetaPrecio = malloc(sizeof(t_receta));
-	t_nombre* afinidad = malloc(sizeof(t_nombre));
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restauranteName->nombre,NULL,TYPE_RESTAURANTE);
 
-	/* DELETE THIS: datos dummies solo para TEST */
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
-	recetaPrecio->receta.nombre = string_duplicate("Milanesa");
-	recetaPrecio->precio = 500;
+	rtaRestaurante->afinidades = list_duplicate(restauranteInfo->afinidad_cocineros);
+	rtaRestaurante->cantAfinidades = rtaRestaurante->afinidades->elements_count;
+	rtaRestaurante->posicion = restauranteInfo->posicion;
 
-	afinidad->nombre = string_duplicate("MilanesaMejor");
+	for(int i = 0; i < restauranteInfo->platos->elements_count; i++){
+		t_receta* recetaPrecio = malloc(sizeof(t_receta));
 
-	restauranteInfo->cantAfinidades = 1;
-	list_add(restauranteInfo->afinidades, afinidad);
-	restauranteInfo->posicion.x = 1;
-	restauranteInfo->posicion.y = 2;
-	restauranteInfo->cantRecetas = 1;
-	list_add(restauranteInfo->recetas,recetaPrecio);
-	restauranteInfo->cantHornos = 1;
-	restauranteInfo->cantCocineros = 2;
-	restauranteInfo->cantPedidos = 2;
+		t_nombre* n = list_get(restauranteInfo->platos, i);
+		uint32_t* p = list_get(restauranteInfo->precios, i);
 
-	return restauranteInfo;
+		recetaPrecio->receta = *n;
+		recetaPrecio->precio = (uint32_t)p;
+
+		list_add(rtaRestaurante->recetas, recetaPrecio);
+
+		free(recetaPrecio);
+	}
+
+	rtaRestaurante->cantRecetas = rtaRestaurante->recetas->elements_count;
+
+	rtaRestaurante->cantHornos = restauranteInfo->cantidad_hornos;
+	rtaRestaurante->cantCocineros = restauranteInfo->cantidad_cocineros;
+	rtaRestaurante->cantPedidos = restauranteInfo->cantidad_pedidos;
+
+	return rtaRestaurante;
 }
 
 uint32_t* sindicato_api_plato_listo(void* plato){
-	//m_platoListo* asd;
+	// m_platoListo* asd;
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	/* DELETE THIS: datos dummies solo para TEST */
 	(*opResult) = 1;
@@ -499,24 +971,34 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 }
 
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
-	//t_nombre* asd;
+	t_nombre* recetaRequested = plato;
+
+	if(!sindicato_utils_verify_if_exist(recetaRequested->nombre, NULL, TYPE_RECETA)){
+		free(recetaRequested);
+		return NULL;
+	}
+
+	/* Initialize of receta structure */
 	rta_obtenerReceta* receta = malloc(sizeof(rta_obtenerReceta));
 	receta->pasos = list_create();
 
-	t_paso* paso = malloc(sizeof(t_paso));
-	paso->duracion = 1;
-	paso->paso.nombre = string_duplicate("Milanesear");
-	puts(paso->paso.nombre);
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(recetaRequested->nombre,NULL,TYPE_RECETA);
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	list_add(receta->pasos,paso);
-	receta->cantPasos = 1;
+	t_receta_file* recetaInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	//TODO: list_duplicate;
+	/* map values retrieved from FS */
+	receta->pasos = recetaInfo->pasos;
+
+	free(initialBLock);
+	free(recetaInfo);
 
 	return receta;
 }
 
 uint32_t* sindicato_api_terminar_pedido(void* pedido){
-	//t_nombre_y_id * asd;
+	// t_nombre_y_id * asd;
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	/* DELETE THIS: datos dummies solo para TEST */
 	(*opResult) = 1;
