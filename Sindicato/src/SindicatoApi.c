@@ -259,7 +259,7 @@ t_pedido_file* internal_api_config_to_pedido(t_config* dataConfig){
 	pedido->precio_total = config_get_int_value(dataConfig, D_PRECIO_TOTAL);
 	pedido->platos = list_create();
 
-	char** aux_array = config_get_array_value(dataConfig, D_PLATOS);
+	char** aux_array = config_get_array_value(dataConfig, D_LISTA_PLATOS);
 
 	int i = 0;
 
@@ -456,7 +456,7 @@ t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restau
 		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, NULL);
 		break;
 	case(TYPE_PEDIDO):
-		filePath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, name, false, restaurateOfPedido);
+		filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, name, false, restaurateOfPedido);
 		break;
 	default:
 		return NULL;
@@ -861,7 +861,7 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoString = internal_api_pedido_to_string("Pendiente","","","","0");
+	char* pedidoString = internal_api_pedido_to_string("Pendiente","[]","[0]","[0]","0");
 
 	int initialBlock = internal_api_write_block(pedidoString, NULL, MODE_ADD);
 
@@ -897,21 +897,44 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 	return opResult;
 }
 
-rta_obtenerPedido* sindicato_api_obtener_pedido(void* Consultapedido){
-	// t_nombre_y_id* asd;
+rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
+	t_nombre_y_id* pedidoRequested = consultapedido;
+
+	if(!sindicato_utils_verify_if_exist(pedidoRequested->nombre.nombre, NULL, TYPE_RESTAURANTE)){
+		free(pedidoRequested);
+		return NULL;
+	}
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
+	string_append(&pedidoName, pedidoNumberString);
+
+	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
+		free(pedidoRequested);
+		return NULL;
+	}
+
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
+
+	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
 	rta_obtenerPedido* pedido = malloc(sizeof(rta_obtenerPedido));
 	pedido->infoPedidos = list_create();
 
-	t_elemPedido* pedidoElem = malloc(sizeof(t_elemPedido));
+	pedido->estadoPedido = pedidoInfo->estado_pedido;
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	pedidoElem->cantHecha = 1;
-	pedidoElem->cantTotal = 1;
-	pedidoElem->comida.nombre = string_duplicate("Milanesa");
+	for(int i = 0; i < pedidoInfo->platos->elements_count; i++){
+		t_elemPedido* pedidoElem = malloc(sizeof(t_elemPedido));
 
-	pedido->cantPedidos = 1;
-	pedido->estadoPedido = PENDIENTE;
-	list_add(pedido->infoPedidos, pedidoElem);
+		t_nombre* nombre = list_get(pedidoInfo->platos, i);
+
+		pedidoElem->comida.nombre = string_duplicate(nombre->nombre);
+		pedidoElem->cantTotal = (uint32_t)list_get(pedidoInfo->cantidad_platos, i);
+		pedidoElem->cantHecha = (uint32_t)list_get(pedidoInfo->cantidad_lista, i);
+	}
+
+	pedido->cantPedidos = pedidoInfo->platos->elements_count;
 
 	return pedido;
 }
@@ -944,12 +967,12 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 		t_nombre* n = list_get(restauranteInfo->platos, i);
 		uint32_t* p = list_get(restauranteInfo->precios, i);
 
-		recetaPrecio->receta = *n;
+		recetaPrecio->receta.nombre = string_duplicate(n->nombre);
 		recetaPrecio->precio = (uint32_t)p;
 
 		list_add(rtaRestaurante->recetas, recetaPrecio);
 
-		free(recetaPrecio);
+		//free(recetaPrecio);
 	}
 
 	rtaRestaurante->cantRecetas = rtaRestaurante->recetas->elements_count;

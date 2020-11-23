@@ -70,7 +70,7 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* message);
 uint32_t* sindicato_api_guardar_pedido(void* pedido);
 uint32_t* sindicato_api_guardar_plato(void* pedido);
 uint32_t* sindicato_api_confirmar_pedido(void* pedido);
-rta_obtenerPedido* sindicato_api_obtener_pedido(void* pedido);
+rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido);
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante);
 uint32_t* sindicato_api_plato_listo(void* plato);
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato);
