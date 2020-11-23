@@ -75,6 +75,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_PEDIDO;
 			responseMessage->message->parametros = pedido;
+
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
 		case OBTENER_RESTAURANTE:
@@ -82,6 +83,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_RESTAURANTE;
 			responseMessage->message->parametros = restaurante;
+
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
 		case PLATO_LISTO:
