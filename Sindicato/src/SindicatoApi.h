@@ -31,13 +31,13 @@ typedef enum{
 }mode_fs;
 
 typedef struct{
-	int cantidad_cocineros;
+	uint32_t cantidad_cocineros;
 	t_coordenadas posicion;
 	t_list* afinidad_cocineros; //lista de t_nombre (afinidades)
 	t_list* platos; //lista de t_nombre (platos)
 	t_list* precios; //lista de precios
-	int cantidad_hornos;
-	int cantidad_pedidos;
+	uint32_t cantidad_hornos;
+	uint32_t cantidad_pedidos;
 }t_restaurante_file;
 
 typedef struct{

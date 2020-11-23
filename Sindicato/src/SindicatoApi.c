@@ -340,6 +340,41 @@ void internal_api_free_array(char** array){
 		free(array);
 }
 
+char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos, char* cantPedidos){
+	char* stringBuilded = string_new();
+
+	string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
+	string_append(&stringBuilded,cantCocineros);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"POSICION=");
+	string_append(&stringBuilded,posXY);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"AFINIDAD_COCINEROS=");
+	string_append(&stringBuilded,afinidadCocinero);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"PLATOS=");
+	string_append(&stringBuilded,platos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"PRECIO_PLATOS=");
+	string_append(&stringBuilded,precioPlatos);
+	string_append(&stringBuilded,"\n");
+
+	string_append(&stringBuilded,"CANTIDAD_HORNOS=");
+	string_append(&stringBuilded,cantHornos);
+	string_append(&stringBuilded,"\n");
+
+	char* cantidadPedidos = cantPedidos;
+
+	string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
+	string_append(&stringBuilded,cantidadPedidos);
+
+	return stringBuilded;
+}
+
 /* ********** FS FILES ********** */
 
 t_initialBlockInfo* internal_api_read_initial_block_info(char* path){
@@ -399,7 +434,7 @@ t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restau
 	return initialBlock;
 }
 
-void internal_api_create_info_file(char* filePath, int initialBlock, char* stringSaved){
+void internal_api_write_info_file(char* filePath, int initialBlock, char* stringSaved){
 
 	/* if the file does not exist then create a new one with default keys in blank*/
 	if(access(filePath, F_OK) != 0){
@@ -706,48 +741,10 @@ void* internal_api_read_blocks(int initialBlock, int stringSize){
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
 	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
-	//TODO: pasar la funcion como interna de api y poner la cantidad de pedidos como variable, en crear restaurante va hardcode con 0 (puaj)
-	char* internal_api_build_string_rest(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
-		char* stringBuilded = string_new();
-
-		string_append(&stringBuilded,"CANTIDAD_COCINEROS=");
-		string_append(&stringBuilded,cantCocineros);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"POSICION=");
-		string_append(&stringBuilded,posXY);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"AFINIDAD_COCINEROS=");
-		string_append(&stringBuilded,afinidadCocinero);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"PLATOS=");
-		string_append(&stringBuilded,platos);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"PRECIO_PLATOS=");
-		string_append(&stringBuilded,precioPlatos);
-		string_append(&stringBuilded,"\n");
-
-		string_append(&stringBuilded,"CANTIDAD_HORNOS=");
-		string_append(&stringBuilded,cantHornos);
-		string_append(&stringBuilded,"\n");
-
-		char* cantidadPedidos = "1";
-		// TODO: IMPORTANTE Definir como calcular los pedidos en el FS
-
-		string_append(&stringBuilded,"CANTIDAD_PEDIDOS=");
-		string_append(&stringBuilded,cantidadPedidos);
-
-		return stringBuilded;
-	}
-
-	char* restToSave = internal_api_build_string_rest(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
+	char* restToSave = internal_api_build_string_rest(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
 
 	// TODO: validar que no sea -1
 	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
-
 
 	/* Create restaurante folder */
 	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, nombre);
@@ -755,7 +752,7 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 
 	/* Create "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
-	internal_api_create_info_file(restPath, initialBlock, restToSave);
+	internal_api_write_info_file(restPath, initialBlock, restToSave);
 
 	free(restPath);
 	free(restToSave);
@@ -786,7 +783,7 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 
 	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre, false, NULL);
 
-	internal_api_create_info_file(restPath, initialBlock, recetaToSave);
+	internal_api_write_info_file(restPath, initialBlock, recetaToSave);
 
 	free(restPath);
 	free(recetaToSave);
@@ -894,29 +891,29 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
+	rtaRestaurante->afinidades = list_duplicate(restauranteInfo->afinidad_cocineros);
+	rtaRestaurante->cantAfinidades = rtaRestaurante->afinidades->elements_count;
+	rtaRestaurante->posicion = restauranteInfo->posicion;
 
+	for(int i = 0; i < restauranteInfo->platos->elements_count; i++){
+		t_receta* recetaPrecio = malloc(sizeof(t_receta));
 
-	/* Elements of list */
-	t_receta* recetaPrecio = malloc(sizeof(t_receta));
-	t_nombre* afinidad = malloc(sizeof(t_nombre));
+		t_nombre* n = list_get(restauranteInfo->platos, i);
+		uint32_t* p = list_get(restauranteInfo->precios, i);
 
-	/* DELETE THIS: datos dummies solo para TEST */
-	recetaPrecio->receta.nombre = string_duplicate("Milanesa");
-	recetaPrecio->precio = 500;
+		recetaPrecio->receta = *n;
+		recetaPrecio->precio = (uint32_t)p;
 
-	afinidad->nombre = string_duplicate("Empanadas");
+		list_add(rtaRestaurante->recetas, recetaPrecio);
 
-	rtaRestaurante->cantAfinidades = restauranteInfo->afinidad_cocineros->elements_count;
-	//TODO: list_duplicate;
-	rtaRestaurante->afinidades = restauranteInfo->afinidad_cocineros;
-	/*rtaRestaurante->posicion.x = restauranteInfo->posicion->x;
-	rtaRestaurante->posicion.y = restauranteInfo->posicion->y;*/
-	rtaRestaurante->cantRecetas = restauranteInfo->platos->elements_count; //dudoso
-	list_add(rtaRestaurante->recetas,recetaPrecio);
+		free(recetaPrecio);
+	}
+
+	rtaRestaurante->cantRecetas = rtaRestaurante->recetas->elements_count;
+
 	rtaRestaurante->cantHornos = restauranteInfo->cantidad_hornos;
 	rtaRestaurante->cantCocineros = restauranteInfo->cantidad_cocineros;
 	rtaRestaurante->cantPedidos = restauranteInfo->cantidad_pedidos;
-
 
 	return rtaRestaurante;
 }
@@ -1014,6 +1011,6 @@ void sindicato_api_afip_initialize(){
 			"PASOS=[Cortar,Condimentar,Hornear,Servir]\nTIEMPO_PASOS=[4,5,5,1]holaaa",bi,MODE_UPDATE);
 	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, "AsadoConFritas", false, NULL);
 
-	internal_api_create_info_file(restPath, initialBlock,
+	internal_api_write_info_file(restPath, initialBlock,
 			"PASOS=[Cortar,Condimentar,Hornear,Servir]\nTIEMPO_PASOS=[4,5,5,1]holaaa");
 }
