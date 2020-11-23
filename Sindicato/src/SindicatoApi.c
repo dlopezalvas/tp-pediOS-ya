@@ -65,8 +65,6 @@ void internal_api_bitmap_create(){
 
 	char* bitarrayMap = mmap(0, blocks, PROT_WRITE | PROT_READ, MAP_SHARED, bitarrayFile, 0);
 
-	// TODO: ver errores en mapeo
-
 	bitarray = bitarray_create_with_mode(bitarrayMap, blocks, LSB_FIRST);
 
 	msync(bitarray, sizeof(bitarray), MS_SYNC);
@@ -552,8 +550,6 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
-//armar una lista auxiliar y convertirla en char**
-//Agregarlo como parametro
 char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, char*** blockList){
 	char* blockPath;
 	char* blocksDelimited = string_new();
@@ -973,44 +969,4 @@ void sindicato_api_afip_initialize(){
 	internal_api_bitmap_create();
 
 	internal_api_initialize_blocks();
-
-	/* DELETE THIS */
-	/*t_restaurante_file* restaurante = internal_api_read_blocks(0, 188);
-
-	puts("cocineros");
-	char* cocineros = string_itoa(restaurante->cantidad_cocineros);
-	puts(cocineros);
-	puts("hornos");
-	char* hornos = string_itoa(restaurante->cantidad_hornos);
-	puts(hornos);
-
-	char* fullString = internal_api_get_string_from_filesystem(0, 188);
-	puts(fullString);
-	free(fullString);
-
-	t_initialBlockInfo* blockInit = internal_api_read_initial_block_info("/home/utnso/workspace/tp-2020-2c-CoronaLinux/Sindicato/afip/Files/Restaurantes/LaParri/LaParri.AFIP");
-	puts(string_itoa((int)blockInit->initialBlock));
-	puts(string_itoa(blockInit->stringSize));
-	free(blockInit);
-
-	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Laparri3", true, NULL));
-	puts(sindicato_utils_build_file_full_path(sindicatoRestaurantePath, "Pedido1", false, "Laparri"));
-	puts(sindicato_utils_build_file_full_path(sindicatoRecetaPath, "Laparri3", false, NULL));
-
-
-	free(cocineros);
-	free(hornos);
-	free(restaurante);
-	char** lista;
-	internal_api_get_string_from_filesystem(4, 188, &lista);
-	puts(lista[0]);
-	puts(lista[1]);*/
-
-	t_initialBlockInfo* bi = internal_api_get_initial_block_info("AsadoConFritas",NULL, TYPE_RECETA);;
-	int initialBlock = internal_api_write_block(
-			"PASOS=[Cortar,Condimentar,Hornear,Servir]\nTIEMPO_PASOS=[4,5,5,1]holaaa",bi,MODE_UPDATE);
-	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, "AsadoConFritas", false, NULL);
-
-	internal_api_write_info_file(restPath, initialBlock,
-			"PASOS=[Cortar,Condimentar,Hornear,Servir]\nTIEMPO_PASOS=[4,5,5,1]holaaa");
 }
