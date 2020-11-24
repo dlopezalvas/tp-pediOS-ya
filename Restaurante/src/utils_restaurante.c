@@ -428,7 +428,9 @@ void process_request(int cod_op, int cliente_fd) {
 
 		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
-		t_nombre* nombre_resturante = mensaje;
+		//t_nombre* nombre_resturante = mensaje;
+		t_nombre* nombre_resturante=malloc(sizeof(t_nombre));
+		nombre_resturante->nombre= string_duplicate(cfg_nombre_restaurante);
 
 		log_info(log_config_ini ,"Se esta conusltando por el resto: %s: ",nombre_resturante->nombre);
 
@@ -505,8 +507,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		}
-		// liberar_conexion(cliente_fd);
-
+		free(nombre_resturante);
 		//free(buffer);
 		break;
 	case CREAR_PEDIDO:
