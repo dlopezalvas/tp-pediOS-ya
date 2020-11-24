@@ -189,7 +189,7 @@ void ejecucion_guardar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){ //listo
 		list_add(restaurantes, restaurante);
 		pthread_mutex_unlock(&restaurantes_mtx);
 	}else{
-		if(buscarPedido(mensaje->id, restaurante) == NULL){
+		if(buscarPedido(mensaje->id, restaurante) != NULL){
 			confirmacion = FAIL;
 		}
 	}
@@ -266,13 +266,15 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						log_info(log_comanda, "[ERROR] No hay memoria disponible en swap");
 					}
 				}else{
+					pthread_mutex_lock(&tablas_paginas_mtx);
 					if(!plato->presencia){
 						traer_de_swap(plato);
 					}
-
+					pthread_mutex_unlock(&tablas_paginas_mtx);
 					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 					actualizar_plato_mp(plato, mensaje->cantidad, 0);
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
+
 					confirmacion = OK;
 				}
 
@@ -361,7 +363,7 @@ int eleccion_victima_clock_mejorado(){
 
 	liberar_frame(victima);
 
-	pthread_mutex_lock(&tablas_paginas_mtx);
+	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	list_destroy(en_mp);
 
@@ -428,7 +430,7 @@ int eleccion_victima_LRU(){
 
 	t_pagina* victima;
 
-	pthread_mutex_lock(&tablas_paginas_mtx);
+//	pthread_mutex_lock(&tablas_paginas_mtx);
 
 	pthread_mutex_lock(&paginas_swap_mtx);
 
@@ -442,7 +444,7 @@ int eleccion_victima_LRU(){
 
 	liberar_frame(victima);
 
-	pthread_mutex_unlock(&tablas_paginas_mtx);
+//	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	return victima->frame;
 
@@ -715,11 +717,12 @@ void ejecucion_plato_listo(t_mensaje_a_procesar* mensaje_a_procesar){
 
 					if(actualizar_plato_mp(pagina, 0, 1)){
 						confirmacion = OK;//cantLista le suma 1
+					}else{
 						log_info(log_comanda, "[ERROR] No pueden estar listos mas %s de los pedidos", mensaje->comida.nombre);
 					}
 
 					pthread_mutex_unlock(&tablas_paginas_mtx);
-					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 				}else{
 					log_info(log_comanda, "[ERROR] No existe el plato %s", mensaje->comida.nombre);
@@ -807,7 +810,7 @@ void ejecucion_obtener_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 			}
 			pthread_mutex_unlock(&tablas_paginas_mtx);
-			pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+			pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
 			mensaje_a_enviar->tipo_mensaje = RTA_OBTENER_PEDIDO;
 			mensaje_a_enviar->parametros = rtaObtenerPedido;
@@ -928,6 +931,7 @@ t_pagina* buscarPlato(t_list* tabla_paginas, char* comida){
 		free(stream);
 		if(string_equals_ignore_case(plato->nombre, comida)){
 			free(plato);
+			pthread_mutex_unlock(&tablas_paginas_mtx);
 			return pagina;
 		}else{
 			free(plato);
