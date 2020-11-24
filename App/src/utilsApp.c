@@ -172,7 +172,7 @@ void configuracionInicial(void) {
         pthread_mutex_init(&mutex_lista_clientes, NULL);
 
     // liberacion de memoria
-        config_destroy(config);
+        // config_destroy(config);
 }
 
 void planif_encolar_NEW(t_pedido* pedido) {
@@ -379,6 +379,11 @@ void planif_nuevoPedido(int id_cliente, int pedido_id) { // TODO: que devuelva b
     pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
     pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado? porque despues medio que por defecto anda deslockeado D:
     log_debug(logger_planificacion, "[PLANIF_NP] Mutex de clock inicializado");
+
+    pedidoNuevo->estaPreparado = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(pedidoNuevo->estaPreparado, NULL);
+    pthread_mutex_lock(pedidoNuevo->estaPreparado);
+    log_debug(logger_planificacion, "[PLANIF_NP] Mutex de 'esta preparado' inicializado");
 
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_EXEC, NULL);
@@ -795,7 +800,7 @@ void consumir_ciclo(t_pedido* pedido) {
 
 void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commons
     t_restaurante* restaurante = malloc(sizeof(t_restaurante));
-    restaurante->nombre = mensaje_rest->nombre.nombre; // TODO: string duplicate / check free
+    restaurante->nombre = string_duplicate(mensaje_rest->nombre.nombre); // TODO: string duplicate / check free
     restaurante->pos_x = mensaje_rest->posicion.x;
     restaurante->pos_y = mensaje_rest->posicion.y;
 
@@ -827,6 +832,8 @@ void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commo
     list_add(restaurantes, restaurante);
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_restaurantes);
+
+    free_struct_mensaje(mensaje_rest, POSICION_RESTAUNTE);
 }
 
 void guardar_seleccion(char* nombre_rest, int id_cliente) {
@@ -1228,6 +1235,7 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
     log_debug(logger_mensajes, "[MENSJS]: Se encontro el puntero del cliente %i", cliente_seleccionante->id);
     cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
+    // TODO: CHECKS POR FAVOR
 
     if (!(cliente_seleccionante->restaurante_seleccionado)) {
         log_debug(
@@ -1748,12 +1756,14 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                             free(rta_cp_comanda);
                             return;
                     }
+                    break;
                 default:
                     responder_ERROR(socket_cliente);
                     qr_free_form(form);
                     free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                     return;
             }
+        break;
         default:
             responder_ERROR(socket_cliente);
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
