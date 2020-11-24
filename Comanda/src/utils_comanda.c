@@ -337,7 +337,7 @@ int eleccion_victima_clock_mejorado(){
 		return pagina1->frame < pagina2->frame;
 	}
 
-	pthread_mutex_lock(&tablas_paginas_mtx);
+//	pthread_mutex_lock(&tablas_paginas_mtx);
 
 	pthread_mutex_lock(&puntero_clock_mtx);
 
@@ -363,7 +363,7 @@ int eleccion_victima_clock_mejorado(){
 
 	liberar_frame(victima);
 
-	pthread_mutex_unlock(&tablas_paginas_mtx);
+//	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	list_destroy(en_mp);
 
