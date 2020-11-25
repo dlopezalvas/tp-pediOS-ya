@@ -96,8 +96,11 @@ void iniciar_restaurante(){
 			//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
 			log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
 			inicio_de_listas_globales();
-			iniciar_colas_ready_es (metadata_rest);
 
+			iniciar_colas_ready_es (metadata_rest);
+			pthread_mutex_lock(&mutex_id_pedidos);
+			id_pedidos = metadata_rest->cantPedidos;
+			pthread_mutex_unlock(&mutex_id_pedidos);
 			//CREAR PROCESO PLANIFICADOR
 			pthread_t hiloClock;
 			pthread_create(&hiloClock, NULL,(void*) fhilo_clock, NULL);
@@ -738,6 +741,8 @@ void process_request(int cod_op, int cliente_fd) {
 							for (int inicio_plato = 0; inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos; inicio_plato++){
 								plato_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
 
+
+
 								int socket_OBTENER_RECETA = conectar_con_sindicato();
 								if(socket_OBTENER_RECETA == -1){
 									//TODO error
@@ -767,6 +772,9 @@ void process_request(int cod_op, int cliente_fd) {
 											inicio_plato_cant <plato_n->cantTotal-plato_n->cantHecha;
 											inicio_plato_cant++)
 									{
+
+
+
 										//cargo el pcb
 										plato_pcb = malloc(sizeof(t_plato_pcb));
 										plato_pcb->id_pedido = id_CONFIRMAR_PEDIDO->id;
@@ -775,7 +783,16 @@ void process_request(int cod_op, int cliente_fd) {
 										plato_pcb->cantTotal = plato_n->cantTotal;
 										plato_pcb->cantHecha = plato_n->cantHecha;
 										plato_pcb->cantPasos = rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
-										plato_pcb->pasos = list_duplicate(rta_sindicato_RTA_OBTENER_RECETA->pasos);
+										plato_pcb->pasos = list_create();
+										for(int i = 0; i< rta_sindicato_RTA_OBTENER_RECETA->cantPasos; i++){
+											t_paso* paso_actual = list_get(rta_sindicato_RTA_OBTENER_RECETA->pasos, i);
+											t_paso* nuevo_paso = malloc(sizeof(t_paso));
+											nuevo_paso->duracion = paso_actual->duracion;
+											nuevo_paso->paso.nombre = string_duplicate(paso_actual->paso.nombre);
+											list_add(plato_pcb->pasos, nuevo_paso);
+										}
+
+//										plato_pcb->pasos = list_duplicate(rta_sindicato_RTA_OBTENER_RECETA->pasos);
 										plato_pcb->estado = NEW;
 
 										pthread_mutex_init(&clock_plato, NULL);
@@ -786,7 +803,9 @@ void process_request(int cod_op, int cliente_fd) {
 										id_plato_global++;
 										pthread_mutex_unlock(&id_plato_global_mtx);
 
-										free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); //TODO free que rompia?
+										//										free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); //TODO free que rompia?
+
+
 
 										//cargo lista de pcb
 										log_debug(log_oficial, "[CREAR_PLATO]: Se creo el PCB del plato %s con ID: %d ", plato_pcb->comida.nombre, plato_pcb->id_plato);
@@ -806,9 +825,10 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 									}//for de cantidad total - cant hecha
+									free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA);
 								}
 							}
-						free_struct_mensaje(rta_sindicato_RTA_OBTENER_PEDIDO, RTA_OBTENER_PEDIDO);
+							free_struct_mensaje(rta_sindicato_RTA_OBTENER_PEDIDO, RTA_OBTENER_PEDIDO);
 						}else{//llave de validacion de error en obtener pedido
 							confirmacion = FAIL;
 							log_info(log_config_ini,"\tSindicato devolvio error al OBTENER_PEDIDO \n");
@@ -885,7 +905,8 @@ void process_request(int cod_op, int cliente_fd) {
 				enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
 				loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_oficial);
 
-				free_struct_mensaje(cliente_rta_CONSULTAR_PEDIDO->parametros, RTA_CONSULTAR_PEDIDO);
+				//				free_struct_mensaje(rta_CONSULTAR_PEDIDO, RTA_CONSULTAR_PEDIDO); TODO revisar
+				list_destroy(rta_CONSULTAR_PEDIDO->platos);
 				free_struct_mensaje(rta_sindicato_RTA_OBTENER_PEDIDO, RTA_OBTENER_PEDIDO);
 			}else{
 				cliente_rta_CONSULTAR_PEDIDO->id=cfg_id;
@@ -921,7 +942,6 @@ void agregar_cola_ready(t_plato_pcb* plato){
 	free(afinidad->nombre);
 
 	if(cola_afinidad == NULL){
-		afinidad = malloc(sizeof(t_nombre));
 		afinidad->nombre = "Otros";
 		pthread_mutex_lock(&cola_afinidades_mtx);
 		cola_afinidad = list_find(colas_afinidades, (void*)_mismo_nombre);
@@ -1123,7 +1143,6 @@ void terminar_plato(t_plato_pcb* plato){
 		free(mensaje);
 		uint32_t* rta_plato_listo = recibir_respuesta(socket_app_plato_listo, &cod_op);
 		if(cod_op == RTA_PLATO_LISTO){
-			loggear_mensaje_recibido(rta_plato_listo, cod_op, log_oficial);
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
 			//error TODO
@@ -1168,7 +1187,7 @@ void terminar_plato(t_plato_pcb* plato){
 }
 
 void free_pcb_plato(t_plato_pcb* plato){
-	//	list_destroy_and_destroy_elements(plato->pasos, (void*) free_pasos);
+	list_destroy_and_destroy_elements(plato->pasos, (void*)free_pasos);
 	free(plato->comida.nombre);
 	free(plato);
 }
