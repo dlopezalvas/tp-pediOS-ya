@@ -452,6 +452,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 			free(cliente_RTA_CONSULTAR_PLATOS);
 
+
 			log_info(log_config_ini,"\tSe envio el mj ERROR al cliente \n");
 
 		}else{
@@ -467,6 +468,7 @@ void process_request(int cod_op, int cliente_fd) {
 			loggear_mensaje_enviado(sindicato_CONSULTAR_PLATOS->parametros, sindicato_CONSULTAR_PLATOS->tipo_mensaje, log_config_ini);
 			//free_struct_mensaje(sindicato_CONSULTAR_PLATOS->parametros, CONSULTAR_PLATOS);
 			free(sindicato_CONSULTAR_PLATOS);
+
 
 			//RECIBO RESPUESTA DE SINDICATO
 			t_restaurante_y_plato* rta_sindicato_CONSULTAR_PLATOS;
@@ -507,7 +509,10 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		}
+		free(nombre_resturante->nombre);
 		free(nombre_resturante);
+		free(mensaje);
+
 		//free(buffer);
 		break;
 	case CREAR_PEDIDO:
@@ -604,7 +609,7 @@ void process_request(int cod_op, int cliente_fd) {
 			free(cliente_rta_CREAR_PEDIDO);
 		}
 
-		// liberar_conexion(cliente_fd);
+		free(mensaje);
 
 		break;
 	case AGREGAR_PLATO:
@@ -675,7 +680,9 @@ void process_request(int cod_op, int cliente_fd) {
 		}
 		enviar_confirmacion(confirmacion, cliente_fd, RTA_AGREGAR_PLATO);
 		// liberar_conexion(cliente_fd);
-		//free_struct_mensaje(mj_agregar_plato, AGREGAR_PLATO);
+		free(mj_agregar_plato->nombre.nombre);
+
+		free(mensaje);
 		break;
 
 	case CONFIRMAR_PEDIDO:
@@ -688,12 +695,6 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		//1) OBTENER EL PEDIDO DEL MODULO SINDICATO
-
-		//nombre_restaurante_OBTENER_PEDIDO->largo_nombre=strlen(cfg_nombre_restaurante);
-
-
-
-
 
 
 		//estructura de respuesta al cliente
@@ -745,6 +746,8 @@ void process_request(int cod_op, int cliente_fd) {
 				rta_sindicato_RTA_OBTENER_PEDIDO = recibir_respuesta(socket_OBTENER_PEDIDO, &error_cod_op);// TODO
 				liberar_conexion(socket_OBTENER_PEDIDO);
 
+				//VALIDAR QUE EL SINDICATO NO DEVUELVA ERROR
+				if(error_cod_op!=ERROR){
 				//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
 
 
@@ -793,7 +796,10 @@ void process_request(int cod_op, int cliente_fd) {
 
 					liberar_conexion(socket_OBTENER_RECETA);
 
-
+				for (int inicio_plato_cant = 0;
+						inicio_plato_cant <plato_n->cantTotal-plato_n->cantHecha;
+						inicio_plato_cant++)
+					{
 					//cargo el pcb
 					plato_pcb->id_pedido = id_CONFIRMAR_PEDIDO->id;
 					plato_pcb->comida.nombre = malloc(strlen(plato_n->comida.nombre)+1);
@@ -832,6 +838,8 @@ void process_request(int cod_op, int cliente_fd) {
 					agregar_cola_ready(plato_pcb);
 
 
+				}//for de cantidad total - cant hecha
+
 				}
 
 				free_struct_mensaje(id_CONFIRMAR_PEDIDO, CONFIRMAR_PEDIDO);
@@ -840,12 +848,18 @@ void process_request(int cod_op, int cliente_fd) {
 				//respondo al cliente -- consultar en que casos se debe mandar fail
 				//esta es la respuesta al cliente,
 				confirmacion = OK;
+			}else{//llave de validacion de error en obtener pedido
+				log_info(log_config_ini,"\tSindicato devolvio error al OBTENER_PEDIDO \n");
+			}
+
 			}
 		}
 
 		//RESPONDO AL CLIENTE
 		//OK o FAIL
 		enviar_confirmacion(confirmacion,cliente_fd, RTA_CONFIRMAR_PEDIDO);
+		free(id_CONFIRMAR_PEDIDO->nombre.nombre);
+		free(mensaje);
 
 		/*
 		Este mensaje permitirá confirmar un pedido creado previamente. Para esto se recibirá el ID de pedido destino.
@@ -858,7 +872,7 @@ void process_request(int cod_op, int cliente_fd) {
 		Informar al Módulo que lo invocó que su pedido fue confirmado.
 		 */
 
-		// liberar_conexion(cliente_fd);
+
 		break;
 	case CONSULTAR_PEDIDO:
 		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
@@ -953,7 +967,6 @@ void process_request(int cod_op, int cliente_fd) {
 	}
 	//	TODO ver que onda free_struct_mensaje(mensaje,cod_op);
 }
-
 
 
 void agregar_cola_ready(t_plato_pcb* plato){
@@ -1151,6 +1164,8 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 
 void terminar_plato(t_plato_pcb* plato){
 	int socket_app_plato_listo = iniciar_cliente(cfg_ip_app, cfg_puerto_app);
+	int socket_sindicato_plato_listo = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
+	//ENVIO A APP PLATO_LISTO
 	if(socket_app_plato_listo == -1){
 		//TODO error
 	}else{
@@ -1178,6 +1193,36 @@ void terminar_plato(t_plato_pcb* plato){
 		liberar_conexion(socket_app_plato_listo);
 
 	}
+
+	//ENVIO A SINDICATO PLATO_LISTO
+	if(socket_sindicato_plato_listo == -1){
+			//TODO error
+		}else{
+			uint32_t cod_op;
+			t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+			mensaje->id = cfg_id;
+			mensaje->tipo_mensaje = PLATO_LISTO;
+			m_platoListo * plato_listo = malloc(sizeof(m_platoListo));
+			plato_listo->comida.nombre = string_duplicate(plato->comida.nombre);
+			plato_listo->restaurante.nombre = string_duplicate(cfg_nombre_restaurante);
+			plato_listo->idPedido = plato->id_pedido;
+			mensaje->parametros = plato_listo;
+			enviar_mensaje(mensaje, socket_sindicato_plato_listo);
+			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_config_ini);
+
+			free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
+			free(mensaje);
+			uint32_t* rta_plato_listo = recibir_respuesta(socket_sindicato_plato_listo, &cod_op);
+			if(cod_op == RTA_PLATO_LISTO){
+				loggear_mensaje_recibido(rta_plato_listo, cod_op, log_config_ini);
+				free_struct_mensaje(rta_plato_listo, cod_op);
+			}else{
+				//error TODO
+			}
+			liberar_conexion(socket_sindicato_plato_listo);
+
+		}
+
 	log_debug(log_oficial, "[PLATO_LISTO]: Finalizó el plato %s con ID: %d", plato->comida.nombre, plato->id_plato);
 	free_pcb_plato(plato);
 
