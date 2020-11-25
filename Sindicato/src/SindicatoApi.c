@@ -895,12 +895,52 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 		char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
 
 		internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
-
-		*opResult = 1;
-		return opResult;
 	} else{
+		free(pedidoRestaurante);
 		*opResult = 0;
+		return opResult;
 	}
+
+
+	/* UPDATE Restaurante */
+
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoRestaurante->nombre.nombre,NULL,TYPE_RESTAURANTE);
+
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	char* cantCocineros = string_itoa(restauranteInfo->cantidad_cocineros);
+	char* posXY = string_new();
+	string_append_with_format(&posXY, "[%d,%d]", restauranteInfo->posicion.x,restauranteInfo->posicion.x);
+	char* afinidadCocinero = internal_api_list_to_string(restauranteInfo->afinidad_cocineros, 0);
+	char* platos = internal_api_list_to_string(restauranteInfo->platos, 0);
+	char* precioPlatos = internal_api_list_to_string(restauranteInfo->precios, 1);
+	char* cantHornos = string_itoa(restauranteInfo->cantidad_hornos);
+	int qtyPedidos = (int)restauranteInfo->cantidad_pedidos + 1;
+	char* cantPedidos = string_itoa(qtyPedidos);
+
+	char* restToSave = internal_api_restaurante_to_string(cantCocineros,
+			posXY,
+			afinidadCocinero,
+			platos,
+			precioPlatos,
+			cantHornos,
+			cantPedidos);
+
+	/* Create restaurante folder */
+	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, pedidoRestaurante->nombre.nombre);
+	sindicato_utils_create_folder(restPath, true);
+
+	// TODO: validar que no sea -1
+	int initialBlockRestaurante = internal_api_write_block(restToSave, initialBLock, MODE_UPDATE);
+
+	/* update "info" file */
+	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoRestaurante->nombre.nombre, true, NULL);
+	internal_api_write_info_file(restPath, initialBlockRestaurante, restToSave);
+
+	free(restPath);
+	free(restToSave);
+
 
 	return opResult;
 }
@@ -1141,8 +1181,6 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 		recetaPrecio->precio = (uint32_t)p;
 
 		list_add(rtaRestaurante->recetas, recetaPrecio);
-
-		//free(recetaPrecio);
 	}
 
 	rtaRestaurante->cantRecetas = rtaRestaurante->recetas->elements_count;
