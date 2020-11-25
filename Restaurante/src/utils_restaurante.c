@@ -96,22 +96,22 @@ void iniciar_restaurante(){
 
 		if(cod_op!= ERROR){
 			//CREO LAS DISTINTAS COLAS DE READY Y DE ENTRADA SALIDA
-				log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
-				inicio_de_listas_globales();
-				iniciar_colas_ready_es (metadata_rest);
+			log_info(log_config_ini, "\tIniciar_colas_ready_es \n");
+			inicio_de_listas_globales();
+			iniciar_colas_ready_es (metadata_rest);
 
-				//CREAR PROCESO PLANIFICADOR
-				pthread_t hiloClock;
-				pthread_create(&hiloClock, NULL,(void*) fhilo_clock, NULL);
+			//CREAR PROCESO PLANIFICADOR
+			pthread_t hiloClock;
+			pthread_create(&hiloClock, NULL,(void*) fhilo_clock, NULL);
 
 
 
-				//CREAR PROCESO SERVIDOR DE CLIENTES
-				log_info(log_config_ini, "Iniciar_planificador de platos \n");
-				pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
+			//CREAR PROCESO SERVIDOR DE CLIENTES
+			log_info(log_config_ini, "Iniciar_planificador de platos \n");
+			pthread_create(&hilo_servidor_clientes, NULL,(void*) fhilo_servidor_clientes, NULL);
 
-				//ME CONECTO CON APP PARA ENVIAR MI POS Y NOMBRE
-				conectarme_con_app();
+			//ME CONECTO CON APP PARA ENVIAR MI POS Y NOMBRE
+			conectarme_con_app();
 		}else{
 			log_info(log_config_ini, "\tFin proceso, sindicato respondio error obtener restaurante \n");
 
@@ -748,117 +748,117 @@ void process_request(int cod_op, int cliente_fd) {
 
 				//VALIDAR QUE EL SINDICATO NO DEVUELVA ERROR
 				if(error_cod_op!=ERROR){
-				//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
+					//2) GENERAR EL PCB DE CADA PLATO DED PEDIDO - OBTENER RECETA
 
 
-				t_elemPedido* plato_n;
-				t_nombre* sindicato_nombre_plato_receta;
+					t_elemPedido* plato_n;
+					t_nombre* sindicato_nombre_plato_receta;
 
-				t_mensaje* mje_sindicato_OBTENER_RECETA;
-				rta_obtenerReceta* rta_sindicato_RTA_OBTENER_RECETA = malloc(sizeof(rta_obtenerReceta));
-				//t_plato_pcb* plato_pcb = malloc(sizeof(t_plato_pcb));//correccion
-				t_plato_pcb* plato_pcb;
-				//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
-				pthread_mutex_t clock_plato;
+					t_mensaje* mje_sindicato_OBTENER_RECETA;
+					rta_obtenerReceta* rta_sindicato_RTA_OBTENER_RECETA = malloc(sizeof(rta_obtenerReceta));
+					//t_plato_pcb* plato_pcb = malloc(sizeof(t_plato_pcb));//correccion
+					t_plato_pcb* plato_pcb;
+					//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
+					pthread_mutex_t clock_plato;
 
-				for (int inicio_plato = 0;
-						inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos;
-						inicio_plato++)
-				{
-					sindicato_nombre_plato_receta = malloc(sizeof(t_nombre));
-					plato_pcb = malloc(sizeof(t_plato_pcb));
-					mje_sindicato_OBTENER_RECETA = malloc(sizeof(t_mensaje));
-					mje_sindicato_OBTENER_RECETA->tipo_mensaje = OBTENER_RECETA;
-					mje_sindicato_OBTENER_RECETA->id = cfg_id;
-
-
-					plato_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
-					//obtengo el nombre del plato
-					sindicato_nombre_plato_receta->nombre = malloc(strlen(plato_n->comida.nombre)+1);
-
-					strcpy(sindicato_nombre_plato_receta->nombre, plato_n->comida.nombre);
-					//				sindicato_nombre_plato_receta->largo_nombre=pedido_n->comida.largo_nombre;
-
-					//cargo el mj a enviar a sindicato para pedir receta
-					mje_sindicato_OBTENER_RECETA->parametros = sindicato_nombre_plato_receta;
-
-					//conexion sindicato - TODO NO HAGO VALIDACION DE SINDICATO DISPONIBLE
-					int socket_OBTENER_RECETA = conectar_con_sindicato();
-
-					enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
-					loggear_mensaje_enviado(mje_sindicato_OBTENER_RECETA->parametros, mje_sindicato_OBTENER_RECETA->tipo_mensaje, log_config_ini);
-
-					free_struct_mensaje(mje_sindicato_OBTENER_RECETA->parametros, OBTENER_RECETA);
-					free(mje_sindicato_OBTENER_RECETA);
-
-					//RECIBIR RESPUESTA DE SINDICATO
-					rta_sindicato_RTA_OBTENER_RECETA = recibir_respuesta(socket_OBTENER_RECETA, &error_cod_op);// TODO
-
-					liberar_conexion(socket_OBTENER_RECETA);
-
-				for (int inicio_plato_cant = 0;
-						inicio_plato_cant <plato_n->cantTotal-plato_n->cantHecha;
-						inicio_plato_cant++)
+					for (int inicio_plato = 0;
+							inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos;
+							inicio_plato++)
 					{
-					//cargo el pcb
-					plato_pcb->id_pedido = id_CONFIRMAR_PEDIDO->id;
-					plato_pcb->comida.nombre = malloc(strlen(plato_n->comida.nombre)+1);
-					strcpy(plato_pcb->comida.nombre,plato_n->comida.nombre);
-
-					plato_pcb->cantTotal = plato_n->cantTotal;
-					plato_pcb->cantHecha = plato_n->cantHecha;
-					plato_pcb->cantPasos = rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
-					plato_pcb->pasos = list_duplicate(rta_sindicato_RTA_OBTENER_RECETA->pasos);
-					plato_pcb->id_plato = id_plato_global;
-					plato_pcb->estado = NEW;
-
-					pthread_mutex_init(&clock_plato, NULL);
-					plato_pcb->mutex_clock = clock_plato;
-
-					pthread_mutex_lock(&id_plato_global_mtx);
-					id_plato_global++;
-					pthread_mutex_unlock(&id_plato_global_mtx);
-
-					//					free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); TODO list duplicate
-
-					//cargo lista de pcb
-					log_debug(log_oficial, "[CREAR_PLATO]: Se creo el PCB del plato %s con ID: %d ", plato_pcb->comida.nombre, plato_pcb->id_plato);
-
-					log_info(log_config_ini,"\tPCB id: %d \n",plato_pcb->id_pedido);
-					log_info(log_config_ini,"\tPCB nombe plato: %s \n",plato_pcb->comida.nombre);
-					log_info(log_config_ini,"\tPCB cant de platos: %d \n",plato_pcb->cantTotal);
-					log_info(log_config_ini,"\tPCB cant hecha: %d \n",plato_pcb->cantHecha);
-					log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos);
-					//log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos); PASOS list get
-
-					pthread_mutex_lock(&list_pedidos_confirm_mtx);
-					list_add(list_pedidos_confirm,plato_pcb->id_pedido);
-					pthread_mutex_unlock(&list_pedidos_confirm_mtx);
-
-					agregar_cola_ready(plato_pcb);
+						sindicato_nombre_plato_receta = malloc(sizeof(t_nombre));
+						plato_pcb = malloc(sizeof(t_plato_pcb));
+						mje_sindicato_OBTENER_RECETA = malloc(sizeof(t_mensaje));
+						mje_sindicato_OBTENER_RECETA->tipo_mensaje = OBTENER_RECETA;
+						mje_sindicato_OBTENER_RECETA->id = cfg_id;
 
 
-				}//for de cantidad total - cant hecha
+						plato_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
+						//obtengo el nombre del plato
+						sindicato_nombre_plato_receta->nombre = malloc(strlen(plato_n->comida.nombre)+1);
 
+						strcpy(sindicato_nombre_plato_receta->nombre, plato_n->comida.nombre);
+						//				sindicato_nombre_plato_receta->largo_nombre=pedido_n->comida.largo_nombre;
+
+						//cargo el mj a enviar a sindicato para pedir receta
+						mje_sindicato_OBTENER_RECETA->parametros = sindicato_nombre_plato_receta;
+
+						//conexion sindicato - TODO NO HAGO VALIDACION DE SINDICATO DISPONIBLE
+						int socket_OBTENER_RECETA = conectar_con_sindicato();
+
+						enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
+						loggear_mensaje_enviado(mje_sindicato_OBTENER_RECETA->parametros, mje_sindicato_OBTENER_RECETA->tipo_mensaje, log_config_ini);
+
+						free_struct_mensaje(mje_sindicato_OBTENER_RECETA->parametros, OBTENER_RECETA);
+						free(mje_sindicato_OBTENER_RECETA);
+
+						//RECIBIR RESPUESTA DE SINDICATO
+						rta_sindicato_RTA_OBTENER_RECETA = recibir_respuesta(socket_OBTENER_RECETA, &error_cod_op);// TODO
+
+						liberar_conexion(socket_OBTENER_RECETA);
+
+						for (int inicio_plato_cant = 0;
+								inicio_plato_cant <plato_n->cantTotal-plato_n->cantHecha;
+								inicio_plato_cant++)
+						{
+							//cargo el pcb
+							plato_pcb->id_pedido = id_CONFIRMAR_PEDIDO->id;
+							plato_pcb->comida.nombre = malloc(strlen(plato_n->comida.nombre)+1);
+							strcpy(plato_pcb->comida.nombre,plato_n->comida.nombre);
+
+							plato_pcb->cantTotal = plato_n->cantTotal;
+							plato_pcb->cantHecha = plato_n->cantHecha;
+							plato_pcb->cantPasos = rta_sindicato_RTA_OBTENER_RECETA->cantPasos;
+							plato_pcb->pasos = list_duplicate(rta_sindicato_RTA_OBTENER_RECETA->pasos);
+							plato_pcb->id_plato = id_plato_global;
+							plato_pcb->estado = NEW;
+
+							pthread_mutex_init(&clock_plato, NULL);
+							plato_pcb->mutex_clock = clock_plato;
+
+							pthread_mutex_lock(&id_plato_global_mtx);
+							id_plato_global++;
+							pthread_mutex_unlock(&id_plato_global_mtx);
+
+							//					free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); TODO list duplicate
+
+							//cargo lista de pcb
+							log_debug(log_oficial, "[CREAR_PLATO]: Se creo el PCB del plato %s con ID: %d ", plato_pcb->comida.nombre, plato_pcb->id_plato);
+
+							log_info(log_config_ini,"\tPCB id: %d \n",plato_pcb->id_pedido);
+							log_info(log_config_ini,"\tPCB nombe plato: %s \n",plato_pcb->comida.nombre);
+							log_info(log_config_ini,"\tPCB cant de platos: %d \n",plato_pcb->cantTotal);
+							log_info(log_config_ini,"\tPCB cant hecha: %d \n",plato_pcb->cantHecha);
+							log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos);
+							//log_info(log_config_ini,"\tPCB cant pasos: %d \n",plato_pcb->cantPasos); PASOS list get
+
+							pthread_mutex_lock(&list_pedidos_confirm_mtx);
+							list_add(list_pedidos_confirm,plato_pcb->id_pedido);
+							pthread_mutex_unlock(&list_pedidos_confirm_mtx);
+
+							agregar_cola_ready(plato_pcb);
+
+
+						}//for de cantidad total - cant hecha
+
+					}
+
+
+
+
+					//respondo al cliente -- consultar en que casos se debe mandar fail
+					//esta es la respuesta al cliente,
+					confirmacion = OK;
+				}else{//llave de validacion de error en obtener pedido
+					log_info(log_config_ini,"\tSindicato devolvio error al OBTENER_PEDIDO \n");
 				}
-
-				free_struct_mensaje(id_CONFIRMAR_PEDIDO, CONFIRMAR_PEDIDO);
 				free_struct_mensaje(rta_sindicato_RTA_OBTENER_PEDIDO, RTA_OBTENER_PEDIDO);
-
-				//respondo al cliente -- consultar en que casos se debe mandar fail
-				//esta es la respuesta al cliente,
-				confirmacion = OK;
-			}else{//llave de validacion de error en obtener pedido
-				log_info(log_config_ini,"\tSindicato devolvio error al OBTENER_PEDIDO \n");
-			}
-
 			}
 		}
 
 		//RESPONDO AL CLIENTE
 		//OK o FAIL
 		enviar_confirmacion(confirmacion,cliente_fd, RTA_CONFIRMAR_PEDIDO);
-		free(id_CONFIRMAR_PEDIDO->nombre.nombre);
+		free_struct_mensaje(id_CONFIRMAR_PEDIDO, CONFIRMAR_PEDIDO);
 		free(mensaje);
 
 		/*
@@ -1196,32 +1196,32 @@ void terminar_plato(t_plato_pcb* plato){
 
 	//ENVIO A SINDICATO PLATO_LISTO
 	if(socket_sindicato_plato_listo == -1){
-			//TODO error
+		//TODO error
+	}else{
+		uint32_t cod_op;
+		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
+		mensaje->id = cfg_id;
+		mensaje->tipo_mensaje = PLATO_LISTO;
+		m_platoListo * plato_listo = malloc(sizeof(m_platoListo));
+		plato_listo->comida.nombre = string_duplicate(plato->comida.nombre);
+		plato_listo->restaurante.nombre = string_duplicate(cfg_nombre_restaurante);
+		plato_listo->idPedido = plato->id_pedido;
+		mensaje->parametros = plato_listo;
+		enviar_mensaje(mensaje, socket_sindicato_plato_listo);
+		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_config_ini);
+
+		free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
+		free(mensaje);
+		uint32_t* rta_plato_listo = recibir_respuesta(socket_sindicato_plato_listo, &cod_op);
+		if(cod_op == RTA_PLATO_LISTO){
+			loggear_mensaje_recibido(rta_plato_listo, cod_op, log_config_ini);
+			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
-			uint32_t cod_op;
-			t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-			mensaje->id = cfg_id;
-			mensaje->tipo_mensaje = PLATO_LISTO;
-			m_platoListo * plato_listo = malloc(sizeof(m_platoListo));
-			plato_listo->comida.nombre = string_duplicate(plato->comida.nombre);
-			plato_listo->restaurante.nombre = string_duplicate(cfg_nombre_restaurante);
-			plato_listo->idPedido = plato->id_pedido;
-			mensaje->parametros = plato_listo;
-			enviar_mensaje(mensaje, socket_sindicato_plato_listo);
-			loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_config_ini);
-
-			free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
-			free(mensaje);
-			uint32_t* rta_plato_listo = recibir_respuesta(socket_sindicato_plato_listo, &cod_op);
-			if(cod_op == RTA_PLATO_LISTO){
-				loggear_mensaje_recibido(rta_plato_listo, cod_op, log_config_ini);
-				free_struct_mensaje(rta_plato_listo, cod_op);
-			}else{
-				//error TODO
-			}
-			liberar_conexion(socket_sindicato_plato_listo);
-
+			//error TODO
 		}
+		liberar_conexion(socket_sindicato_plato_listo);
+
+	}
 
 	log_debug(log_oficial, "[PLATO_LISTO]: Finalizó el plato %s con ID: %d", plato->comida.nombre, plato->id_plato);
 	free_pcb_plato(plato);
