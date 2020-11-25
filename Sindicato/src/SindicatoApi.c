@@ -122,16 +122,17 @@ char* internal_api_list_to_string(t_list* list, int type){
 
 	string_append(&listString, "[");
 	for(int i = 0; i < list->elements_count; i++){
-		void* element = list_get(list, i);
 
 		if(type == 1){
-			if(i == 0)
+			uint32_t element = (uint32_t)list_get(list, i);
+			if(i == 0){
+
 				string_append_with_format(&listString, "%d", element);
-			else
+			}else
 				string_append_with_format(&listString, ",%d", element);
 
 		}else{
-			t_nombre* name = element;
+			t_nombre* name = list_get(list, i);
 			if(i == 0)
 				string_append_with_format(&listString, "%s", name->nombre);
 			else
@@ -885,7 +886,7 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoString = internal_api_pedido_to_string("Pendiente","[]","[0]","[0]","0");
+	char* pedidoString = internal_api_pedido_to_string("Pendiente","[]","[]","[]","0");
 
 	int initialBlock = internal_api_write_block(pedidoString, NULL, MODE_ADD);
 
@@ -905,11 +906,86 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 }
 
 uint32_t* sindicato_api_guardar_plato(void* pedido){
-	// m_guardarPlato* asd;
+	m_guardarPlato* pedidoRequested = pedido;
+	bool platoAdded = false;
 
 	uint32_t* opResult = malloc(sizeof(uint32_t));
-	/* DELETE THIS: datos dummies solo para TEST */
-	(*opResult) = 1;
+	*opResult = 1;
+
+	if(!sindicato_utils_verify_if_exist(pedidoRequested->restaurante.nombre, NULL, TYPE_RESTAURANTE)){
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)pedidoRequested->idPedido);
+	string_append(&pedidoName, pedidoNumberString);
+
+	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO)){
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO);
+
+	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	if(pedidoInfo->estado_pedido != PENDIENTE){
+		free(initialBLock);
+		free(pedidoInfo);
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	for(int i = 0; i < pedidoInfo->platos->elements_count; i++){
+		t_nombre* plato = list_get(pedidoInfo->platos, i);
+
+		if(string_equals_ignore_case(plato->nombre, pedidoRequested->comida.nombre)){
+			uint32_t qtyPlatos = (uint32_t)list_remove(pedidoInfo->cantidad_platos, i);
+
+			uint32_t newTotal = qtyPlatos + pedidoRequested->cantidad;
+
+			list_add_in_index(pedidoInfo->cantidad_platos, i,(void*) newTotal);
+
+			platoAdded = true;
+		}
+	}
+
+	if(!platoAdded){
+		list_add(pedidoInfo->platos, &pedidoRequested->comida);
+		list_add(pedidoInfo->cantidad_platos, (void*)pedidoRequested->cantidad);
+		list_add(pedidoInfo->cantidad_lista, 0);
+	}
+
+	char* platos = internal_api_list_to_string(pedidoInfo->platos, 0);
+	char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
+	char* cantLista = internal_api_list_to_string(pedidoInfo->cantidad_lista, 1);
+
+	//TODO: Actualizar precio
+
+	char* precioTotal = string_itoa((int)pedidoInfo->precio_total);
+
+	char* pedidoString = internal_api_pedido_to_string("Pendiente",platos, cantPlatos, cantLista, precioTotal);
+
+	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+
+	if(initialBlock == -1){
+		free(pedidoString);
+		free(initialBLock);
+		free(pedidoInfo);
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	/* Create "info" file */
+	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->restaurante.nombre);
+
+	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
 
 	return opResult;
 }
@@ -1063,7 +1139,7 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 }
 
 uint32_t* sindicato_api_plato_listo(void* plato){
-	// m_platoListo* asd;
+	m_platoListo* asd;
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	/* DELETE THIS: datos dummies solo para TEST */
 	(*opResult) = 1;
@@ -1132,6 +1208,7 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 			*opResult = 0;
 			return opResult;
 		}
+
 
 		char* platos = internal_api_list_to_string(pedidoInfo->platos, 0);
 		char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
