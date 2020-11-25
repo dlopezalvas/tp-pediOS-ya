@@ -117,6 +117,32 @@ t_config* internal_api_array_to_config(char** stringArray){
 	return config;
 }
 
+char* internal_api_list_to_string(t_list* list, int type){
+	char* listString = string_new();
+
+	string_append(&listString, "[");
+	for(int i = 0; i < list->elements_count; i++){
+		void* element = list_get(list, i);
+
+		if(type == 1){
+			if(i == 0)
+				string_append_with_format(&listString, "%d", element);
+			else
+				string_append_with_format(&listString, ",%d", element);
+
+		}else{
+			t_nombre* name = element;
+			if(i == 0)
+				string_append_with_format(&listString, "%s", name->nombre);
+			else
+				string_append_with_format(&listString, ",%s", name->nombre);
+		}
+	}
+	string_append(&listString, "]");
+
+	return listString;
+}
+
 char** internal_api_split_string(char* stringtoSplit, int stringMaxSize, int blocksNeeded){
 	char** stringSplitted = malloc(blocksNeeded*sizeof(char)*stringMaxSize);
 
@@ -588,9 +614,9 @@ int internal_api_calculate_blocks_needed(char* fullString){
 	return blocksNeeded;
 }
 
-char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, char*** blockList){
+char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, char** blockList){
 	char* blockPath;
-	char* blocksDelimited = string_new();
+	*blockList = string_new();
 
 	int offset = 0;
 
@@ -599,7 +625,7 @@ char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, 
 
 	char* blockData = malloc(stringSize*sizeof(char)+1);
 	memset(blockData, 0, stringSize*sizeof(char)+1);
-	string_append_with_format(&blocksDelimited,"%d", nextBlock );
+	string_append_with_format(blockList,"%d", nextBlock );
 	for(int i = 0; i < blocksQty; i++){
 
 		blockPath = sindicato_utils_build_block_path(nextBlock);
@@ -612,7 +638,7 @@ char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, 
 		if(i < blocksQty - 1){
 			memcpy(blockData + offset, blockMapped, metadataFS->block_size - 4);
 			memcpy(&nextBlock, blockMapped + metadataFS->block_size - 4,  4);
-			string_append_with_format(&blocksDelimited,",%d", nextBlock );
+			string_append_with_format(blockList,",%d", nextBlock );
 			offset += metadataFS->block_size - 4;
 			stringSize -= metadataFS->block_size - 4;
 		}else{
@@ -623,8 +649,6 @@ char* internal_api_get_string_from_filesystem(int initialBlock, int stringSize, 
 		close(block);
 		free(blockPath);
 	}
-
-	*blockList = string_split(blocksDelimited, ",");
 
 	return blockData;
 }
@@ -645,14 +669,17 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 		blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
 		if(blocksToWrite == NULL)
 			return -1; //error
+
+		//TODO: loguear los bloques a escribir
 	}
 
 	if(mode == MODE_UPDATE){
-		char** originalBlocks;
-		size_t sizeNew;
+		char* originalBlocks;
 
 		char* originalStringStored = internal_api_get_string_from_filesystem(initialBLock->initialBlock,initialBLock->stringSize, &originalBlocks);
 		int qtyBlocksStored = internal_api_calculate_blocks_needed(originalStringStored);
+
+		//TODO: liberar originalStringStored?
 
 		int blocksMissed = 0;
 
@@ -662,27 +689,22 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 
 			char** newBlocks = internal_api_get_free_blocks(blocksMissed);
 
-			sizeNew = sizeof(originalBlocks) + sizeof(newBlocks);
-			blocksToWrite = malloc(sizeNew * sizeof(char*));
-
-			memcpy(blocksToWrite, originalBlocks, qtyBlocksStored*sizeof(char*));
-			memcpy(blocksToWrite + qtyBlocksStored*sizeof(char*), newBlocks, blocksMissed * sizeof(char*));
-
-			for(int i = 0; i < qtyBlocksStored+qtyblocksNeeded; i++){
-				puts(blocksToWrite[i]);
+			for(int i = 0; i < blocksMissed; i++){
+				string_append_with_format(&originalBlocks, ",%s", newBlocks[i]);
 			}
 
-			//TODO: Obtener el o los bloques faltantes
+			blocksToWrite = string_split(originalBlocks, ",");
+
+			free(newBlocks);
+			free(originalBlocks);
+
 		} else if (qtyblocksNeeded < qtyBlocksStored){
 			blocksMissed = qtyBlocksStored - qtyblocksNeeded;
 			//TODO: liberar el ultimo bloque
 
 		} else {
-			blocksToWrite = originalBlocks;
+			blocksToWrite = string_split(originalBlocks, ",");
 		}
-
-		//TODO: Armar con los bloques ya existentes y validar si necesito alguno mas
-
 	}
 
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
@@ -770,12 +792,14 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 
 	char* restToSave = internal_api_restaurante_to_string(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
 
-	// TODO: validar que no sea -1
-	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
-
 	/* Create restaurante folder */
 	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, nombre);
 	sindicato_utils_create_folder(restPath, true);
+
+	// TODO: validar que no sea -1
+	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
+
+
 
 	/* Create "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
@@ -847,7 +871,7 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 	if(!sindicato_utils_verify_if_exist(pedidoRestaurante->nombre.nombre, NULL, TYPE_RESTAURANTE)){
 		free(pedidoRestaurante);
-		*opResult = 1;
+		*opResult = 0;
 		return opResult;
 	}
 
@@ -857,7 +881,7 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 	if(sindicato_utils_verify_if_exist(pedidoName, pedidoRestaurante->nombre.nombre, TYPE_PEDIDO)){
 		free(pedidoRestaurante);
-		*opResult = 1;
+		*opResult = 0;
 		return opResult;
 	}
 
@@ -873,6 +897,8 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 		*opResult = 1;
 		return opResult;
+	} else{
+		*opResult = 0;
 	}
 
 	return opResult;
@@ -889,10 +915,62 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 }
 
 uint32_t* sindicato_api_confirmar_pedido(void* pedido){
-	// t_nombre_y_id* asd;
+	t_nombre_y_id* pedidoRequested = pedido;
+
 	uint32_t* opResult = malloc(sizeof(uint32_t));
-	/* DELETE THIS: datos dummies solo para TEST */
-	(*opResult) = 1;
+	*opResult = 1;
+
+	if(!sindicato_utils_verify_if_exist(pedidoRequested->nombre.nombre, NULL, TYPE_RESTAURANTE)){
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
+	string_append(&pedidoName, pedidoNumberString);
+
+	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
+
+	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+	if(pedidoInfo->estado_pedido != PENDIENTE){
+		free(initialBLock);
+		free(pedidoInfo);
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	char* platos = internal_api_list_to_string(pedidoInfo->platos, 0);
+	char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
+	char* cantLista = internal_api_list_to_string(pedidoInfo->cantidad_lista, 1);
+	char* precioTotal = string_itoa((int)pedidoInfo->precio_total);
+
+	char* pedidoString = internal_api_pedido_to_string("Confirmado",platos, cantPlatos, cantLista, precioTotal);
+
+	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+
+	if(initialBlock == -1){
+		free(pedidoString);
+		free(initialBLock);
+		free(pedidoInfo);
+		free(pedidoRequested);
+		*opResult = 0;
+		return opResult;
+	}
+
+	/* Create "info" file */
+	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->nombre.nombre);
+
+	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
 
 	return opResult;
 }
@@ -1021,12 +1099,64 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 }
 
 uint32_t* sindicato_api_terminar_pedido(void* pedido){
-	// t_nombre_y_id * asd;
-	uint32_t* opResult = malloc(sizeof(uint32_t));
-	/* DELETE THIS: datos dummies solo para TEST */
-	(*opResult) = 1;
+	t_nombre_y_id* pedidoRequested = pedido;
 
-	return opResult;
+		uint32_t* opResult = malloc(sizeof(uint32_t));
+		*opResult = 1;
+
+		if(!sindicato_utils_verify_if_exist(pedidoRequested->nombre.nombre, NULL, TYPE_RESTAURANTE)){
+			free(pedidoRequested);
+			*opResult = 0;
+			return opResult;
+		}
+
+		char* pedidoName = string_duplicate("Pedido");
+		char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
+		string_append(&pedidoName, pedidoNumberString);
+
+		if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
+			free(pedidoRequested);
+			*opResult = 0;
+			return opResult;
+		}
+
+		/* get the info from FS */
+		t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
+
+		t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
+
+		if(pedidoInfo->estado_pedido != CONFIRMADO){
+			free(initialBLock);
+			free(pedidoInfo);
+			free(pedidoRequested);
+			*opResult = 0;
+			return opResult;
+		}
+
+		char* platos = internal_api_list_to_string(pedidoInfo->platos, 0);
+		char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
+		char* cantLista = internal_api_list_to_string(pedidoInfo->cantidad_lista, 1);
+		char* precioTotal = string_itoa((int)pedidoInfo->precio_total);
+
+		char* pedidoString = internal_api_pedido_to_string("Terminado",platos, cantPlatos, cantLista, precioTotal);
+
+		int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+
+		if(initialBlock == -1){
+			free(pedidoString);
+			free(initialBLock);
+			free(pedidoInfo);
+			free(pedidoRequested);
+			*opResult = 0;
+			return opResult;
+		}
+
+		/* Create "info" file */
+		char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->nombre.nombre);
+
+		internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+
+		return opResult;
 }
 
 /* Main functions */
