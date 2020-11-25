@@ -187,6 +187,9 @@ void inicio_de_listas_globales(){
 
 	pthread_mutex_init(&id_plato_global_mtx, NULL);
 	id_plato_global = 0;
+	list_pedidos_terminar=list_create();
+	pthread_mutex_init(&mutex_list_terminar, NULL);
+
 
 	//LSITA DE HILOS CLIENTE
 	hilos = list_create();
@@ -327,19 +330,6 @@ bool mismo_id(uint32_t id1, uint32_t id2){
 	return id1 == id2;
 }
 
-//void* fhilo_planificador(void* v){
-//	int contador=0;
-//
-//	while (contador <10){
-//
-//		log_info(log_config_ini, "\tCONTADOR: %d \n",contador);
-//
-//		delay(3);
-//		contador=contador+1;
-//
-//	}
-//	return 0;
-//}
 
 
 
@@ -795,6 +785,17 @@ void process_request(int cod_op, int cliente_fd) {
 					rta_sindicato_RTA_OBTENER_RECETA = recibir_respuesta(socket_OBTENER_RECETA, &error_cod_op);// TODO
 
 					liberar_conexion(socket_OBTENER_RECETA);
+					//AGREGO  A PEDIDOS A TERMINAR
+					m_guardarPlato* pedido_a_terminar = malloc(sizeof(m_guardarPlato));
+					pedido_a_terminar->cantidad=plato_n->cantTotal-plato_n->cantHecha;
+					strcpy(pedido_a_terminar->comida,plato_n->comida.nombre);
+					pedido_a_terminar->idPedido=id_CONFIRMAR_PEDIDO->id;
+
+
+					pthread_mutex_lock(&mutex_list_terminar);
+					list_add(list_pedidos_terminar,pedido_a_terminar);
+					pthread_mutex_unlock(&mutex_list_terminar);
+
 
 				for (int inicio_plato_cant = 0;
 						inicio_plato_cant <plato_n->cantTotal-plato_n->cantHecha;
@@ -836,6 +837,8 @@ void process_request(int cod_op, int cliente_fd) {
 					pthread_mutex_unlock(&list_pedidos_confirm_mtx);
 
 					agregar_cola_ready(plato_pcb);
+
+
 
 
 				}//for de cantidad total - cant hecha

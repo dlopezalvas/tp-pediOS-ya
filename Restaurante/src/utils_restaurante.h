@@ -173,6 +173,8 @@ int id_pedidos;
 
 t_list *  list_pedidos_confirm;
 pthread_mutex_t list_pedidos_confirm_mtx;
+t_list *  list_pedidos_terminar;
+pthread_mutex_t mutex_list_terminar;
 
 
 
