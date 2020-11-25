@@ -1,8 +1,6 @@
 echo "Deploy TP"
 cd ~
 
-mkdir workspace
-
 cd workspace/so-commons-library
 sudo make install
 cd ~
