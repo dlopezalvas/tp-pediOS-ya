@@ -84,7 +84,7 @@ char* id_o_confirmacion_to_string(uint32_t* id_confirmacion, op_code tipo_mensaj
 	if(es_id(tipo_mensaje)){
 		string_append_with_format(&string_mensaje, "%s %d", op_code_to_string(tipo_mensaje), id);
 	}else{
-		string_append_with_format(&string_mensaje, "%s %s", op_code_to_string(tipo_mensaje),bool_to_string(id));
+		string_append_with_format(&string_mensaje, "%s %s", op_code_to_string(tipo_mensaje),confirmacion_to_string((t_confirmacion)id));
 	}
 	return string_mensaje;
 }
@@ -94,9 +94,11 @@ bool es_id(op_code tipo_mensaje){
 	return (tipo_mensaje == RTA_CREAR_PEDIDO ||	tipo_mensaje == CONFIRMAR_PEDIDO ||	tipo_mensaje == CONSULTAR_PEDIDO);
 }
 
-char* bool_to_string(bool confirmacion){
-	if(confirmacion) return "OK";
-	else return "FAIL";
+char* confirmacion_to_string(t_confirmacion confirmacion){
+	switch(confirmacion){
+	case OK: return "OK";
+	case FAIL: return "FAIL";
+	}
 }
 
 char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje){

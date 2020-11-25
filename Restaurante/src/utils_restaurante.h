@@ -91,6 +91,9 @@ t_list* platos_HORNEANDO;
 pthread_mutex_t mutex_hilos;
 pthread_mutex_t mutex_id_pedidos;
 
+uint32_t id_plato_global;
+pthread_mutex_t id_plato_global_mtx;
+
 
 pthread_t hilo_serve_app;
 typedef enum{
@@ -111,6 +114,7 @@ typedef struct{
 			uint32_t cantHecha;
 			est_planif estado;
 			pthread_mutex_t mutex_clock;
+			uint32_t id_plato;
 }t_plato_pcb;
 
 
@@ -167,7 +171,9 @@ int id_pedidos;
 
 //LISTAS
 
-t_list *  list_pedidos;
+t_list *  list_pedidos_confirm;
+pthread_mutex_t list_pedidos_confirm_mtx;
+
 
 
 //MENSAJES
@@ -188,6 +194,9 @@ void terminar_plato(t_plato_pcb* plato);
 void free_pcb_plato(t_plato_pcb* plato);
 void planificar_hornos();
 void hornear(t_horno* horno);
+void planificador_ready_a_exec(t_cola_afinidad* strc_cola);
+void planificador_exec(t_cola_afinidad* strc_cola);
+void fhilo_clock();
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */

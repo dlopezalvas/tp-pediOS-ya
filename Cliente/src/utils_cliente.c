@@ -30,8 +30,12 @@ void iniciar_consola(){
 
 		char* linea = readline(">");
 
-		while(strncmp(linea, "", 1) != 0){
-			if(linea){
+		while(string_is_empty(linea) || !string_equals_ignore_case(linea, EXIT)){
+			if(string_is_empty(linea)){
+				free(linea);
+				linea = readline(">");
+				continue;
+			}else{
 				add_history(linea);
 			}
 
@@ -47,6 +51,7 @@ void iniciar_consola(){
 			}
 
 			free(linea);
+
 			linea = readline(">");
 		}
 		free(linea);
@@ -91,7 +96,12 @@ void seleccionar_proceso(){
 		printf("Seleccione uno de los siguiente procesos: \nComanda\nApp\nRestaurante\nSindicato \n");
 		linea = readline(">");
 		string_to_upper(linea);
-	}while (!validar_proceso(linea));
+	}while (!validar_proceso(linea) && !string_equals_ignore_case(linea, EXIT));
+
+	if(string_equals_ignore_case(linea, EXIT)){
+		free(linea);
+		pthread_exit(NULL);
+	}
 	proceso = linea;
 }
 
@@ -129,6 +139,7 @@ void imprimir_mensajes_disponibles(){
 		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO);
 		printf("7-%s\n", FORMATO_PLATO_LISTO);
 		printf("8-%s\n", FORMATO_OBTENER_RECETA);
+		printf("9-%s\n", FORMATO_TERMINAR_PEDIDO);
 	}
 
 	printf("Para consultar los mensajes ingrese %s\n", COMANDO_HELP);
@@ -180,7 +191,8 @@ bool validar_proceso_mensaje(char* tipo_mensaje){
 				string_equals_ignore_case(MENSAJE_OBTENER_RESTAURANTE, tipo_mensaje) ||
 				string_equals_ignore_case(MENSAJE_PLATO_LISTO, tipo_mensaje) ||
 				string_equals_ignore_case(MENSAJE_OBTENER_RECETA, tipo_mensaje) ||
-				string_equals_ignore_case(MENSAJE_CONFIRMAR_PEDIDO, tipo_mensaje);
+				string_equals_ignore_case(MENSAJE_CONFIRMAR_PEDIDO, tipo_mensaje) ||
+				string_equals_ignore_case(MENSAJE_TERMINAR_PEDIDO, tipo_mensaje);
 	}
 	return false;
 }

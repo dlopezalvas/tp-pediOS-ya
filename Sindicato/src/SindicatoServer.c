@@ -2,6 +2,19 @@
 
 /* ********************************** PRIVATE FUNCTIONS ********************************** */
 
+void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op){
+	t_mensaje* mensaje_a_enviar = malloc(sizeof(t_mensaje));
+	mensaje_a_enviar->tipo_mensaje = cod_op;
+	mensaje_a_enviar->id = sindicatoProcessId;
+	uint32_t* confirmacion = malloc(sizeof(uint32_t));
+	*confirmacion = _confirmacion;
+	mensaje_a_enviar->parametros = confirmacion;
+	enviar_mensaje(mensaje_a_enviar, cliente);
+	loggear_mensaje_enviado(confirmacion, cod_op, sindicatoLog);
+	free_struct_mensaje(confirmacion,cod_op);
+	free(mensaje_a_enviar);
+}
+
 void internal_process_request(int cod_op, int socket_client){
 	void* messageReceived = NULL;
 	int sizeMessage = 0;
@@ -9,7 +22,7 @@ void internal_process_request(int cod_op, int socket_client){
 	uint32_t id_proceso;
 
 	/* Response variables */
-	int operationResult = 0;
+	uint32_t* operationResult = 0;
 	rta_obtenerRestaurante* restaurante;
 	rta_obtenerReceta* receta;
 	rta_obtenerPedido* pedido;
@@ -62,6 +75,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_PEDIDO;
 			responseMessage->message->parametros = pedido;
+
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
 		case OBTENER_RESTAURANTE:
@@ -69,6 +83,7 @@ void internal_process_request(int cod_op, int socket_client){
 
 			responseMessage->message->tipo_mensaje = RTA_OBTENER_RESTAURANTE;
 			responseMessage->message->parametros = restaurante;
+
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
 		case PLATO_LISTO:
@@ -92,12 +107,24 @@ void internal_process_request(int cod_op, int socket_client){
 			responseMessage->message->parametros = (void*)operationResult;
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
+		case POSICION_CLIENTE:
+			log_info(sindicatoDebugLog, "[SERVER] Handshake Cliente");
+			log_info(sindicatoDebugLog, "[SERVER] Respuesta POSICION_CLIENTE, enviada");
+
+			t_coordenadas* mensaje = messageReceived;
+
+			enviar_confirmacion(0, socket_client, RTA_POSICION_CLIENTE);
+			free_struct_mensaje(mensaje, POSICION_CLIENTE);
+
+			free(responseMessage->message);
+			free(responseMessage);
 	}
 
-	if(sendMessageFlag == ENVIAR_RESPUESTA)
-		sindicato_api_send_response_of_operation(responseMessage, socket_client);
+	if(sendMessageFlag == ENVIAR_RESPUESTA){
+		sindicato_api_send_response_of_operation(responseMessage);
+		sindicato_utils_free_memory_message(responseMessage);
+	}
 
-	//TODO: Liberar memoraia de todos los mensajes.
 }
 
 void internal_serve_client(int socket){
@@ -107,13 +134,9 @@ void internal_serve_client(int socket){
 		cod_op = -1;
 	}
 
-	if(cod_op != -1 && cod_op != POSICION_CLIENTE){
+	if(cod_op != -1 && cod_op != 0){
 		internal_process_request(cod_op, socket);
 	} else{
-		if(cod_op == POSICION_CLIENTE){
-			//TODO:Sincronizar log
-			log_info(sindicatoDebugLog, "[SERVER] Handshake Cliente");
-		}
 		pthread_exit(NULL);
 	}
 }

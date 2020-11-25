@@ -1,790 +1,342 @@
-<<<<<<< HEAD
-[INFO] 00:52:51:350 cliente/(14411:14413): Se envio el mensaje CREAR_PEDIDO
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:911 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:912 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:913 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:19:914 cliente/(14617:14620): Se recibio el mensaje (null)
-[INFO] 17:24:42:828 cliente/(14629:14631): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:13:16:957 cliente/(12930:12937): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:19:06:424 cliente/(13202:13208): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:19:06:453 cliente/(13202:13208): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 20:24:41:655 cliente/(13307:13320): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:24:41:669 cliente/(13307:13320): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 20:39:44:187 cliente/(13382:13454): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:39:44:199 cliente/(13382:13454): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 20:40:34:889 cliente/(13469:13475): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:40:34:923 cliente/(13469:13475): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 20:44:18:963 cliente/(13571:13583): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:44:18:993 cliente/(13571:13583): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-=======
->>>>>>> master
-[INFO] 20:57:17:814 cliente/(4939:4951): Se envio el mensaje CREAR_PEDIDO
-[INFO] 20:57:17:817 cliente/(4939:4951): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 21:01:27:383 cliente/(5112:5131): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:01:27:385 cliente/(5112:5131): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 21:03:59:681 cliente/(5112:5215): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:04:39:770 cliente/(5112:5236): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 21:26:26:250 cliente/(5904:5912): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:26:46:26 cliente/(5904:5933): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:26:46:30 cliente/(5904:5933): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 21:28:00:40 cliente/(5904:5967): Se envio el mensaje CONSULTAR_PLATOS a
-[INFO] 21:44:35:274 cliente/(5904:6596): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 21:44:35:275 cliente/(5904:6596): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 21:46:06:118 cliente/(5904:6663): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 21:47:34:727 cliente/(5904:6751): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 21:52:07:798 cliente/(6859:6872): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:52:07:800 cliente/(6859:6872): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 21:52:24:317 cliente/(6859:6880): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 21:54:22:915 cliente/(6859:7018): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:05:04:39 cliente/(6859:7212): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:05:57:367 cliente/(6859:7263): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:06:37:607 cliente/(6859:7276): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:12:27:971 cliente/(6859:7347): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:12:27:972 cliente/(6859:7347): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 22:15:10:485 cliente/(6859:7436): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:15:10:486 cliente/(6859:7436): Se recibio el mensaje ERROR
-[INFO] 22:18:16:429 cliente/(6859:7484): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:18:16:431 cliente/(6859:7484): Se recibio el mensaje RTA_CREAR_PEDIDO 0
-[INFO] 22:22:57:542 cliente/(6859:7579): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:22:57:543 cliente/(6859:7579): Se recibio el mensaje ERROR
-[INFO] 22:23:00:945 cliente/(6859:7583): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:23:00:947 cliente/(6859:7583): Se recibio el mensaje ERROR
-[INFO] 22:24:06:203 cliente/(6859:7641): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:24:22:524 cliente/(6859:7651): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:28:29:765 cliente/(6859:7738): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:31:37:110 cliente/(6859:7822): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:33:51:543 cliente/(6859:7919): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:33:51:617 cliente/(6859:7919): Se recibio el mensaje ERROR
-[INFO] 22:35:02:727 cliente/(6859:7938): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:35:02:733 cliente/(6859:7938): Se recibio el mensaje ERROR
-[INFO] 22:43:18:986 cliente/(6859:8193): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:43:19:35 cliente/(6859:8193): Se recibio el mensaje ERROR
-[INFO] 22:43:23:354 cliente/(6859:8197): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:43:23:397 cliente/(6859:8197): Se recibio el mensaje ERROR
-[INFO] 22:47:06:57 cliente/(8272:8284): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:47:27:915 cliente/(8272:8299): Se envio el mensaje CREAR_PEDIDO
-[INFO] 22:47:27:986 cliente/(8272:8299): Se recibio el mensaje ERROR
-[INFO] 22:47:38:346 cliente/(8272:8305): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:47:38:393 cliente/(8272:8305): Se recibio el mensaje ERROR
-[INFO] 22:49:34:632 cliente/(8272:8374): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 22:49:34:779 cliente/(8272:8374): Se recibio el mensaje ERROR
-[INFO] 23:10:53:890 cliente/(8649:8664): Se envio el mensaje AGREGAR_PLATO ugis 1
-[INFO] 23:11:02:508 cliente/(8649:8674): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:13:20:203 cliente/(8649:8761): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:16:15:718 cliente/(8649:8857): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:16:15:766 cliente/(8649:8857): Se recibio el mensaje ERROR
-[INFO] 23:17:30:295 cliente/(8649:8933): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:17:30:403 cliente/(8649:8933): Se recibio el mensaje ERROR
-[INFO] 23:17:33:627 cliente/(8649:8937): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:18:51:622 cliente/(8649:8997): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:18:51:667 cliente/(8649:8997): Se recibio el mensaje ERROR
-[INFO] 23:18:54:491 cliente/(8649:9001): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:25:35:342 cliente/(8649:9210): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:25:35:394 cliente/(8649:9210): Se recibio el mensaje ERROR
-[INFO] 23:25:39:70 cliente/(8649:9215): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:29:13:203 cliente/(8649:9288): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 23:29:13:253 cliente/(8649:9288): Se recibio el mensaje ERROR
-[INFO] 23:29:15:679 cliente/(8649:9291): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:29:15:708 cliente/(8649:9291): Se recibio el mensaje ERROR
-[INFO] 23:30:44:430 cliente/(8649:9371): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:30:44:498 cliente/(8649:9371): Se recibio el mensaje ERROR
-[INFO] 23:46:02:166 cliente/(9743:9756): Se envio el mensaje CONFIRMAR_PEDIDO 2 0
-[INFO] 23:46:02:209 cliente/(9743:9756): Se recibio el mensaje ERROR
-[INFO] 23:46:51:70 cliente/(9743:9761): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 23:46:51:74 cliente/(9743:9761): Se recibio el mensaje ERROR
-[INFO] 23:52:04:306 cliente/(9743:9912): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:52:04:360 cliente/(9743:9912): Se recibio el mensaje ERROR
-[INFO] 23:55:20:218 cliente/(9743:10014): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:55:20:294 cliente/(9743:10014): Se recibio el mensaje ERROR
-[INFO] 23:57:36:666 cliente/(9743:10117): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:57:36:742 cliente/(9743:10117): Se recibio el mensaje ERROR
-[INFO] 23:57:47:257 cliente/(9743:10124): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 23:57:47:299 cliente/(9743:10124): Se recibio el mensaje ERROR
-[INFO] 23:59:50:851 cliente/(10156:10163): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:27:05:984 cliente/(10156:10460): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:27:12:693 cliente/(10156:10467): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:29:38:187 cliente/(10156:10537): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:31:13:539 cliente/(10156:10568): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:31:13:588 cliente/(10156:10568): Se recibio el mensaje ERROR
-[INFO] 00:57:31:534 cliente/(11029:11042): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 00:57:31:543 cliente/(11029:11042): Se recibio el mensaje ERROR
-[INFO] 00:57:45:643 cliente/(11029:11050): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:57:45:648 cliente/(11029:11050): Se recibio el mensaje ERROR
-[INFO] 00:57:59:748 cliente/(11029:11057): Se envio el mensaje AGREGAR_PLATO ugis 1
-[INFO] 00:57:59:755 cliente/(11029:11057): Se recibio el mensaje ERROR
-[INFO] 00:58:10:746 cliente/(11029:11063): Se envio el mensaje AGREGAR_PLATO ugis 6
-[INFO] 00:58:10:750 cliente/(11029:11063): Se recibio el mensaje ERROR
-[INFO] 00:58:20:47 cliente/(11029:11069): Se envio el mensaje AGREGAR_PLATO ugis 7
-[INFO] 00:58:20:51 cliente/(11029:11069): Se recibio el mensaje ERROR
-[INFO] 00:59:01:424 cliente/(11029:11077): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 00:59:01:431 cliente/(11029:11077): Se recibio el mensaje ERROR
-[INFO] 00:59:15:626 cliente/(11029:11086): Se envio el mensaje CONSULTAR_PEDIDO 6
-[INFO] 00:59:15:631 cliente/(11029:11086): Se recibio el mensaje ERROR
-[INFO] 00:59:22:644 cliente/(11029:11092): Se envio el mensaje CONSULTAR_PEDIDO 8
-[INFO] 00:59:22:647 cliente/(11029:11092): Se recibio el mensaje ERROR
-[INFO] 00:41:23:891 cliente/(30231:30251): Se envio el mensaje CREAR_PEDIDO
-[INFO] 00:42:05:568 cliente/(30231:30281): Se envio el mensaje AGREGAR_PLATO ugis 2
-[INFO] 00:42:05:572 cliente/(30231:30281): Se recibio el mensaje RTA_AGREGAR_PLATO OK
-[INFO] 00:42:37:578 cliente/(30231:30289): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 19:00:19:1 cliente/(30231:7067): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 21:50:44:805 cliente/(6855:6860): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 21:50:44:806 cliente/(6855:6860): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoCompleto Choripan
-[INFO] 21:51:32:495 cliente/(6855:6873): Se envio el mensaje CREAR_PEDIDO
-[INFO] 21:51:32:497 cliente/(6855:6873): Se recibio el mensaje ERROR
-[INFO] 21:52:13:577 cliente/(6855:6884): Se envio el mensaje AGREGAR_PLATO ugis 2
-[INFO] 21:52:13:578 cliente/(6855:6884): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 21:52:44:299 cliente/(6855:6892): Se envio el mensaje AGREGAR_PLATO ugis 1
-[INFO] 21:52:44:301 cliente/(6855:6892): Se recibio el mensaje RTA_AGREGAR_PLATO OK
-[INFO] 21:53:04:438 cliente/(6855:6903): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
-[INFO] 21:53:10:28 cliente/(6855:6911): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:53:17:420 cliente/(6855:6918): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:53:37:995 cliente/(6855:6923): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:53:44:485 cliente/(6855:6931): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:54:00:440 cliente/(6855:6951): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 21:55:25:859 cliente/(6855:6974): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:55:25:909 cliente/(6855:6974): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
-[INFO] 21:57:52:877 cliente/(6855:7060): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:57:53:55 cliente/(6855:7060): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
-[INFO] 21:58:26:115 cliente/(6855:7119): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
-[INFO] 21:58:26:268 cliente/(6855:7119): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
-[INFO] 21:58:35:732 cliente/(6855:7127): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 21:59:45:591 cliente/(6855:7187): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 22:00:55:520 cliente/(6855:7252): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 22:59:31:689 cliente/(8999:9005): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 22:59:31:708 cliente/(8999:9005): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:02:09:657 cliente/(9407:9415): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 23:02:09:707 cliente/(9407:9415): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:05:41:267 cliente/(9407:9458): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:05:41:374 cliente/(9407:9458): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:06:34:153 cliente/(9407:9465): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:06:34:170 cliente/(9407:9465): Se recibio el mensaje ERROR
-[INFO] 23:06:49:345 cliente/(9407:9474): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:06:49:358 cliente/(9407:9474): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:07:03:274 cliente/(9407:9485): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
-[INFO] 23:07:03:281 cliente/(9407:9485): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
-[INFO] 23:07:12:753 cliente/(9407:9491): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:07:12:778 cliente/(9407:9491): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:14:44:724 cliente/(9407:9663): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:14:44:810 cliente/(9407:9663): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:17:36:397 cliente/(9407:9746): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:17:36:573 cliente/(9407:9746): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:20:07:664 cliente/(9407:9824): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:20:07:748 cliente/(9407:9824): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:20:17:624 cliente/(9407:9831): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:20:17:674 cliente/(9407:9831): Se recibio el mensaje ERROR
-[INFO] 23:20:31:874 cliente/(9407:9840): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:20:31:898 cliente/(9407:9840): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:21:54:64 cliente/(9407:9916): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:21:54:110 cliente/(9407:9916): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:22:03:272 cliente/(9407:9924): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
-[INFO] 23:22:03:317 cliente/(9407:9924): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
-[INFO] 23:22:17:61 cliente/(9407:9931): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 23:22:17:185 cliente/(9407:9931): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:31:14:420 cliente/(9407:10168): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:31:14:512 cliente/(9407:10168): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:31:19:204 cliente/(9407:10173): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:31:19:256 cliente/(9407:10173): Se recibio el mensaje ERROR
-[INFO] 23:31:23:168 cliente/(9407:10177): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:31:23:212 cliente/(9407:10177): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:31:28:180 cliente/(9407:10182): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
-[INFO] 23:31:28:209 cliente/(9407:10182): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
-[INFO] 23:31:32:775 cliente/(9407:10184): Se envio el mensaje CONSULTAR_PEDIDO 1
-[INFO] 23:31:32:882 cliente/(9407:10184): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:39:47:100 cliente/(9407:10438): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:39:47:199 cliente/(9407:10438): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:41:08:132 cliente/(9407:10504): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:41:08:225 cliente/(9407:10504): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:41:17:607 cliente/(9407:10511): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:41:17:689 cliente/(9407:10511): Se recibio el mensaje ERROR
-[INFO] 23:42:28:69 cliente/(9407:10573): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:42:28:144 cliente/(9407:10573): Se recibio el mensaje ERROR
-[INFO] 23:46:58:975 cliente/(9407:10747): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:46:59:73 cliente/(9407:10747): Se recibio el mensaje ERROR
-[INFO] 23:47:09:282 cliente/(9407:10755): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:47:09:360 cliente/(9407:10755): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:47:15:176 cliente/(9407:10759): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:47:15:196 cliente/(9407:10759): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:47:21:380 cliente/(9407:10763): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
-[INFO] 23:47:21:416 cliente/(9407:10763): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
-[INFO] 23:47:37:708 cliente/(9407:10767): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:47:37:728 cliente/(9407:10767): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 23:52:59:700 cliente/(9407:10950): Se envio el mensaje CONSULTAR_PLATOS ugis
-[INFO] 23:52:59:772 cliente/(9407:10950): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
-[INFO] 23:53:03:836 cliente/(9407:10955): Se envio el mensaje CREAR_PEDIDO
-[INFO] 23:53:03:890 cliente/(9407:10955): Se recibio el mensaje ERROR
-[INFO] 23:53:08:72 cliente/(9407:10959): Se envio el mensaje AGREGAR_PLATO ugis 3
-[INFO] 23:53:08:98 cliente/(9407:10959): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
-[INFO] 23:53:11:769 cliente/(9407:10963): Se envio el mensaje CONFIRMAR_PEDIDO ugis 4
-[INFO] 23:53:11:800 cliente/(9407:10963): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
-[INFO] 23:53:16:764 cliente/(9407:10967): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 23:53:16:848 cliente/(9407:10967): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 00:01:11:411 cliente/(9407:11115): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 00:01:11:526 cliente/(9407:11115): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
-[INFO] 00:01:23:52 cliente/(9407:11123): Se envio el mensaje CONSULTAR_PEDIDO 2
-[INFO] 00:01:23:99 cliente/(9407:11123): Se recibio el mensaje RTA_CONSULTAR_PEDIDO UGIS PENDIENTEMilanesa - pedidos: 1 listos: 1
+[INFO] 18:57:05:32 cliente/(5391:5395): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 18:57:05:33 cliente/(5391:5395): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 18:59:25:278 cliente/(5475:5482): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 18:59:25:280 cliente/(5475:5482): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 18:59:44:183 cliente/(5475:5503): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 18:59:44:246 cliente/(5475:5503): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:02:10:63 cliente/(5475:5606): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:02:10:101 cliente/(5475:5606): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:04:02:453 cliente/(5475:5706): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:04:02:470 cliente/(5475:5706): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:08:23:632 cliente/(5475:5823): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:08:23:672 cliente/(5475:5823): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:09:41:135 cliente/(5892:5897): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:09:41:166 cliente/(5892:5897): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:10:08:320 cliente/(5892:5982): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:10:08:349 cliente/(5892:5982): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:13:12:832 cliente/(5892:6047): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:13:12:894 cliente/(5892:6047): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:15:54:306 cliente/(5892:6088): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:15:54:328 cliente/(5892:6088): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:22:21:672 cliente/(5892:6157): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:22:21:692 cliente/(5892:6157): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:28:46:97 cliente/(5892:6259): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:28:46:162 cliente/(5892:6259): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:33:22:484 cliente/(5892:6412): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:33:22:506 cliente/(5892:6412): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:33:56:91 cliente/(5892:6478): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:33:56:107 cliente/(5892:6478): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:34:43:473 cliente/(5892:6503): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:34:43:491 cliente/(5892:6503): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:40:27:626 cliente/(5892:6658): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:40:27:641 cliente/(5892:6658): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:41:21:965 cliente/(5892:6732): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:41:21:980 cliente/(5892:6732): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:42:07:74 cliente/(5892:6797): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:42:07:91 cliente/(5892:6797): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:42:37:265 cliente/(5892:6859): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:42:37:285 cliente/(5892:6859): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:45:38:773 cliente/(5892:6982): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:45:38:788 cliente/(5892:6982): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 19:47:13:95 cliente/(5892:7061): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 19:47:13:110 cliente/(5892:7061): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:11:22:617 cliente/(5892:7693): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:11:22:630 cliente/(5892:7693): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:11:52:619 cliente/(5892:7715): Se envio el mensaje CONSULTAR_PLATOS 12
+[INFO] 21:11:52:633 cliente/(5892:7715): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:12:03:455 cliente/(5892:7724): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:12:03:468 cliente/(5892:7724): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:12:30:132 cliente/(5892:7745): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:12:30:146 cliente/(5892:7745): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:12:33:275 cliente/(5892:7750): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:12:33:287 cliente/(5892:7750): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:12:44:455 cliente/(5892:7761): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:12:44:469 cliente/(5892:7761): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:13:04:807 cliente/(5892:7783): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:13:04:815 cliente/(5892:7783): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 21:13:09:28 cliente/(5892:7787): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:13:09:42 cliente/(5892:7787): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:13:10:953 cliente/(5892:7791): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:13:10:961 cliente/(5892:7791): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:17:10:280 cliente/(5892:7932): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:17:10:293 cliente/(5892:7932): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:17:14:911 cliente/(5892:7936): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:17:14:926 cliente/(5892:7936): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:17:17:4 cliente/(5892:7940): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:17:17:18 cliente/(5892:7940): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:20:10:399 cliente/(5892:8001): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:20:10:421 cliente/(5892:8001): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:20:12:641 cliente/(5892:8006): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:20:12:645 cliente/(5892:8006): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:20:15:717 cliente/(5892:8010): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:20:15:731 cliente/(5892:8010): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:20:18:19 cliente/(5892:8014): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:20:18:23 cliente/(5892:8014): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:20:21:593 cliente/(5892:8019): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:20:21:596 cliente/(5892:8019): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:20:25:709 cliente/(5892:8024): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:20:25:721 cliente/(5892:8024): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:20:27:681 cliente/(5892:8027): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:20:27:687 cliente/(5892:8027): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:20:30:766 cliente/(5892:8031): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:20:30:771 cliente/(5892:8031): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:20:33:284 cliente/(5892:8034): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:20:33:288 cliente/(5892:8034): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:20:59:648 cliente/(5892:8055): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:20:59:661 cliente/(5892:8055): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:21:01:123 cliente/(5892:8059): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:21:01:126 cliente/(5892:8059): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:21:04:175 cliente/(5892:8063): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:21:04:185 cliente/(5892:8063): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:21:05:570 cliente/(5892:8067): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:21:05:573 cliente/(5892:8067): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:21:11:749 cliente/(5892:8072): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:21:11:764 cliente/(5892:8072): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:21:12:564 cliente/(5892:8076): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:21:12:568 cliente/(5892:8076): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:21:15:779 cliente/(5892:8079): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:21:15:782 cliente/(5892:8079): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:21:16:516 cliente/(5892:8082): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:21:16:521 cliente/(5892:8082): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:25:47:257 cliente/(5892:8272): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:25:47:272 cliente/(5892:8272): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:25:48:419 cliente/(5892:8276): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:25:48:422 cliente/(5892:8276): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:25:51:270 cliente/(5892:8279): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:25:51:281 cliente/(5892:8279): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:25:52:93 cliente/(5892:8282): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:25:52:96 cliente/(5892:8282): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:25:53:357 cliente/(5892:8286): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:25:53:360 cliente/(5892:8286): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:25:57:345 cliente/(5892:8292): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:25:57:358 cliente/(5892:8292): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:25:58:264 cliente/(5892:8295): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:25:58:268 cliente/(5892:8295): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:25:59:961 cliente/(5892:8298): Se envio el mensaje CONSULTAR_PLATOS 2
+[INFO] 21:25:59:965 cliente/(5892:8298): Se recibio el mensaje RTA_CONSULTAR_PLATOS Milanesa
+[INFO] 21:26:07:885 cliente/(5892:8302): Se envio el mensaje AGREGAR_PLATO ugis 12
+[INFO] 21:26:07:889 cliente/(5892:8302): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 21:26:51:234 cliente/(5892:8322): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:26:51:250 cliente/(5892:8322): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:26:52:510 cliente/(5892:8328): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:26:52:513 cliente/(5892:8328): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:26:53:672 cliente/(5892:8331): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:26:53:675 cliente/(5892:8331): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:27:12:598 cliente/(5892:8339): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:27:12:613 cliente/(5892:8339): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:27:14:489 cliente/(5892:8345): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:27:14:494 cliente/(5892:8345): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:27:17:852 cliente/(5892:8351): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:27:17:859 cliente/(5892:8351): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:27:19:376 cliente/(5892:8354): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:27:19:380 cliente/(5892:8354): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:27:20:927 cliente/(5892:8357): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:27:20:931 cliente/(5892:8357): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:27:31:856 cliente/(5892:8363): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:28:19:245 cliente/(5892:8384): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:28:19:264 cliente/(5892:8384): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:28:20:253 cliente/(5892:8388): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:28:20:257 cliente/(5892:8388): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:28:20:780 cliente/(5892:8391): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:28:20:783 cliente/(5892:8391): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:28:33:681 cliente/(5892:8401): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:28:33:695 cliente/(5892:8401): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:28:34:913 cliente/(5892:8405): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:28:34:918 cliente/(5892:8405): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:28:37:438 cliente/(5892:8408): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:28:37:441 cliente/(5892:8408): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:28:44:753 cliente/(5892:8415): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:39:52:30 cliente/(5892:8614): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:39:52:75 cliente/(5892:8614): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:39:52:685 cliente/(5892:8618): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:39:52:688 cliente/(5892:8618): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:39:56:287 cliente/(5892:8624): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:39:56:303 cliente/(5892:8624): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:39:59:385 cliente/(5892:8629): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:39:59:391 cliente/(5892:8629): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:40:02:829 cliente/(5892:8634): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:40:02:839 cliente/(5892:8634): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:40:09:838 cliente/(5892:8639): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:40:09:844 cliente/(5892:8639): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:40:16:769 cliente/(5892:8646): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:40:16:782 cliente/(5892:8646): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:40:20:565 cliente/(5892:8652): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:40:20:571 cliente/(5892:8652): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:41:37:394 cliente/(5892:8685): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:41:37:408 cliente/(5892:8685): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:41:40:21 cliente/(5892:8689): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:41:40:24 cliente/(5892:8689): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:41:43:534 cliente/(5892:8694): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:41:43:549 cliente/(5892:8694): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:41:46:510 cliente/(5892:8697): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:41:46:513 cliente/(5892:8697): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:41:49:133 cliente/(5892:8702): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:41:49:140 cliente/(5892:8702): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:41:50:417 cliente/(5892:8706): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:41:50:420 cliente/(5892:8706): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:43:11:786 cliente/(5892:8775): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:43:11:800 cliente/(5892:8775): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:43:12:445 cliente/(5892:8778): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:43:12:449 cliente/(5892:8778): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:43:12:964 cliente/(5892:8781): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:43:12:968 cliente/(5892:8781): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:43:16:888 cliente/(5892:8785): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:43:16:902 cliente/(5892:8785): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:17:689 cliente/(5892:8788): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:43:17:693 cliente/(5892:8788): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:19:26 cliente/(5892:8791): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:43:19:31 cliente/(5892:8791): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:20:359 cliente/(5892:8794): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:43:20:362 cliente/(5892:8794): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:21:830 cliente/(5892:8798): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:43:21:835 cliente/(5892:8798): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:23:839 cliente/(5892:8806): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:43:23:843 cliente/(5892:8806): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:43:31:293 cliente/(5892:8810): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:43:31:300 cliente/(5892:8810): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:45:46:639 cliente/(5892:8895): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:45:46:653 cliente/(5892:8895): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:45:47:804 cliente/(5892:8899): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:45:47:810 cliente/(5892:8899): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:45:48:411 cliente/(5892:8902): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:45:48:414 cliente/(5892:8902): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:45:51:600 cliente/(5892:8906): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:45:51:616 cliente/(5892:8906): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:45:52:600 cliente/(5892:8910): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:45:52:603 cliente/(5892:8910): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:45:54:157 cliente/(5892:8913): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:45:54:161 cliente/(5892:8913): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:45:55:447 cliente/(5892:8918): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:45:55:451 cliente/(5892:8918): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:45:57:42 cliente/(5892:8924): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:45:57:47 cliente/(5892:8924): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:45:58:204 cliente/(5892:8927): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:45:58:209 cliente/(5892:8927): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:46:03:93 cliente/(5892:8932): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:46:03:100 cliente/(5892:8932): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:46:06:114 cliente/(5892:8935): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:46:06:118 cliente/(5892:8935): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:46:08:498 cliente/(5892:8940): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 21:46:08:503 cliente/(5892:8940): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:48:05:580 cliente/(5892:8997): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:48:05:593 cliente/(5892:8997): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:48:06:126 cliente/(5892:9001): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:48:06:130 cliente/(5892:9001): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:48:06:733 cliente/(5892:9005): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:48:06:735 cliente/(5892:9005): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:48:09:4 cliente/(5892:9008): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:48:10:20 cliente/(5892:9008): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:11:26 cliente/(5892:9012): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:48:11:29 cliente/(5892:9012): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:12:72 cliente/(5892:9016): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:48:12:76 cliente/(5892:9016): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:14:164 cliente/(5892:9019): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:48:14:169 cliente/(5892:9019): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:15:829 cliente/(5892:9023): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:48:15:833 cliente/(5892:9023): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:16:445 cliente/(5892:9027): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:48:16:449 cliente/(5892:9027): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:19:120 cliente/(5892:9030): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:48:19:123 cliente/(5892:9030): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:19:978 cliente/(5892:9033): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:48:19:983 cliente/(5892:9033): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:20:908 cliente/(5892:9037): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:48:20:912 cliente/(5892:9037): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:48:26:628 cliente/(5892:9047): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:48:26:637 cliente/(5892:9047): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:48:27:727 cliente/(5892:9051): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:48:27:731 cliente/(5892:9051): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:48:29:928 cliente/(5892:9054): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:48:29:932 cliente/(5892:9054): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:48:31:805 cliente/(5892:9059): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 21:48:31:810 cliente/(5892:9059): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:49:41:834 cliente/(5892:9122): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:49:41:848 cliente/(5892:9122): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 21:49:42:499 cliente/(5892:9125): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:49:42:502 cliente/(5892:9125): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 21:49:43:12 cliente/(5892:9128): Se envio el mensaje CREAR_PEDIDO
+[INFO] 21:49:43:15 cliente/(5892:9128): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 21:49:46:317 cliente/(5892:9131): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:49:46:331 cliente/(5892:9131): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:47:319 cliente/(5892:9135): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:49:47:323 cliente/(5892:9135): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:48:37 cliente/(5892:9138): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 21:49:48:43 cliente/(5892:9138): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:49:475 cliente/(5892:9141): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:49:49:478 cliente/(5892:9141): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:50:248 cliente/(5892:9144): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:49:50:253 cliente/(5892:9144): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:51:378 cliente/(5892:9147): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 21:49:51:381 cliente/(5892:9147): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:53:572 cliente/(5892:9151): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:49:53:577 cliente/(5892:9151): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:54:799 cliente/(5892:9154): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:49:54:804 cliente/(5892:9154): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:49:55:719 cliente/(5892:9159): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 21:49:55:723 cliente/(5892:9159): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 21:50:01:596 cliente/(5892:9163): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 21:50:01:603 cliente/(5892:9163): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:50:03:490 cliente/(5892:9167): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 21:50:03:496 cliente/(5892:9167): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 21:50:05:831 cliente/(5892:9170): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 21:50:05:836 cliente/(5892:9170): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 22:10:33:965 cliente/(5892:9512): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:10:33:978 cliente/(5892:9512): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 22:10:34:649 cliente/(5892:9517): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:10:34:652 cliente/(5892:9517): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 22:10:35:328 cliente/(5892:9520): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:10:35:331 cliente/(5892:9520): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:10:37:931 cliente/(5892:9523): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:10:37:945 cliente/(5892:9523): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:39:905 cliente/(5892:9528): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:10:39:909 cliente/(5892:9528): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:40:500 cliente/(5892:9531): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:10:40:507 cliente/(5892:9531): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:42:281 cliente/(5892:9534): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:10:42:285 cliente/(5892:9534): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:44:93 cliente/(5892:9538): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:10:44:97 cliente/(5892:9538): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:44:725 cliente/(5892:9542): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:10:44:728 cliente/(5892:9542): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:46:202 cliente/(5892:9545): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:10:46:206 cliente/(5892:9545): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:50:93 cliente/(5892:9550): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:10:50:97 cliente/(5892:9550): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:51:834 cliente/(5892:9553): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:10:51:838 cliente/(5892:9553): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:57:992 cliente/(5892:9560): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:10:57:998 cliente/(5892:9560): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:10:59:539 cliente/(5892:9564): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:10:59:543 cliente/(5892:9564): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:11:00:969 cliente/(5892:9567): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:11:00:975 cliente/(5892:9567): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:25:59 cliente/(5892:9777): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:22:25:74 cliente/(5892:9777): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 22:22:25:665 cliente/(5892:9781): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:22:25:668 cliente/(5892:9781): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 22:22:26:212 cliente/(5892:9785): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:22:26:214 cliente/(5892:9785): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:22:29:23 cliente/(5892:9793): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:22:29:40 cliente/(5892:9793): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:29:686 cliente/(5892:9796): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:22:29:691 cliente/(5892:9796): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:30:146 cliente/(5892:9800): Se envio el mensaje AGREGAR_PLATO ugis 3
+[INFO] 22:22:30:150 cliente/(5892:9800): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:32:166 cliente/(5892:9804): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:22:32:172 cliente/(5892:9804): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:32:910 cliente/(5892:9807): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:22:32:915 cliente/(5892:9807): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:33:428 cliente/(5892:9810): Se envio el mensaje AGREGAR_PLATO ugis 2
+[INFO] 22:22:33:433 cliente/(5892:9810): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:34:946 cliente/(5892:9813): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:22:34:949 cliente/(5892:9813): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:35:865 cliente/(5892:9817): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:22:35:869 cliente/(5892:9817): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:36:577 cliente/(5892:9821): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:22:36:582 cliente/(5892:9821): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:22:44:592 cliente/(5892:9826): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 22:22:44:599 cliente/(5892:9826): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 22:22:46:433 cliente/(5892:9831): Se envio el mensaje CONFIRMAR_PEDIDO ugis 2
+[INFO] 22:22:46:437 cliente/(5892:9831): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 22:22:47:986 cliente/(5892:9834): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 22:22:47:990 cliente/(5892:9834): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL

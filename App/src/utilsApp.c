@@ -172,7 +172,7 @@ void configuracionInicial(void) {
         pthread_mutex_init(&mutex_lista_clientes, NULL);
 
     // liberacion de memoria
-        config_destroy(config);
+        // config_destroy(config);
 }
 
 void planif_encolar_NEW(t_pedido* pedido) {
@@ -379,6 +379,11 @@ void planif_nuevoPedido(int id_cliente, int pedido_id) { // TODO: que devuelva b
     pthread_mutex_init(pedidoNuevo->mutex_clock, NULL);
     pthread_mutex_lock(pedidoNuevo->mutex_clock); // TODO: init lockeado? porque despues medio que por defecto anda deslockeado D:
     log_debug(logger_planificacion, "[PLANIF_NP] Mutex de clock inicializado");
+
+    pedidoNuevo->estaPreparado = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(pedidoNuevo->estaPreparado, NULL);
+    pthread_mutex_lock(pedidoNuevo->estaPreparado);
+    log_debug(logger_planificacion, "[PLANIF_NP] Mutex de 'esta preparado' inicializado");
 
     pedidoNuevo->mutex_EXEC = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(pedidoNuevo->mutex_EXEC, NULL);
@@ -795,11 +800,20 @@ void consumir_ciclo(t_pedido* pedido) {
 
 void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commons
     t_restaurante* restaurante = malloc(sizeof(t_restaurante));
-    restaurante->nombre = mensaje_rest->nombre.nombre;
+    restaurante->nombre = string_duplicate(mensaje_rest->nombre.nombre); // TODO: string duplicate / check free
     restaurante->pos_x = mensaje_rest->posicion.x;
     restaurante->pos_y = mensaje_rest->posicion.y;
 
+    log_debug(logger_mensajes, "Socket pre guardado de restaurante %s: %i",
+        restaurante->nombre,
+        socket
+    );
     restaurante->socket = socket;
+    log_debug(logger_mensajes, "Socket post guardado de restaurante %s: %i",
+        restaurante->nombre,
+        restaurante->socket
+    );
+
     restaurante->mutex = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(restaurante->mutex, NULL);
 
@@ -818,6 +832,8 @@ void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commo
     list_add(restaurantes, restaurante);
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_restaurantes);
+
+    free_struct_mensaje(mensaje_rest, POSICION_RESTAUNTE);
 }
 
 void guardar_seleccion(char* nombre_rest, int id_cliente) {
@@ -1014,15 +1030,9 @@ void esperar_cliente(int servidor){
 void serve_client(int socket){
 	int rec;
 	int cod_op = -1;
-	while(1){
+	// while(1){
         log_debug(logger_mensajes, "[MENSJS]: pre recibir op_code");
 		rec = recv(socket, &cod_op, sizeof(op_code), MSG_WAITALL);
-        log_debug(
-            logger_mensajes,
-            "[MENSJS]: post recibir op_code: %i-%s",
-            cod_op,
-            op_code_to_string(cod_op)
-        );
 		if(rec == -1 || rec == 0 ){
 			cod_op = -1;
             log_debug(logger_mensajes, "[MENSJS]: Fin de conexion: recv = %i", rec);
@@ -1031,13 +1041,20 @@ void serve_client(int socket){
 			//			pthread_mutex_unlock(&logger_mutex);
 			pthread_exit(NULL);
 		}
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: post recibir op_code: %i-%s",
+            cod_op,
+            op_code_to_string(cod_op)
+        );
         log_debug(logger_mensajes, "[MENSJS]: pre process_request");
 		process_request(cod_op, socket);
-	}
+	// }
 }
 
 void process_request(int cod_op, int cliente_fd) {
     int size = 0;
+    int error = FLAG_OK;
     void* mensaje = NULL;
     int rec;
     uint32_t cliente_id;
@@ -1062,9 +1079,15 @@ void process_request(int cod_op, int cliente_fd) {
     // if(op_code_to_struct_code(cod_op) != STRC_MENSAJE_VACIO){
 
     // log_debug(logger_mensajes, "[MENSJS]: entro en if porque el mje no es vacio");
-    void* buffer = recibir_mensaje(cliente_fd, &size);
+    void* buffer = recibir_mensaje(cliente_fd, &error);
     log_debug(logger_mensajes, "[MENSJS]: mje recibido");
+    if (error) {
+        log_debug(logger_mensajes, "[MENSJS]: Hubo un error al recibir el mje.");
+        pthread_exit(NULL);
+    }
+    log_debug("[MENSJS] puntero del buffer: %x", buffer);
     mensaje = deserializar_mensaje(buffer, cod_op);
+    loggear_mensaje_recibido(mensaje, cod_op, logger_mensajes);
     log_debug(logger_mensajes, "[MENSJS]: mje deserializado");
 
     // }
@@ -1212,6 +1235,7 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
     log_debug(logger_mensajes, "[MENSJS]: Se encontro el puntero del cliente %i", cliente_seleccionante->id);
     cliente_seleccionante->restaurante_seleccionado = get_restaurante(seleccion->restaurante.nombre);
+    // TODO: CHECKS POR FAVOR
 
     if (!(cliente_seleccionante->restaurante_seleccionado)) {
         log_debug(
@@ -1287,14 +1311,13 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
         return;
     }
 
-    // TODO: usar rest->q
     mensaje->tipo_mensaje = CONSULTAR_PLATOS;
     nombre_rest_consultado->nombre="";
     mensaje->parametros = nombre_rest_consultado;
 
     form = qr_request(mensaje, restaurante_consultado);
 
-    if (form->error_flag) {
+    if (*(form->error_flag)) {
         responder_ERROR(socket_cliente);
         qr_free_form(form);
         return; // TODO: liberar la memoria previa a este if dentro de aca
@@ -1352,40 +1375,39 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
         mensaje->id = cfval_id;
         mensaje->parametros = NULL;
         form = qr_request(mensaje, resto_en_cuestion);
-        if (form->error_flag) {
+        printf("volvio al gestionar_*\n");
+        if (*(form->error_flag)) {
+            printf("flag error\n");
             responder_ERROR(socket_cliente);
             qr_free_form(form);
             return;
         }
         switch (form->m_recibir->tipo_mensaje) {
             case ERROR:
+                printf("ERROR recibido\n");
                 responder_ERROR(socket_cliente);
                 qr_free_form(form);
                 return;
             case RTA_CREAR_PEDIDO:
+                printf("ok\n");
                 pedido_id = *((uint32_t*)(form->m_recibir->parametros));
-                mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
-                mensaje->id = cfval_id;
-                mensaje->parametros = (uint32_t*)(form->m_recibir->parametros);
-                enviar_mensaje(mensaje, socket_cliente);
-                free(mensaje);
                 qr_free_form(form);
+                break;
+                // mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
+                // mensaje->id = cfval_id;
+                // mensaje->parametros = (uint32_t*)(form->m_recibir->parametros);
+                // enviar_mensaje(mensaje, socket_cliente);
+                // free(mensaje);
             default:
+                printf("vino cod op inesperado\n");
+                loggear_mensaje_recibido(form->m_recibir->parametros, form->m_recibir->tipo_mensaje, logger_mensajes);
                 responder_ERROR(socket_cliente);
                 qr_free_form(form);
                 return;
         }
     }
 
-    if (modo_noComanda) {
-        mensaje = malloc(sizeof(t_mensaje));
-        mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
-        mensaje->id = cfval_id;
-        mensaje->parametros = &pedido_id;
-        enviar_mensaje(mensaje, socket_cliente);
-        free(mensaje);
-        return;
-    }
+    printf("seguimos con comanda...\n");
         
     params = malloc(sizeof(t_nombre_y_id));
     params->id = pedido_id;
@@ -1394,30 +1416,43 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
     free(params);
 
     if (!rta_comanda) {
+        printf("no hubo respuesta de comanda\n");
         responder_ERROR(socket_cliente);
         return;
     }
 
     switch (rta_comanda->tipo_mensaje) {
         case ERROR:
+            printf("rta_comanda fue ERROR\n");
             responder_ERROR(socket_cliente);
             // TODO: free
             break;
         case RTA_GUARDAR_PEDIDO:
             if (*(int*)(rta_comanda->parametros)) { // -------------------------------- OK
+                printf("rta_comanda fue OK\n");
                 mensaje = malloc(sizeof(t_mensaje));
                 mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
                 mensaje->id = cfval_id;
                 mensaje->parametros = &pedido_id;
+                log_debug(
+                    logger_mensajes,
+                    "[MENSJS] Contestando OK al cliente..."
+                );
                 enviar_mensaje(mensaje, socket_cliente);
+                log_debug(
+                    logger_mensajes,
+                    "[MENSJS] OK al cliente contestado!"
+                );
                 free(mensaje);
                 free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
             } else { // --------------------------------------------------------- FAIL
+                printf("rta_comanda fue FAIL\n");
                 responder_ERROR(socket_cliente);
                 // TODO: free
             }
             break;
         default:
+            printf("rta_comanda fue inesperada");
             responder_ERROR(socket_cliente);
             // TODO: free
             break;
@@ -1451,7 +1486,7 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
         mensaje->id = cfval_id;
         mensaje->parametros = plato;
         form = qr_request(mensaje, resto_en_cuestion);
-        if (form->error_flag) {
+        if (*(form->error_flag)) {
             responder_ERROR(socket_cliente);
             return;
         }
@@ -1659,7 +1694,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
             pedido_comanda->nombre.nombre = string_duplicate(pedido->nombre.nombre);
             mje_cprest->parametros = pedido_comanda;
             form = qr_request(mje_cprest, rest_a_conf);
-            if (form->error_flag) {
+            if (*(form->error_flag)) {
                 responder_ERROR(socket_cliente);
                 qr_free_form(form);
                 free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
@@ -1721,12 +1756,14 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                             free(rta_cp_comanda);
                             return;
                     }
+                    break;
                 default:
                     responder_ERROR(socket_cliente);
                     qr_free_form(form);
                     free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                     return;
             }
+        break;
         default:
             responder_ERROR(socket_cliente);
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
@@ -2009,7 +2046,7 @@ void responder_ERROR(int socket) {
 
 
 void qr_free_form(qr_form_t* form) {
-    if (!(form->error_flag)) {
+    if (!*(form->error_flag)) {
         free_struct_mensaje(form->m_recibir->parametros, form->m_recibir->tipo_mensaje);
         free(form->m_recibir);
     }
@@ -2023,6 +2060,7 @@ void qr_free_form(qr_form_t* form) {
 qr_form_t* qr_request(t_mensaje* m_enviar, t_restaurante* rest) { // TODO: y si le paso char* nombre_rest?
     qr_form_t* form = malloc(sizeof(qr_form_t));
     form->m_enviar = m_enviar;
+    form->m_enviar->id = 0;
     form->m_recibir = NULL;
     form->mutex = malloc(sizeof(pthread_mutex_t));
     form->error_flag = malloc(sizeof(error_flag_t));
@@ -2044,6 +2082,8 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
     uint32_t id_recibida;
     int size = 0;
     int _recv_op, _recv_id;
+    void* stream;
+    int error;
 
     log_debug(logger_mensajes, "[Q (\"%s\")] Comenzando hilo...", rest->nombre);
 
@@ -2058,6 +2098,10 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
         log_debug(logger_mensajes, "[Q (\"%s\")] Mutex de la q unlockeado", rest->nombre);
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Enviando mensaje...", rest->nombre);
+
+        loggear_mensaje_enviado(form->m_enviar->parametros, form->m_enviar->tipo_mensaje, logger_mensajes);
+        log_debug(logger_mensajes, "[Q (\"%s\")] Socket rest.: %i", rest->nombre, rest->socket);
+        
         enviar_mensaje(form->m_enviar, rest->socket);
         log_debug(logger_mensajes, "[Q (\"%s\")] Mensaje enviado", rest->nombre);
         // TODO: frees?
@@ -2073,6 +2117,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
             log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
             continue;
         }
+        log_debug(logger_mensajes, "[Q (\"%s\")] Codigo de operacion %s", rest->nombre, op_code_to_string(cod_op));
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Recibiendo mensaje: (2/3) id", rest->nombre);
         _recv_id = recv(rest->socket, &id_recibida, sizeof(uint32_t), MSG_WAITALL);
@@ -2085,16 +2130,28 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
             log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
             continue;
         }
+        log_debug(logger_mensajes, "[Q (\"%s\")] ID recibida: %i", rest->nombre, id_recibida);
         
         form->m_recibir = malloc(sizeof(t_mensaje));
         form->m_recibir->tipo_mensaje = cod_op;
         form->m_recibir->id = id_recibida;
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Recibiendo mensaje: (3/3) parametros", rest->nombre);
-        form->m_recibir->parametros = deserializar_mensaje(
-            recibir_mensaje(rest->socket, &size),
-            cod_op
-        );
+
+        stream = recibir_mensaje(rest->socket, &error);
+
+        if (error) {
+            log_debug(logger_mensajes, "[Q (\"%s\")] Hubo un error en la recepcion del stream", rest->nombre);
+            *(form->error_flag) = FLAG_ERROR;
+            form->m_recibir->parametros = NULL;
+        } else {
+            form->m_recibir->parametros = deserializar_mensaje(
+                stream,
+                cod_op
+            );
+            loggear_mensaje_recibido(form->m_recibir->parametros, cod_op, logger_mensajes);
+        }
+
 
         log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
         pthread_mutex_unlock(form->mutex);

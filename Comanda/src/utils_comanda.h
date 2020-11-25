@@ -39,6 +39,8 @@ pthread_mutex_t hilos_operaciones_mtx;
 t_list* paginas_swap;
 pthread_mutex_t paginas_swap_mtx;
 
+pthread_mutex_t tablas_paginas_mtx;
+
 typedef struct{
 	char* nombre;
 	t_list* tabla_segmentos;
@@ -107,7 +109,7 @@ void esperar_cliente(int servidor);
 
 t_restaurante* buscarRestaurante(char* nombre);
 t_segmento* buscarPedido(uint32_t id_pedido, t_restaurante* restaurante);
-void enviar_confirmacion(uint32_t _confirmacion, int cliente, op_code cod_op);
+void enviar_confirmacion(t_confirmacion _confirmacion, int cliente, op_code cod_op);
 t_pagina* buscarPlato(t_list* tabla_paginas, char* comida);
 void* serializar_pagina(t_plato* plato);
 
