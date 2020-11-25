@@ -965,9 +965,23 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 	char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
 	char* cantLista = internal_api_list_to_string(pedidoInfo->cantidad_lista, 1);
 
-	//TODO: Actualizar precio
+	/* get the info from FS */
+	t_initialBlockInfo* initialBLockRestaurante = internal_api_get_initial_block_info(pedidoRequested->restaurante.nombre,NULL,TYPE_RESTAURANTE);
 
-	char* precioTotal = string_itoa((int)pedidoInfo->precio_total);
+	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLockRestaurante->initialBlock, initialBLockRestaurante->stringSize);
+
+	uint32_t newPrecio = pedidoInfo->precio_total;
+
+	for(int i = 0; i < restauranteInfo->platos->elements_count; i++){
+		t_nombre* plato = list_get(restauranteInfo->platos, i);
+		if(string_equals_ignore_case(plato->nombre, pedidoRequested->comida.nombre)){
+			uint32_t precio = (uint32_t)list_get(restauranteInfo->precios, i);
+
+			newPrecio = newPrecio + precio * pedidoRequested->cantidad;
+		}
+	}
+
+	char* precioTotal = string_itoa((int)newPrecio);
 
 	char* pedidoString = internal_api_pedido_to_string("Pendiente",platos, cantPlatos, cantLista, precioTotal);
 
