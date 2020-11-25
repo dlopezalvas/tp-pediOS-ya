@@ -428,7 +428,9 @@ void process_request(int cod_op, int cliente_fd) {
 
 		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
 
-		t_nombre* nombre_resturante = mensaje;
+		//t_nombre* nombre_resturante = mensaje;
+		t_nombre* nombre_resturante=malloc(sizeof(t_nombre));
+		nombre_resturante->nombre= string_duplicate(cfg_nombre_restaurante);
 
 		log_info(log_config_ini ,"Se esta conusltando por el resto: %s: ",nombre_resturante->nombre);
 
@@ -505,8 +507,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 		}
-		liberar_conexion(cliente_fd);
-
+		free(nombre_resturante);
 		//free(buffer);
 		break;
 	case CREAR_PEDIDO:
@@ -603,7 +604,7 @@ void process_request(int cod_op, int cliente_fd) {
 			free(cliente_rta_CREAR_PEDIDO);
 		}
 
-		liberar_conexion(cliente_fd);
+		// liberar_conexion(cliente_fd);
 
 		break;
 	case AGREGAR_PLATO:
@@ -673,7 +674,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		}
 		enviar_confirmacion(confirmacion, cliente_fd, RTA_AGREGAR_PLATO);
-		liberar_conexion(cliente_fd);
+		// liberar_conexion(cliente_fd);
 		//free_struct_mensaje(mj_agregar_plato, AGREGAR_PLATO);
 		break;
 
@@ -857,7 +858,7 @@ void process_request(int cod_op, int cliente_fd) {
 		Informar al Módulo que lo invocó que su pedido fue confirmado.
 		 */
 
-		liberar_conexion(cliente_fd);
+		// liberar_conexion(cliente_fd);
 		break;
 	case CONSULTAR_PEDIDO:
 		loggear_mensaje_recibido(mensaje, cod_op, log_config_ini);
@@ -943,7 +944,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		}
 
-		liberar_conexion(cliente_fd);
+		// liberar_conexion(cliente_fd);
 		break;
 	case 0:
 		pthread_exit(NULL);

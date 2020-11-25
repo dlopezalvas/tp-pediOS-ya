@@ -69,8 +69,8 @@ extern int errno;
     typedef struct {
         pthread_mutex_t* mutex; // por ahora solo para el socket
         int socket;
-        int pos_x;
-        int pos_y;
+        uint32_t pos_x;
+        uint32_t pos_y;
         char* nombre;
         pthread_mutex_t* q_mtx; // TODO: init
         sem_t* q_sem; // TODO: init
