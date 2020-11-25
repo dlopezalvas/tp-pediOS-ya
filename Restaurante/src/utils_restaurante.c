@@ -728,7 +728,7 @@ void process_request(int cod_op, int cliente_fd) {
 							t_nombre* sindicato_nombre_plato_receta;
 
 							t_mensaje* mje_sindicato_OBTENER_RECETA;
-							rta_obtenerReceta* rta_sindicato_RTA_OBTENER_RECETA = malloc(sizeof(rta_obtenerReceta));
+							rta_obtenerReceta* rta_sindicato_RTA_OBTENER_RECETA;
 							//t_plato_pcb* plato_pcb = malloc(sizeof(t_plato_pcb));//correccion
 							t_plato_pcb* plato_pcb;
 							//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
