@@ -911,7 +911,7 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRestaurante->nombre.nombre, TYPE_PEDIDO_INICIAL, pedidoRestaurante->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido existe");
@@ -1000,7 +1000,7 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->restaurante.nombre, TYPE_PEDIDO, pedidoRequested->idPedido, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1104,7 +1104,7 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1170,7 +1170,7 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
 	t_nombre_y_id* pedidoRequested = consultapedido;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1261,7 +1261,7 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 	*opResult = SUCCESS_OPERATION;
 	bool platoFound = false;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->restaurante.nombre, TYPE_PEDIDO, pedidoRequested->idPedido, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1383,7 +1383,7 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName;
+	char* pedidoName = string_new();
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
