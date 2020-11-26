@@ -90,65 +90,69 @@ void serve_client(int socket){
 }
 
 void process_request(int cod_op, int cliente_fd){
-	int size = 0;
+	int error_msj = 0;
 	void* mensaje;
 	uint32_t id_cliente;
 
 	int _recv = recv(cliente_fd, &id_cliente, sizeof(uint32_t), MSG_WAITALL);
 
 	if(_recv == 0 || _recv == -1){
-		//intento de reconexion
-		puts("error adentro process request");
-		liberar_conexion(cliente_fd);
+		log_info(log_comanda, "[ERROR] Se ha perdido la conexión");
 		pthread_exit(NULL);
 	}
 
-	void* buffer = recibir_mensaje(cliente_fd, &size);
-	mensaje = deserializar_mensaje(buffer, cod_op);
+	void* buffer = recibir_mensaje(cliente_fd, &error_msj);
 
-	free(buffer);
-	loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
+	if(error_msj == (error_flag_t)FLAG_ERROR){
+		log_info(log_comanda, "[ERROR] Se ha perdido la conexión");
+	}else{
 
-	pthread_t hilo_operacion;
-	t_mensaje_a_procesar* mensaje_a_procesar = malloc(sizeof(t_mensaje_a_procesar));
-	mensaje_a_procesar->mensaje = mensaje;
-	mensaje_a_procesar->socket_cliente = cliente_fd;
+		mensaje = deserializar_mensaje(buffer, cod_op);
 
-	pthread_mutex_lock(&hilos_operaciones_mtx);
-	list_add(hilos_operaciones, &hilo_operacion);
-	pthread_mutex_unlock(&hilos_operaciones_mtx);
+		free(buffer);
+		loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
 
-	switch (cod_op) {
-	case GUARDAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case GUARDAR_PLATO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_plato, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case CONFIRMAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_confirmar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case PLATO_LISTO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_plato_listo, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case OBTENER_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_obtener_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case FINALIZAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case POSICION_CLIENTE:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_handshake_cliente, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	default:
-		log_info(log_comanda, "[ERROR] Recibi mensaje invalido");
+		pthread_t hilo_operacion;
+		t_mensaje_a_procesar* mensaje_a_procesar = malloc(sizeof(t_mensaje_a_procesar));
+		mensaje_a_procesar->mensaje = mensaje;
+		mensaje_a_procesar->socket_cliente = cliente_fd;
+
+		pthread_mutex_lock(&hilos_operaciones_mtx);
+		list_add(hilos_operaciones, &hilo_operacion);
+		pthread_mutex_unlock(&hilos_operaciones_mtx);
+
+		switch (cod_op) {
+		case GUARDAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case GUARDAR_PLATO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_plato, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case CONFIRMAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_confirmar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case PLATO_LISTO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_plato_listo, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case OBTENER_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_obtener_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case FINALIZAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case POSICION_CLIENTE:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_handshake_cliente, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		default:
+			log_info(log_comanda, "[ERROR] Recibi mensaje invalido");
+		}
 	}
 }
 
@@ -244,8 +248,8 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						plato->uso = true;
 						plato->ultimo_acceso = time(NULL);
 						plato->pagina_swap = frame_disponible_swap;
-						plato->presencia = true; //TODO ver si necesita mutex
-						//TODO no se si va aca
+						plato->presencia = true;
+
 						guardar_en_swap(frame_disponible_swap, plato_a_guardar);
 
 						plato->frame = guardar_en_mp(plato_a_guardar);
@@ -350,12 +354,11 @@ int eleccion_victima_clock_mejorado(){
 	while(victima == NULL){
 		victima = list_iterate_and_find_from_index(en_mp, (void*)hacer_nada, (void*)uso_modificado_cero);
 		if(victima == NULL){
-			puts("ENTRA AL SEGUNDA PASO");
 			victima = list_iterate_and_find_from_index(en_mp, (void*)cambiar_uso_cero, (void*)uso_cero_modificado_uno);
 		}
 	}
 
-	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
+	pthread_mutex_unlock(&paginas_swap_mtx);
 
 	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %p", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
@@ -655,7 +658,7 @@ void liberar_pagina(t_pagina* pagina){
 	log_info(log_comanda, "[MEMORIA_SWAP] Se libero el frame %d posicion %p", pagina->pagina_swap, pagina->pagina_swap * TAMANIO_PAGINA + memoria_swap);
 }
 
-void free_pagina(t_pagina* pagina){ //TODO fijarnos si list_destroy elimina los elementos o no :o
+void free_pagina(t_pagina* pagina){
 	free(pagina);
 }
 
