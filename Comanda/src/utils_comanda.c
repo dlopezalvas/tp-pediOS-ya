@@ -270,12 +270,14 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						log_info(log_comanda, "[ERROR] No hay memoria disponible en swap");
 					}
 				}else{
+
+					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
 					pthread_mutex_lock(&tablas_paginas_mtx);
 					if(!plato->presencia){
 						traer_de_swap(plato);
 					}
 					pthread_mutex_unlock(&tablas_paginas_mtx);
-					pthread_mutex_lock(&restaurante->tabla_segmentos_mtx);
+
 					actualizar_plato_mp(plato, mensaje->cantidad, 0);
 					pthread_mutex_unlock(&restaurante->tabla_segmentos_mtx);
 
@@ -629,6 +631,7 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 
 			list_iterate(pedido->tabla_paginas, (void*)liberar_pagina);
 			list_destroy_and_destroy_elements(pedido->tabla_paginas, (void*)free_pagina);
+
 			confirmacion = OK;
 			free(pedido);
 		}else{
@@ -643,6 +646,11 @@ void ejecucion_finalizar_pedido(t_mensaje_a_procesar* mensaje_a_procesar){
 }
 
 void liberar_pagina(t_pagina* pagina){
+
+	bool _mismo_frame(t_pagina* pagina_a_liberar){
+		return pagina->pagina_swap == pagina_a_liberar->pagina_swap;
+	}
+
 	if(pagina->presencia){
 		pthread_mutex_lock(&frames_MP_mtx);
 		bitarray_clean_bit(frames_MP, pagina->frame);
@@ -654,6 +662,14 @@ void liberar_pagina(t_pagina* pagina){
 	pthread_mutex_lock(&frames_swap_mtx);
 	bitarray_clean_bit(frames_swap, pagina->pagina_swap);
 	pthread_mutex_unlock(&frames_swap_mtx);
+
+	pthread_mutex_lock(&tablas_paginas_mtx);
+
+	pthread_mutex_lock(&paginas_swap_mtx);
+	list_remove_by_condition(paginas_swap, (void*)_mismo_frame);
+	pthread_mutex_unlock(&paginas_swap_mtx);
+
+	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	log_info(log_comanda, "[MEMORIA_SWAP] Se libero el frame %d posicion %p", pagina->pagina_swap, pagina->pagina_swap * TAMANIO_PAGINA + memoria_swap);
 }
