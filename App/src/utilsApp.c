@@ -1130,6 +1130,7 @@ void process_request(int cod_op, int cliente_fd) {
                 break;
             case CONSULTAR_PEDIDO:
                 gestionar_CONSULTAR_PEDIDO(mensaje, cliente_fd, cliente_id);
+                break;
 
         // de RESTAURANT:
             case POSICION_RESTAUNTE:
@@ -1583,7 +1584,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
     t_mensaje* mje_cprest;
     t_mensaje* rta_cp_comanda;
     t_mensaje* mje_confirm_cli;
-    t_pedido* pedido_pointer;
+    t_cliente* cliente_confirmante;
     uint32_t confirm = 0;
     qr_form_t* form;
     t_nombre_y_id* pedido_comanda;
@@ -1608,6 +1609,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
     // obtener pedido de comanda
     rta_obtener_pedido = mensajear_comanda(OBTENER_PEDIDO, pedido, false);
     if (!rta_obtener_pedido) {
+        log_debug(logger_mensajes, "[MENSJS] Hubo un error al recibir respuesta de comanda");
         responder_ERROR(socket_cliente);
         free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
         free(rta_obtener_pedido);
@@ -1616,6 +1618,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
     }
     switch (rta_obtener_pedido->tipo_mensaje) {
         case ERROR:
+            log_debug(logger_mensajes, "[MENSJS] Comanda respondio ERROR");
             responder_ERROR(socket_cliente);
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
@@ -1625,21 +1628,17 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
         case RTA_OBTENER_PEDIDO:
             // ((rta_obtenerPedido*)(rta_obtener_pedido->parametros))->
             // ????
+            log_debug(logger_mensajes, "[MENSJS] Comanda respondio RTA_OBTENER_PEDIDO");
 
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
 
             // rest_a_conf = get_restaurante(pedido->nombre.nombre);
-            pedido_pointer = get_pedido(pedido->id, pedido->nombre.nombre, false);
-            if (!pedido_pointer) {
-                responder_ERROR(socket_cliente);
-                free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
-                return;
-            }
-            rest_a_conf = pedido_pointer->restaurante;
-
+            cliente_confirmante = get_cliente_porSuID(cliente_id);
+            rest_a_conf = cliente_confirmante->restaurante_seleccionado;
 
             if (!rest_a_conf) {
+                log_debug(logger_mensajes, "[MENSJS] rest_a_conf es NULL :(");
                 responder_ERROR(socket_cliente);
                 free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                 return;
@@ -1794,10 +1793,11 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
 
 void gestionar_CONSULTAR_PEDIDO(uint32_t* id_pedido, int socket_cliente, int cliente_id) {
     t_mensaje* rta_OPcom;
+    t_mensaje* rta_final_cli;
     t_restaurante* rest_en_cuestion;
     t_cliente* cliente_en_cuestion;
     t_nombre_y_id pedido_params;
-    rta_consultarPedido* rta_a_cliente;
+    rta_consultarPedido* rta_a_cliente_params;
     rta_obtenerPedido* params_rta_OPcom;
 
     if (modo_noComanda) {
@@ -1806,34 +1806,45 @@ void gestionar_CONSULTAR_PEDIDO(uint32_t* id_pedido, int socket_cliente, int cli
         return;
     }
 
+    log_debug(logger_mensajes, "[MENSJS]: Se consulta el pedido %i", *id_pedido);
+
     cliente_en_cuestion = get_cliente_porSuID(cliente_id);
     rest_en_cuestion = cliente_en_cuestion->restaurante_seleccionado;
 
-    pedido_params.id = id_pedido;
+    pedido_params.id = *id_pedido;
     pedido_params.nombre.nombre = string_duplicate(rest_en_cuestion->nombre);
     rta_OPcom = mensajear_comanda(OBTENER_PEDIDO, &pedido_params, false);
 
     if (!rta_OPcom) {
+        log_debug(logger_mensajes, "[MENSJS]: Hubo error al recibir respuesta de comanda");
         responder_ERROR(socket_cliente);
         return;
     }
     switch (rta_OPcom->tipo_mensaje) {
         case ERROR:
+            log_debug(logger_mensajes, "[MENSJS]: Se recibio ERROR de comanda");
             responder_ERROR(socket_cliente);
             free(rta_OPcom);
             return;
         case RTA_OBTENER_PEDIDO:
+            log_debug(logger_mensajes, "[MENSJS]: La respuesta de comanda fue la esperada");
             params_rta_OPcom = rta_OPcom->parametros;
-            rta_a_cliente = malloc(sizeof(rta_consultarPedido));
-            rta_a_cliente->restaurante.nombre = rest_en_cuestion->nombre;
-            rta_a_cliente->platos = params_rta_OPcom->infoPedidos; // TODO: hmmmmm
-            rta_a_cliente->estadoPedido = params_rta_OPcom->estadoPedido;
-            enviar_mensaje(rta_a_cliente, socket_cliente);
-            free(rta_a_cliente);
+            rta_a_cliente_params = malloc(sizeof(rta_consultarPedido));
+            rta_a_cliente_params->restaurante.nombre = rest_en_cuestion->nombre;
+            rta_a_cliente_params->platos = params_rta_OPcom->infoPedidos; // TODO: hmmmmm
+            rta_a_cliente_params->estadoPedido = params_rta_OPcom->estadoPedido;
+            rta_final_cli = malloc(sizeof(t_mensaje));
+            rta_final_cli->id = cfval_id;
+            rta_final_cli->tipo_mensaje = RTA_CONSULTAR_PEDIDO;
+            rta_final_cli->parametros = rta_a_cliente_params;
+            enviar_mensaje(rta_final_cli, socket_cliente);
+            free(rta_a_cliente_params);
+            free(rta_final_cli);
             free_struct_mensaje(rta_OPcom->parametros, rta_OPcom->tipo_mensaje);
             free(rta_OPcom);
             break;
         default:
+            log_debug(logger_mensajes, "[MENSJS]: La respuesta de comanda no fue la esperada");
             responder_ERROR(socket_cliente);
             free_struct_mensaje(rta_OPcom->parametros, rta_OPcom->tipo_mensaje);
             free(rta_OPcom);
