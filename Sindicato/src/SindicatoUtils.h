@@ -19,6 +19,9 @@ typedef enum{
 	TYPE_RECETA = 0,
 	TYPE_PEDIDO = 1,
 	TYPE_RESTAURANTE = 2,
+	TYPE_RECETA_INICIAL = 3,
+	TYPE_PEDIDO_INICIAL = 4,
+	TYPE_RESTAURANTE_INICIAL = 5,
 }file_type;
 
 typedef struct{
