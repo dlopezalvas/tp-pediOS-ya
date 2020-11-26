@@ -90,65 +90,69 @@ void serve_client(int socket){
 }
 
 void process_request(int cod_op, int cliente_fd){
-	int size = 0;
+	int error_msj = 0;
 	void* mensaje;
 	uint32_t id_cliente;
 
 	int _recv = recv(cliente_fd, &id_cliente, sizeof(uint32_t), MSG_WAITALL);
 
 	if(_recv == 0 || _recv == -1){
-		//intento de reconexion
-		puts("error adentro process request");
-		liberar_conexion(cliente_fd);
+		log_info(log_comanda, "[ERROR] Se ha perdido la conexión");
 		pthread_exit(NULL);
 	}
 
-	void* buffer = recibir_mensaje(cliente_fd, &size);
-	mensaje = deserializar_mensaje(buffer, cod_op);
+	void* buffer = recibir_mensaje(cliente_fd, &error_msj);
 
-	free(buffer);
-	loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
+	if(error_msj == (error_flag_t)FLAG_ERROR){
+		log_info(log_comanda, "[ERROR] Se ha perdido la conexión");
+	}else{
 
-	pthread_t hilo_operacion;
-	t_mensaje_a_procesar* mensaje_a_procesar = malloc(sizeof(t_mensaje_a_procesar));
-	mensaje_a_procesar->mensaje = mensaje;
-	mensaje_a_procesar->socket_cliente = cliente_fd;
+		mensaje = deserializar_mensaje(buffer, cod_op);
 
-	pthread_mutex_lock(&hilos_operaciones_mtx);
-	list_add(hilos_operaciones, &hilo_operacion);
-	pthread_mutex_unlock(&hilos_operaciones_mtx);
+		free(buffer);
+		loggear_mensaje_recibido(mensaje, cod_op, log_comanda);
 
-	switch (cod_op) {
-	case GUARDAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case GUARDAR_PLATO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_plato, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case CONFIRMAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_confirmar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case PLATO_LISTO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_plato_listo, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case OBTENER_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_obtener_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case FINALIZAR_PEDIDO:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	case POSICION_CLIENTE:
-		pthread_create(&hilo_operacion, NULL, (void*)ejecucion_handshake_cliente, mensaje_a_procesar);
-		pthread_detach(hilo_operacion);
-		break;
-	default:
-		log_info(log_comanda, "[ERROR] Recibi mensaje invalido");
+		pthread_t hilo_operacion;
+		t_mensaje_a_procesar* mensaje_a_procesar = malloc(sizeof(t_mensaje_a_procesar));
+		mensaje_a_procesar->mensaje = mensaje;
+		mensaje_a_procesar->socket_cliente = cliente_fd;
+
+		pthread_mutex_lock(&hilos_operaciones_mtx);
+		list_add(hilos_operaciones, &hilo_operacion);
+		pthread_mutex_unlock(&hilos_operaciones_mtx);
+
+		switch (cod_op) {
+		case GUARDAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case GUARDAR_PLATO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_guardar_plato, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case CONFIRMAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_confirmar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case PLATO_LISTO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_plato_listo, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case OBTENER_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_obtener_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case FINALIZAR_PEDIDO:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_finalizar_pedido, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		case POSICION_CLIENTE:
+			pthread_create(&hilo_operacion, NULL, (void*)ejecucion_handshake_cliente, mensaje_a_procesar);
+			pthread_detach(hilo_operacion);
+			break;
+		default:
+			log_info(log_comanda, "[ERROR] Recibi mensaje invalido");
+		}
 	}
 }
 
@@ -244,8 +248,8 @@ void ejecucion_guardar_plato(t_mensaje_a_procesar* mensaje_a_procesar){
 						plato->uso = true;
 						plato->ultimo_acceso = time(NULL);
 						plato->pagina_swap = frame_disponible_swap;
-						plato->presencia = true; //TODO ver si necesita mutex
-						//TODO no se si va aca
+						plato->presencia = true;
+
 						guardar_en_swap(frame_disponible_swap, plato_a_guardar);
 
 						plato->frame = guardar_en_mp(plato_a_guardar);
@@ -302,7 +306,7 @@ int guardar_en_mp(t_plato* plato){
 
 	pthread_mutex_lock(&memoria_principal_mtx);
 	memcpy(memoria_principal + offset, pagina_serializada, TAMANIO_PAGINA);
-	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se guardo el plato %s en el frame %d posicion: %d", plato->nombre, frame, memoria_principal + offset);
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se guardo el plato %s en el frame %d posicion: %p", plato->nombre, frame, memoria_principal + offset);
 	pthread_mutex_unlock(&memoria_principal_mtx);
 
 	free(pagina_serializada);
@@ -337,7 +341,7 @@ int eleccion_victima_clock_mejorado(){
 		return pagina1->frame < pagina2->frame;
 	}
 
-//	pthread_mutex_lock(&tablas_paginas_mtx);
+	//	pthread_mutex_lock(&tablas_paginas_mtx);
 
 	pthread_mutex_lock(&puntero_clock_mtx);
 
@@ -350,20 +354,19 @@ int eleccion_victima_clock_mejorado(){
 	while(victima == NULL){
 		victima = list_iterate_and_find_from_index(en_mp, (void*)hacer_nada, (void*)uso_modificado_cero);
 		if(victima == NULL){
-			puts("ENTRA AL SEGUNDA PASO");
 			victima = list_iterate_and_find_from_index(en_mp, (void*)cambiar_uso_cero, (void*)uso_cero_modificado_uno);
 		}
 	}
 
-	pthread_mutex_unlock(&paginas_swap_mtx); //TODO ver
+	pthread_mutex_unlock(&paginas_swap_mtx);
 
-	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %p", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 	pthread_mutex_unlock(&puntero_clock_mtx);
 
 	liberar_frame(victima);
 
-//	pthread_mutex_unlock(&tablas_paginas_mtx);
+	//	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	list_destroy(en_mp);
 
@@ -386,36 +389,39 @@ bool uso_modificado_cero(t_pagina* pagina){
 	return (!pagina->uso && !pagina->modificado);
 }
 
+int indice_siguiente(int i, int tope){
+	i++;
+
+	if(i >= tope){
+		return 0;
+	}else{
+		return i;
+	}
+}
+
 void* list_iterate_and_find_from_index(t_list* self, void(closure)(void*), bool(*condition)(void*)){
 	t_pagina * pagina = list_get(self, puntero_clock);
-	//	t_pagina *aux = NULL;
 
-	for(int i = puntero_clock; !condition(pagina) && i < self->elements_count; i++) {
-		pagina = list_get(self, i);
+	int puntero_original = puntero_clock;
+
+	puntero_clock = indice_siguiente(puntero_clock, self->elements_count);
+
+	if(condition(pagina)){
+		return pagina;
+	}else{
 		closure(pagina);
 	}
 
-	if(!condition(pagina)){
-		pagina = list_get(self, 0);
+	while(puntero_clock != puntero_original){
+		pagina = list_get(self, puntero_clock);
+		puntero_clock = indice_siguiente(puntero_clock, self->elements_count);
 
-		for(int i = 0; i < puntero_clock && !condition(pagina); i++){
-			pagina = list_get(self, i);
-			closure(pagina);
-		}
+		if(condition(pagina))	return pagina;
+		closure(pagina);
+
 	}
 
-	if(!condition(pagina)){
-		return NULL;
-	}
-
-	puntero_clock = pagina->frame + 1;
-
-	if(puntero_clock >= self->elements_count){
-		puntero_clock = 0;
-	}
-
-	return pagina;
-
+	return NULL;
 }
 
 bool esta_en_MP(t_pagina* pagina){
@@ -430,7 +436,7 @@ int eleccion_victima_LRU(){
 
 	t_pagina* victima;
 
-//	pthread_mutex_lock(&tablas_paginas_mtx);
+	//	pthread_mutex_lock(&tablas_paginas_mtx);
 
 	pthread_mutex_lock(&paginas_swap_mtx);
 
@@ -438,13 +444,13 @@ int eleccion_victima_LRU(){
 
 	victima = list_find(paginas_swap, (void*)esta_en_MP); //las ordeno por LRU y agarro la primera en la lista que este ocupada
 
-	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Victima seleccionada: frame %d posicion %p", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 	pthread_mutex_unlock(&paginas_swap_mtx);
 
 	liberar_frame(victima);
 
-//	pthread_mutex_unlock(&tablas_paginas_mtx);
+	//	pthread_mutex_unlock(&tablas_paginas_mtx);
 
 	return victima->frame;
 
@@ -462,7 +468,7 @@ void liberar_frame(t_pagina* victima){
 	victima->presencia = false;
 	victima->uso = false;
 
-	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se elimino a la victima en el frame %d posicion: %d", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
+	log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se elimino a la victima en el frame %d posicion: %p", victima->frame, (victima->frame)*TAMANIO_PAGINA + memoria_principal);
 
 }
 
@@ -558,7 +564,7 @@ void guardar_en_swap(int frame_destino_swap, t_plato* plato){
 	memcpy(memoria_swap + offset, pagina, TAMANIO_PAGINA);
 	msync(memoria_swap, sizeof(memoria_swap), MS_SYNC);
 	pthread_mutex_unlock(&memoria_swap_mtx);
-	log_info(log_comanda, "[MEMORIA_SWAP] Se guardo el plato %s en el frame %d posicion %d", plato->nombre, frame_destino_swap, memoria_swap + offset);
+	log_info(log_comanda, "[MEMORIA_SWAP] Se guardo el plato %s en el frame %d posicion %p", plato->nombre, frame_destino_swap, memoria_swap + offset);
 	free(pagina);
 }
 
@@ -641,7 +647,7 @@ void liberar_pagina(t_pagina* pagina){
 		pthread_mutex_lock(&frames_MP_mtx);
 		bitarray_clean_bit(frames_MP, pagina->frame);
 		pthread_mutex_unlock(&frames_MP_mtx);
-		log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se libero el frame %d posicion %d", pagina->frame, pagina->frame * TAMANIO_PAGINA + memoria_principal);
+		log_info(log_comanda, "[MEMORIA_PRINCIPAL] Se libero el frame %d posicion %p", pagina->frame, pagina->frame * TAMANIO_PAGINA + memoria_principal);
 		pagina->presencia = false;
 	}
 
@@ -649,10 +655,10 @@ void liberar_pagina(t_pagina* pagina){
 	bitarray_clean_bit(frames_swap, pagina->pagina_swap);
 	pthread_mutex_unlock(&frames_swap_mtx);
 
-	log_info(log_comanda, "[MEMORIA_SWAP] Se libero el frame %d posicion %d", pagina->pagina_swap, pagina->pagina_swap * TAMANIO_PAGINA + memoria_swap);
+	log_info(log_comanda, "[MEMORIA_SWAP] Se libero el frame %d posicion %p", pagina->pagina_swap, pagina->pagina_swap * TAMANIO_PAGINA + memoria_swap);
 }
 
-void free_pagina(t_pagina* pagina){ //TODO fijarnos si list_destroy elimina los elementos o no :o
+void free_pagina(t_pagina* pagina){
 	free(pagina);
 }
 
