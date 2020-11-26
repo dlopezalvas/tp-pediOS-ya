@@ -18,11 +18,11 @@ void sindicato_utils_create_folder(char* path, bool recordLog){
 	if(stat(path, &st) == -1){
 		if(mkdir(path,0777) == 0){
 			if(recordLog)
-				log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta creada: %s",path);
+				log_info(sindicatoDebugLog, "[FILESYSTEM] - Carpeta creada: %s",path);
 		}
 	}else{
 		if(recordLog)
-			log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta existente: %s", path);
+			log_info(sindicatoDebugLog, "[FILESYSTEM] - Carpeta existente: %s", path);
 	}
 }
 
@@ -74,6 +74,16 @@ char* sindicato_utils_build_block_path(int blockNumber){
 	free(filePath);
 
 	return filePathComplete;
+}
+
+char* sindicato_utils_build_pedido_name(uint32_t idPedido){
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)idPedido);
+
+	string_append(&pedidoName, pedidoNumberString);
+
+	return pedidoName;
 }
 
 bool sindicato_utils_verify_if_file_exist(char* path){

@@ -24,6 +24,8 @@
 #define E_PENDIENTE "PENDIENTE"
 #define E_TERMINADO "TERMINADO"
 
+#define ERROR_WRITE_BLOCK -1
+
 typedef enum{
 	MODE_ADD = 0,
 	MODE_UPDATE = 1,

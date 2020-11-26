@@ -46,7 +46,7 @@ void internal_api_initialize_metadata(){
 	metadataFS->blocks = (uint32_t)config_get_int_value(metadataConfig, "BLOCKS");
 	metadataFS->magic_number = config_get_string_value(metadataConfig, "MAGIC_NUMBER");
 
-	log_info(sindicatoDebugLog,"[FILESYSTEM] Metadata leida y guardada");
+	log_info(sindicatoDebugLog,"[FILESYSTEM] - Metadata leida y guardada");
 
 	free(metadaPathFS);
 }
@@ -71,7 +71,7 @@ void internal_api_bitmap_create(){
 
 	pthread_mutex_init(&bitarray_mtx, NULL);
 
-	log_info(sindicatoDebugLog,"[FILESYSTEM] Bitmap creado");
+	log_info(sindicatoDebugLog,"[FILESYSTEM] - Bitmap creado");
 
 	close(bitarrayFile);
 	free(bitmapPathFS);
@@ -94,7 +94,7 @@ void internal_api_initialize_blocks(){
 		free(filePath);
 	}
 
-	log_info(sindicatoDebugLog,"[FILESYSTEM] Bloques inicializados");
+	log_info(sindicatoDebugLog,"[FILESYSTEM] - Bloques inicializados");
 }
 
 /* ********** INTERNAL UTILS ********** */
@@ -549,10 +549,12 @@ void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 
 			pthread_mutex_unlock(&bitarray_mtx);
 			/* END   CRITICAL SECTION bitarray_mtx */
+
+			log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d liberado", block);
 		}
 	}
 
-	log_info(sindicatoDebugLog, "[FILESYSTEM] %d bloques reservados fueron liberados en bitmap.",qtyBitsReserved);
+	log_info(sindicatoDebugLog, "[FILESYSTEM] - %d bloques reservados fueron liberados en bitmap.",qtyBitsReserved);
 }
 
 int internal_api_get_free_block(){
@@ -567,6 +569,8 @@ int internal_api_get_free_block(){
 
 			pthread_mutex_unlock(&bitarray_mtx);
 			/* END   CRITICAL SECTION bitarray_mtx */
+
+			log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d reservado", blockNumber);
 
 			return blockNumber;
 		}
@@ -585,7 +589,8 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 	for(int i = 0; i < blocksNeeded; i++){
 		freeBlock = internal_api_get_free_block();
 		if(freeBlock == -1){
-			log_error(sindicatoDebugLog, "[FILESYSTEM] ERROR: No hay bloques disponibles");
+			log_error(sindicatoDebugLog, "[FILESYSTEM] - ERROR: No hay bloques disponibles");
+			log_error(sindicatoLog, "[FILESYSTEM] - ERROR: No hay bloques disponibles");
 			internal_api_free_bits_reserved(blocks, i);
 			internal_api_free_blocks_array(blocks, i);
 			return NULL;
@@ -597,7 +602,8 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 		free(stringAux);
 	}
 
-	log_info(sindicatoDebugLog, "[FILESYSTEM] %d bloques fueron seteados en bitmap.",blocksNeeded);
+	log_info(sindicatoLog, "[FILESYSTEM] - %d bloques fueron seteados en bitmap.",blocksNeeded);
+	log_info(sindicatoDebugLog, "[FILESYSTEM] - %d bloques fueron seteados en bitmap.",blocksNeeded);
 
 	return blocks;
 }
@@ -668,13 +674,13 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 	if(mode == MODE_ADD){
 
 		blocksToWrite = internal_api_get_free_blocks(qtyblocksNeeded);
-		if(blocksToWrite == NULL)
-			return -1; //error
-
-		//TODO: loguear los bloques a escribir
+		if(blocksToWrite == NULL){
+			return ERROR_WRITE_BLOCK;
+		}
 	}
 
 	if(mode == MODE_UPDATE){
+
 		char* originalBlocks;
 
 		char* originalStringStored = internal_api_get_string_from_filesystem(initialBLock->initialBlock,initialBLock->stringSize, &originalBlocks);
@@ -789,7 +795,6 @@ void* internal_api_read_blocks(int initialBlock, int stringSize){
 
 /* Console functions */
 void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos){
-	log_info(sindicatoLog, "Se creo el restaurante: %s %s %s %s %s %s %s",nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
 	char* restToSave = internal_api_restaurante_to_string(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, "0");
 
@@ -797,32 +802,44 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, nombre);
 	sindicato_utils_create_folder(restPath, true);
 
-	// TODO: validar que no sea -1
 	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
 
-
+	if(initialBlock == ERROR_WRITE_BLOCK){
+		free(restPath);
+		free(restToSave);
+		log_info(sindicatoLog, "[FILESYSTEM] - No se pudo crear restaurante: %s %s %s %s %s %s %s",
+				nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
+		return;
+	}
 
 	/* Create "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
 	internal_api_write_info_file(restPath, initialBlock, restToSave);
+
+	log_info(sindicatoLog, "[FILESYSTEM] - Se creo restaurante: %s %s %s %s %s %s %s",
+			nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
 	free(restPath);
 	free(restToSave);
 }
 
 void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
-	log_info(sindicatoLog, "Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
 	char* recetaToSave = internal_api_receta_to_string(pasos, tiempoPasos);
 
 	int initialBlock = internal_api_write_block(recetaToSave, NULL, MODE_ADD);
-
+	if(initialBlock == ERROR_WRITE_BLOCK){
+		free(recetaToSave);
+		log_info(sindicatoLog, "[FILESYSTEM] - No se pudo crear la receta: %s %s %s", nombre, pasos, tiempoPasos);
+		return;
+	}
 
 	/* Create "info" file */
-
 	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre, false, NULL);
 
 	internal_api_write_info_file(restPath, initialBlock, recetaToSave);
+
+	log_info(sindicatoLog, "[FILESYSTEM] - Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
 	free(restPath);
 	free(recetaToSave);
@@ -876,11 +893,10 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRestaurante->id);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRestaurante->id);
 
 	if(sindicato_utils_verify_if_exist(pedidoName, pedidoRestaurante->nombre.nombre, TYPE_PEDIDO)){
+		free(pedidoName);
 		free(pedidoRestaurante);
 		*opResult = 0;
 		return opResult;
@@ -890,17 +906,19 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 	int initialBlock = internal_api_write_block(pedidoString, NULL, MODE_ADD);
 
-	if(initialBlock != -1){
-		/* Create "info" file */
-		char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
-
-		internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
-	} else{
+	if(initialBlock == ERROR_WRITE_BLOCK){
+		free(pedidoName);
 		free(pedidoRestaurante);
 		*opResult = 0;
 		return opResult;
 	}
 
+	/* Create "info" file */
+	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
+
+	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+
+	log_info(sindicatoLog, "[FILESYSTEM] - Se creo el %s Pendiente [] [] [] 0", pedidoName);
 
 	/* UPDATE Restaurante */
 
@@ -958,9 +976,7 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRequested->idPedido);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRequested->idPedido);
 
 	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO)){
 		free(pedidoRequested);
@@ -1056,9 +1072,7 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRequested->id);
 
 	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
 		free(pedidoRequested);
@@ -1113,9 +1127,7 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
 		return NULL;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRequested->id);
 
 	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
 		free(pedidoRequested);
@@ -1204,9 +1216,7 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 		return opResult;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRequested->idPedido);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRequested->idPedido);
 
 	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO)){
 		free(pedidoRequested);
@@ -1314,9 +1324,7 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 		return opResult;
 	}
 
-	char* pedidoName = string_duplicate("Pedido");
-	char* pedidoNumberString = string_itoa((int)pedidoRequested->id);
-	string_append(&pedidoName, pedidoNumberString);
+	char* pedidoName = sindicato_utils_build_pedido_name(pedidoRequested->id);
 
 	if(!sindicato_utils_verify_if_exist(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO)){
 		free(pedidoRequested);
