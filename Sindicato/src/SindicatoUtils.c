@@ -187,6 +187,23 @@ bool sindicato_utils_verify_if_file_integrity_is_ok(char* name, file_type fileTy
 	return result;
 }
 
+pthread_mutex_t* internal_utils_get_mutex(char* key){
+	pthread_mutex_t* fileMutex = malloc(sizeof(pthread_mutex_t));
+
+	pthread_mutex_lock(&dictionary_mtx);
+
+	if(dictionary_has_key(mutexDictionary, key)){
+		fileMutex = dictionary_get(mutexDictionary, key);
+
+	} else {
+		pthread_mutex_init(fileMutex, NULL);
+		dictionary_put(mutexDictionary, key, fileMutex);
+	}
+	pthread_mutex_unlock(&dictionary_mtx);
+
+	return fileMutex;
+}
+
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
 
 	free_struct_mensaje(responseMessage->message->parametros, responseMessage->message->tipo_mensaje);
