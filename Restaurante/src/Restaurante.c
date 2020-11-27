@@ -14,8 +14,8 @@
 int main(int argc, char* argv[]) {
 
 // ACTIVACION DE CONSOLA POR TIPO DE LOG:
-	  	bool_log_oficial    = false;
-	    bool_log_restaurante = true;
+	  	bool_log_oficial = true;
+	    bool_log_restaurante = false;
 
 
 	    //  set logs no oficiales
@@ -52,8 +52,7 @@ log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
 
 
 	pthread_detach(hilo_planificador);
-	//pthread_join(hilo_planificador,NULL);
-	pthread_join(hilo_servidor_clientes,NULL);
+
 
 
 

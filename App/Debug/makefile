@@ -23,22 +23,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Sindicato
+all: App
 
 dependents:
 	-cd /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug && $(MAKE) clean all
 
 # Tool invocations
-Sindicato: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug/libcommonsCoronaLinux.so
+App: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug/libcommonsCoronaLinux.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug" -o "Sindicato" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/workspace/tp-2020-2c-CoronaLinux/commonsCoronaLinux/Debug" -o "App" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Sindicato
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) App
 	-@echo ' '
 
 .PHONY: all clean dependents
