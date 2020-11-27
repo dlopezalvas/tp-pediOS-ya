@@ -718,6 +718,7 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 		}
 	}
 
+	int initBlock;
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
 	char** stringToWriteSplitted = internal_api_split_string(stringToWrite, stringBlockSize, qtyblocksNeeded);
 
@@ -728,6 +729,9 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 		ftruncate(block, metadataFS->block_size);
 
 		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+		if(i == 0)
+			initBlock = atoi(blocksToWrite[0]);
 
 		if(i < (qtyblocksNeeded -1))
 			pointerNextBlock = (uint32_t)atoi(blocksToWrite[i+1]);
@@ -740,11 +744,18 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 
 		msync(blockMapped, metadataFS->block_size, MS_SYNC);
 
+		free(stringToWriteSplitted[i]);
+		free(blocksToWrite[i]);
+
 		munmap(blockMapped, metadataFS->block_size);
 		close(block);
+		free(blockFullPath);
 	}
 
-	return atoi(blocksToWrite[0]);
+	free(stringToWriteSplitted);
+	free(blocksToWrite);
+
+	return initBlock;
 }
 
 /* If fails return NULL */
@@ -826,6 +837,8 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 
 		return;
 	}
+
+	free(restPath);
 
 	/* Create "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
