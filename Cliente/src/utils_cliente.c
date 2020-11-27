@@ -303,6 +303,8 @@ void conexionRecepcion(){
 			}
 			free(mensaje);
 			free_struct_mensaje(rta_conexion, cod_op);
+		}else{
+			pthread_exit(NULL);
 		}
 
 		while(usar_socket){
@@ -316,6 +318,8 @@ void conexionRecepcion(){
 				loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
 				free_struct_mensaje(mensaje, cod_op);
 				free(buffer);
+			}else{
+				pthread_exit(NULL);
 			}
 		}
 
