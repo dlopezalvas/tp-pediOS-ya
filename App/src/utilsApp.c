@@ -1146,18 +1146,28 @@ void process_request(int cod_op, int cliente_fd) {
 }
 
 void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int socket_cliente) {
-    t_cliente* cliente = malloc(sizeof(t_cliente));
-    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-    uint32_t* confirmacion = malloc(sizeof(uint32_t));
+    t_cliente* cliente;
 
     log_debug(
         logger_mensajes,
-        "[MENSJS]: Llego pos. (%i, %i) del cliente %i (ahora conectado)",
+        "[MENSJS]: Llego pos. (%i, %i) del cliente %i (INTENTO HANDSHAKE)",
         posicion->x,
         posicion->y,
         cliente_id
     );
 
+    pthread_mutex_lock(&mutex_lista_clientes);
+
+    if (exists_cliente(cliente_id)) {
+        log_debug(
+            logger_mensajes,
+            "[MENSJS]: Ya existe un cliente por el mismo id; se rechaza el registro (ERROR)"
+        );
+        responder_ERROR(socket_cliente);
+        return;
+    }
+
+    cliente = malloc(sizeof(t_cliente));
     cliente->id = cliente_id;
     cliente->pos_x = posicion->x;
     cliente->pos_y = posicion->y;
@@ -1167,31 +1177,21 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
     pthread_mutex_init(cliente->mutex, NULL);
     pthread_mutex_lock(cliente->mutex);
 
-    pthread_mutex_lock(&mutex_lista_clientes);
     list_add(clientes, cliente);
     // TODO: logging
     pthread_mutex_unlock(&mutex_lista_clientes);
 
-    mensaje->tipo_mensaje = RTA_POSICION_CLIENTE;
-    mensaje->id = cfval_id;
-    *confirmacion = 1;
-    mensaje->parametros = confirmacion;
-
     log_debug(
         logger_mensajes,
-        "[MENSJS]: Contestando handshake..."
+        "[MENSJS]: Contestando handshake OK..."
     );
-
-    enviar_mensaje(mensaje, socket_cliente);
-
+    responder_confirm(socket_cliente, true, RTA_POSICION_CLIENTE);
     log_debug(
         logger_mensajes,
         "[MENSJS]: Handshake contestado"
     );
 
     pthread_mutex_unlock(cliente->mutex);
-    free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
-    free(mensaje);
 }
 
 void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
@@ -1203,7 +1203,6 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
         "[MENSJS]: Gestionando CONSULTAR_RESTAURANTES:"
     );
 
-    mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
     restaurantes->nombres = get_nombresRestConectados();
     for (
         unsigned index_rests = 0;
@@ -1222,16 +1221,18 @@ void gestionar_CONSULTAR_RESTAURANTES(int socket_cliente) {
         "[MENSJS]: Cant. de elems.: %i",
         list_size(restaurantes->nombres)
     );
+
+    mensaje->tipo_mensaje = RTA_CONSULTAR_RESTAURANTES;
     mensaje->id = cfval_id;
     mensaje->parametros = restaurantes;
     log_debug(
         logger_mensajes,
-        "[MENSJS]: Enviando mensaje..."
+        "[MENSJS]: Enviando RTA_CONSULTAR_RESTAURANTES..."
     );
     enviar_mensaje(mensaje, socket_cliente);
     log_debug(
         logger_mensajes,
-        "[MENSJS]: Mensaje enviado"
+        "[MENSJS]: RTA_CONSULTAR_RESTAURANTES enviado"
     );
     loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, logger_mensajes);
     free_struct_mensaje(mensaje->parametros, mensaje->tipo_mensaje);
@@ -1260,7 +1261,7 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
 
     cliente_seleccionante = get_cliente_porSuID(seleccion->cliente);
     if (!cliente_seleccionante) {
-        log_debug(logger_mensajes, "[MENSJS]: No se encontro el puntero del cliente %i", seleccion->cliente);
+        log_debug(logger_mensajes, "[MENSJS]: No se encontro el puntero del cliente %i -> FAIL", seleccion->cliente);
         responder_confirm(socket_cliente, false, RTA_SELECCIONAR_RESTAURANTE);
         return;
     }
@@ -1277,10 +1278,11 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
             seleccion->restaurante.nombre
         );
         responder_confirm(socket_cliente, false, RTA_SELECCIONAR_RESTAURANTE);
+        pthread_mutex_unlock(cliente_seleccionante->mutex);
         return;
     }
     
-    log_debug(logger_mensajes, "[MENSJS]: se encontro rest. %s; ahora seleccionado", cliente_seleccionante->restaurante_seleccionado->nombre);
+    log_debug(logger_mensajes, "[MENSJS]: se encontro rest. %s; ahora seleccionado -> OK", cliente_seleccionante->restaurante_seleccionado->nombre);
 
     responder_confirm(socket_cliente, true, RTA_SELECCIONAR_RESTAURANTE);
 
@@ -1288,16 +1290,10 @@ void gestionar_SELECCIONAR_RESTAURANTE(m_seleccionarRestaurante* seleccion, int 
 }
 
 void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
-    t_mensaje* mensaje = malloc(sizeof(t_mensaje));
-    t_nombre* nombre_rest_consultado = malloc(sizeof(t_nombre));
+    t_mensaje* mensaje;
+    t_nombre* nombre_rest_consultado;
     t_restaurante* restaurante_consultado;
     t_cliente* cliente_consultor;
-    uint32_t* confirmacion;
-    op_code cod_op;
-    uint32_t id_recibida;
-    int _recv_op;
-    int _recv_id;
-    int size = 0;
     qr_form_t* form;
 
     log_debug(
@@ -1307,20 +1303,21 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
 
     cliente_consultor = get_cliente_porSuID(cliente_id);
     if (!cliente_consultor) {
-        log_debug(logger_mensajes, "[MENSJS]: No se encontro el puntero del cliente %i", cliente_id);
+        log_debug(logger_mensajes, "[MENSJS]: No se encontro el puntero del cliente %i -> ERROR", cliente_id);
         responder_ERROR(socket_cliente);
         return;
     }
+    log_debug(logger_mensajes, "[MENSJS]: Se encontro el puntero del cliente %i", cliente_consultor->id);
     pthread_mutex_lock(cliente_consultor->mutex);
 
     restaurante_consultado = cliente_consultor->restaurante_seleccionado;
     if (!restaurante_consultado) {
-        // TODO: tambien agregarle null cuando se guarda el cliente al conectarse no?
         log_debug(
             logger_mensajes,
             "[MENSJS]: El cliente no tiene restaurante seleccionado, se contesta ERROR"
         );
         responder_ERROR(socket_cliente);
+        pthread_mutex_unlock(cliente_consultor->mutex);
         return;
     } else if (restaurante_consultado == resto_default) {
         log_debug(
@@ -1341,34 +1338,43 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
             "[MENSJS]: Post enviar mensaje"
         );
         free(mensaje);
+        pthread_mutex_unlock(cliente_consultor->mutex);
         return;
     }
 
-    mensaje->tipo_mensaje = CONSULTAR_PLATOS;
+    nombre_rest_consultado = malloc(sizeof(t_nombre));
     nombre_rest_consultado->nombre="";
+    mensaje = malloc(sizeof(t_mensaje));
+    mensaje->tipo_mensaje = CONSULTAR_PLATOS;
     mensaje->parametros = nombre_rest_consultado;
 
     form = qr_request(mensaje, restaurante_consultado);
 
     if (*(form->error_flag)) {
+        log_debug(logger_mensajes, "[MENSJS]: Form con error flag -> se responde ERROR");
         responder_ERROR(socket_cliente);
+        pthread_mutex_unlock(cliente_consultor->mutex);
         qr_free_form(form);
         return; // TODO: liberar la memoria previa a este if dentro de aca
     }
 
     switch (form->m_recibir->tipo_mensaje) {
         case ERROR:
-            // TODO: logging
+            log_debug(logger_mensajes, "[MENSJS]: Rest. responde ERROR -> se responde ERROR");
             responder_ERROR(socket_cliente);
             break;
         case RTA_CONSULTAR_PLATOS:
+            log_debug(logger_mensajes, "[MENSJS]: Rest. responde como se esperaba");
             enviar_mensaje(form->m_recibir, socket_cliente);
+            loggear_mensaje_enviado(form->m_recibir->parametros, form->m_recibir->tipo_mensaje, logger_mensajes);
             break;
         default:
-            // TODO: logging
+            log_debug(logger_mensajes, "[MENSJS]: Rest. no responde como se esperaba -> se responde ERROR");
             responder_ERROR(socket_cliente);
     }
 
+    pthread_mutex_unlock(cliente_consultor->mutex);
+    qr_free_form(form);
     // TODO: liberar la memoria
 }
 
@@ -1392,37 +1398,52 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
     
     // buscar rest de ese cliente
     cliente_en_cuestion = get_cliente_porSuID(cliente_id); // TODO: error check
-    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: ojo el mutex del socket del rest.
-    
-    if (!resto_en_cuestion) {
+    if (!cliente_en_cuestion) {
+        log_debug(logger_mensajes, "[MENSJS]: Cliente %i no registrado -> se responde ERROR", cliente_id);
         responder_ERROR(socket_cliente);
+    }
+    pthread_mutex_lock(cliente_en_cuestion->mutex);
+
+    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado; // TODO: ojo el mutex del socket del rest.
+    if (!resto_en_cuestion) {
+        log_debug(logger_mensajes, "[MENSJS]: Cliente %i no tiene rest. selecc. -> ERROR", cliente_id);
+        responder_ERROR(socket_cliente);
+        pthread_mutex_unlock(cliente_en_cuestion->mutex);
         return;
     }
-
     if (resto_en_cuestion == resto_default) {
         pedido_id = resto_default_get_id();
+        log_debug(logger_mensajes, "[MENSJS]: Cliente %i tenia RestoDefault (nuevo ped. %i)",
+            cliente_id,
+            pedido_id
+        );
     } else {
         // mandarle el crear pedido
+        log_debug(logger_mensajes, "[MENSJS]: Cliente %i tenia %s seleccionado",
+            cliente_id,
+            resto_en_cuestion->nombre
+        );
         mensaje = malloc(sizeof(t_mensaje));
         mensaje->tipo_mensaje = CREAR_PEDIDO;
         mensaje->id = cfval_id;
         mensaje->parametros = NULL;
         form = qr_request(mensaje, resto_en_cuestion);
-        printf("volvio al gestionar_*\n");
         if (*(form->error_flag)) {
-            printf("flag error\n");
+            log_debug(logger_mensajes, "[MENSJS]: Form con error flag -> se responde ERROR");
             responder_ERROR(socket_cliente);
             qr_free_form(form);
+            pthread_mutex_unlock(cliente_en_cuestion->mutex);
             return;
         }
         switch (form->m_recibir->tipo_mensaje) {
             case ERROR:
-                printf("ERROR recibido\n");
+                log_debug(logger_mensajes, "[MENSJS]: Rest. respondio ERROR -> se responde ERROR a cli");
                 responder_ERROR(socket_cliente);
                 qr_free_form(form);
+                pthread_mutex_unlock(cliente_en_cuestion->mutex);
                 return;
             case RTA_CREAR_PEDIDO:
-                printf("ok\n");
+                log_debug(logger_mensajes, "[MENSJS]: Rest. respondio como se esperaba");
                 pedido_id = *((uint32_t*)(form->m_recibir->parametros));
                 qr_free_form(form);
                 break;
@@ -1432,37 +1453,35 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
                 // enviar_mensaje(mensaje, socket_cliente);
                 // free(mensaje);
             default:
-                printf("vino cod op inesperado\n");
+                log_debug(logger_mensajes, "[MENSJS]: Rest. no respondio como se esperaba -> ERROR a cli");
                 loggear_mensaje_recibido(form->m_recibir->parametros, form->m_recibir->tipo_mensaje, logger_mensajes);
                 responder_ERROR(socket_cliente);
                 qr_free_form(form);
+                pthread_mutex_unlock(cliente_en_cuestion->mutex);
                 return;
         }
     }
-
-    printf("seguimos con comanda...\n");
         
     params = malloc(sizeof(t_nombre_y_id));
     params->id = pedido_id;
     params->nombre.nombre = resto_en_cuestion->nombre;
-    rta_comanda = mensajear_comanda(GUARDAR_PEDIDO, params, false); // TODO: false?
-    free(params);
+    rta_comanda = mensajear_comanda(GUARDAR_PEDIDO, params, true);
 
     if (!rta_comanda) {
-        printf("no hubo respuesta de comanda\n");
+        log_debug(logger_mensajes, "[MENSJS]: Hubo un error al recibir rta. de comanda -> ERROR a cli");
         responder_ERROR(socket_cliente);
+        pthread_mutex_unlock(cliente_en_cuestion->mutex);
         return;
     }
 
     switch (rta_comanda->tipo_mensaje) {
         case ERROR:
-            printf("rta_comanda fue ERROR\n");
+            log_debug(logger_mensajes, "[MENSJS]: Comanda respondio ERROR -> se responde ERROR a cli");
             responder_ERROR(socket_cliente);
-            // TODO: free
             break;
         case RTA_GUARDAR_PEDIDO:
             if (*(int*)(rta_comanda->parametros)) { // -------------------------------- OK
-                printf("rta_comanda fue OK\n");
+                log_debug(logger_mensajes, "[MENSJS]: Comanda respondio OK");
                 mensaje = malloc(sizeof(t_mensaje));
                 mensaje->tipo_mensaje = RTA_CREAR_PEDIDO;
                 mensaje->id = cfval_id;
@@ -1477,23 +1496,22 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
                     "[MENSJS] OK al cliente contestado!"
                 );
                 free(mensaje);
-                free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
             } else { // --------------------------------------------------------- FAIL
-                printf("rta_comanda fue FAIL\n");
+                log_debug(logger_mensajes, "[MENSJS]: Comanda respondio ERROR -> ERROR a cli");
                 responder_ERROR(socket_cliente);
-                // TODO: free
             }
             break;
         default:
-            printf("rta_comanda fue inesperada");
+            log_debug(logger_mensajes, "[MENSJS]: Comanda no respondio como se esperaba -> ERROR a cli");
             responder_ERROR(socket_cliente);
-            // TODO: free
             break;
     }
+    free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
     free(rta_comanda);
+    pthread_mutex_unlock(cliente_en_cuestion->mutex);
 }
 
-void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente) { // TODO: el id de pedido pa que?
+void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cliente) {
     t_cliente* cliente_en_cuestion;
     t_restaurante* resto_en_cuestion;
     t_mensaje* mensaje;
@@ -1505,14 +1523,20 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
     
     // buscar rest de ese cliente
     cliente_en_cuestion = get_cliente_porSuID(cliente_id);
-    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado;
-
-    if (!resto_en_cuestion) {
-        // TODO: error handling
-        responder_ERROR(socket_cliente);
+    if (!cliente_en_cuestion) {
+        log_debug(logger_mensajes, "[MENSJS]: El cliente %i no esta registrado -> FAIL a cli", cliente_id);
+        responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
         return;
     }
-    
+    pthread_mutex_lock(cliente_en_cuestion->mutex);
+
+    resto_en_cuestion = cliente_en_cuestion->restaurante_seleccionado;
+    if (!resto_en_cuestion) {
+        log_debug(logger_mensajes, "[MENSJS]: El cliente %i no selecciono rest. -> FAIL a cli", cliente_id);
+        responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
+        pthread_mutex_unlock(cliente_en_cuestion->mutex);
+        return;
+    }
     if (resto_en_cuestion != resto_default) {
         mensaje = malloc(sizeof(t_mensaje));
         mensaje->tipo_mensaje = AGREGAR_PLATO;
@@ -1520,40 +1544,36 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
         mensaje->parametros = plato;
         form = qr_request(mensaje, resto_en_cuestion);
         if (*(form->error_flag)) {
-            responder_ERROR(socket_cliente);
+            log_debug(logger_mensajes, "[MENSJS]: Form con error flag -> FAIL a cli", cliente_id);
+            responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
+            pthread_mutex_unlock(cliente_en_cuestion->mutex);
+            qr_free_form(form);
             return;
         }
         switch (form->m_recibir->tipo_mensaje) {
             case ERROR:
-                responder_ERROR(socket_cliente);
+                log_debug(logger_mensajes, "[MENSJS]: Rest. responde ERROR -> FAIL a cli", cliente_id);
+                responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
+                pthread_mutex_unlock(cliente_en_cuestion->mutex);
                 qr_free_form(form);
                 return;
             case RTA_AGREGAR_PLATO:
                 if (!*(int*)(form->m_recibir->parametros)) { // ------------------- FAIL
-                    responder_ERROR(socket_cliente);
+                    log_debug(logger_mensajes, "[MENSJS]: Rest. responde FAIL -> FAIL a cli", cliente_id);
+                    responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
+                    pthread_mutex_unlock(cliente_en_cuestion->mutex);
                     qr_free_form(form);
                     return;
                 } // -------------------------------------------------------- OK
+                log_debug(logger_mensajes, "[MENSJS]: Rest. responde OK", cliente_id);
                 break;
             default:
-                responder_ERROR(socket_cliente);
+                log_debug(logger_mensajes, "[MENSJS]: Rest. responde ERROR -> FAIL a cli", cliente_id);
+                responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
+                pthread_mutex_unlock(cliente_en_cuestion->mutex);
                 qr_free_form(form);
                 return;
         }
-    }
-
-    if (modo_noComanda) {
-        if (form) {
-            qr_free_form(form);
-        }
-        mensaje_a_cli = malloc(sizeof(t_mensaje));
-        mensaje_a_cli->tipo_mensaje = RTA_AGREGAR_PLATO;
-        mensaje_a_cli->id = cfval_id;
-        confirm_cli = 1;
-        mensaje_a_cli->parametros = &confirm_cli;
-        enviar_mensaje(mensaje_a_cli, socket_cliente);
-        free(mensaje_a_cli);
-        return;
     }
 
     // mandarle guardar plato a comanda
@@ -1563,41 +1583,40 @@ void gestionar_AGREGAR_PLATO(t_nombre_y_id* plato, int cliente_id, int socket_cl
     plato_comanda->comida.nombre = string_duplicate(plato->nombre.nombre);
     plato_comanda->cantidad = 1;
     rta_comanda = mensajear_comanda(GUARDAR_PLATO, plato_comanda, true);
+
     log_debug(logger_mensajes, "[MENSJS] rta_comanda: %x", rta_comanda);
     log_debug(logger_mensajes, "[MENSJS] rta_comanda->parametros: %x", rta_comanda->parametros);
 
+    qr_free_form(form);
+
     // proc respuesta
     if (!rta_comanda) {
-        responder_ERROR(socket_cliente);
+        log_debug(logger_mensajes, "[MENSJS]: Error recibiendo rta. comanda -> FAIL a cli", cliente_id);
+        responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
     } else {
         switch (rta_comanda->tipo_mensaje) {
             case ERROR:
-                responder_ERROR(socket_cliente);
+                log_debug(logger_mensajes, "[MENSJS]: Comanda respondio ERROR -> FAIL a cli", cliente_id);
+                responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
                 break;
             case RTA_GUARDAR_PLATO:
                 if (*(int*)(rta_comanda->parametros)) {
-                    mensaje_a_cli = malloc(sizeof(t_mensaje));
-                    mensaje_a_cli->tipo_mensaje = RTA_AGREGAR_PLATO;
-                    mensaje_a_cli->id = cfval_id;
-                    confirm_cli = 1;
-                    mensaje_a_cli->parametros = &confirm_cli;
-                    enviar_mensaje(mensaje_a_cli, socket_cliente);
-                    free(mensaje_a_cli);
+                    log_debug(logger_mensajes, "[MENSJS]: Comanda responde OK -> OK a cli", cliente_id);
+                    responder_confirm(socket_cliente, true, RTA_AGREGAR_PLATO);
                 } else {
-                    responder_ERROR(socket_cliente);
+                    log_debug(logger_mensajes, "[MENSJS]: Comanda respondio FAIL -> FAIL a cli", cliente_id);
+                    responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
                 }
                 break;
             default:
-                responder_ERROR(socket_cliente);
+                log_debug(logger_mensajes, "[MENSJS]: Respuesta inesperada de comanda -> FAIL a cli", cliente_id);
+                responder_confirm(socket_cliente, false, RTA_AGREGAR_PLATO);
         }
     }
 
-
+    pthread_mutex_unlock(cliente_en_cuestion->mutex);
     free_struct_mensaje(rta_comanda->parametros, rta_comanda->tipo_mensaje);
     free(rta_comanda);
-    if (form) {
-        qr_free_form(form);
-    }
 }
 
 void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int cliente_id) {
@@ -1612,22 +1631,6 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
     qr_form_t* form;
     t_nombre_y_id* pedido_comanda;
 
-    if (modo_noComanda) {
-        rest_a_conf = get_restaurante(pedido->nombre.nombre);
-        if (rest_a_conf != resto_default) {
-            log_debug(logger_mensajes, "[MENSJS] F, no hay modo_noComanda para CONFIRMAR_PEDIDO si no es con RestoDefault! :(");
-            return;
-        }
-        planif_nuevoPedido(cliente_id, pedido->id);
-        mje_confirm_cli = malloc(sizeof(t_mensaje));
-        mje_confirm_cli->tipo_mensaje = RTA_CONFIRMAR_PEDIDO;
-        mje_confirm_cli->id = cfval_id;
-        confirm = 1;
-        mje_confirm_cli->parametros = &confirm;
-        enviar_mensaje(mje_confirm_cli, socket_cliente);
-        free(mje_confirm_cli);
-        return;
-    } 
 
     cliente_confirmante = get_cliente_porSuID(cliente_id);
     rest_a_conf = cliente_confirmante->restaurante_seleccionado;
@@ -1662,7 +1665,6 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
 
-            // rest_a_conf = get_restaurante(pedido->nombre.nombre);
             // cliente_confirmante = get_cliente_porSuID(cliente_id);
             // rest_a_conf = cliente_confirmante->restaurante_seleccionado;
 
