@@ -235,6 +235,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
 void gestionar_CONSULTAR_PEDIDO(uint32_t* id_pedido, int socket_cliente, int cliente_id);
 void gestionar_PLATO_LISTO(m_platoListo* plato_params, int socket_rest);
 
+void responder_confirm(int socket_cliente, bool ok_fail, int cod_op);
 void responder_ERROR(int socket);
 bool todosLosPlatosEstanPreparados(rta_obtenerPedido* pedido);
 
