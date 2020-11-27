@@ -24,6 +24,10 @@
 #define E_PENDIENTE "PENDIENTE"
 #define E_TERMINADO "TERMINADO"
 
+#define ERROR_WRITE_BLOCK -1
+#define ERROR_OPERATION 0
+#define SUCCESS_OPERATION 1
+
 typedef enum{
 	MODE_ADD = 0,
 	MODE_UPDATE = 1,
@@ -74,6 +78,7 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido);
 rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante);
 uint32_t* sindicato_api_plato_listo(void* plato);
 rta_obtenerReceta* sindicato_api_obtener_receta(void* plato);
+bool sindicato_utils_verify_if_file_integrity_is_ok(char* name, file_type fileType, uint32_t idPedido, char** pedidoName);
 uint32_t* sindicato_api_terminar_pedido(void* pedido);
 
 /* Main functions */

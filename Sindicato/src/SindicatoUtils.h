@@ -19,6 +19,9 @@ typedef enum{
 	TYPE_RECETA = 0,
 	TYPE_PEDIDO = 1,
 	TYPE_RESTAURANTE = 2,
+	TYPE_RECETA_INICIAL = 3,
+	TYPE_PEDIDO_INICIAL = 4,
+	TYPE_RESTAURANTE_INICIAL = 5,
 }file_type;
 
 typedef struct{
@@ -61,8 +64,10 @@ void sindicato_utils_create_folder(char* path, bool logsFolder);
 char* sindicato_utils_build_path(char* path, char* toAppend);
 char* sindicato_utils_build_file_full_path(char* path, char* name, bool isRestaurante, char* restaurateOfPedido);
 char* sindicato_utils_build_block_path(int blockNumber);
+char* sindicato_utils_build_pedido_name(uint32_t idPedido);
 bool sindicato_utils_verify_if_file_exist(char* path);
 bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, file_type fileType);
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
+
 
 #endif /* SINDICATOUTILS_H_ */

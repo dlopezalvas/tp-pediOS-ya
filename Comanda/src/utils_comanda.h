@@ -144,5 +144,6 @@ bool uso_modificado_cero(t_pagina* pagina);
 bool uso_cero_modificado_uno(t_pagina* pagina);
 void hacer_nada(void* algo); //jaja salu2
 void cambiar_uso_cero(t_pagina* pagina);
+int indice_siguiente(int i, int tope);
 
 #endif /* UTILS_COMANDA_H_ */

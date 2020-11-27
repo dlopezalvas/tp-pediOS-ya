@@ -108,8 +108,9 @@ void internal_process_request(int cod_op, int socket_client){
 			sendMessageFlag = ENVIAR_RESPUESTA;
 			break;
 		case POSICION_CLIENTE:
-			log_info(sindicatoDebugLog, "[SERVER] Handshake Cliente");
-			log_info(sindicatoDebugLog, "[SERVER] Respuesta POSICION_CLIENTE, enviada");
+			log_info(sindicatoDebugLog, "[SERVER] - Handshake Cliente");
+			log_info(sindicatoDebugLog, "[SERVER] - Respuesta POSICION_CLIENTE, enviada");
+			log_info(sindicatoLog, "[SERVER] - Conexion aceptada: Cliente");
 
 			t_coordenadas* mensaje = messageReceived;
 
@@ -150,8 +151,7 @@ void internal_wait_client(int server){
 
 	int cliente = accept(server, (void*) &direccion_cliente, &tam_direccion);
 
-	//TODO:Sincronizar log
-	log_info(sindicatoLog, "[SERVER] Conexion aceptada");
+	log_info(sindicatoLog, "[SERVER] - Conexion aceptada");
 
 	pthread_create(&hilo,NULL,(void*)internal_serve_client,(void*)cliente);
 	pthread_detach(hilo);
@@ -163,9 +163,9 @@ void sindicato_server_initialize(){
 
 	int sindicatoServer = iniciar_servidor(sindicatoPort);
 	if(sindicatoServer == -1){
-		log_info(sindicatoDebugLog, "[SERVER] No se pudo crear el servidor");
+		log_info(sindicatoDebugLog, "[SERVER] - No se pudo crear el servidor");
 	} else{
-		log_info(sindicatoDebugLog, "[SERVER] Servidor Creado");
+		log_info(sindicatoDebugLog, "[SERVER] - Servidor Creado");
 	}
 
 	while(true) internal_wait_client(sindicatoServer);
