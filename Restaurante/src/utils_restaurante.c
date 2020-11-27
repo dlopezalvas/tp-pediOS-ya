@@ -189,6 +189,9 @@ void inicio_de_listas_globales(){
 
 	pthread_mutex_init(&id_plato_global_mtx, NULL);
 	id_plato_global = 0;
+	list_pedidos_terminar=list_create();
+	pthread_mutex_init(&mutex_list_terminar, NULL);
+
 
 	//LSITA DE HILOS CLIENTE
 	hilos = list_create();
@@ -329,19 +332,9 @@ bool mismo_id(uint32_t id1, uint32_t id2){
 	return id1 == id2;
 }
 
-//void* fhilo_planificador(void* v){
-//	int contador=0;
-//
-//	while (contador <10){
-//
-//		log_info(log_config_ini, "\tCONTADOR: %d \n",contador);
-//
-//		delay(3);
-//		contador=contador+1;
-//
-//	}
-//	return 0;
-//}
+bool mismo_id_nombre(t_nombre* afinidad1, t_nombre* afinidad2,uint32_t id1, uint32_t id2){
+	return id1 == id2 && string_equals_ignore_case(afinidad1->nombre,afinidad2->nombre);
+}
 
 
 
@@ -737,11 +730,32 @@ void process_request(int cod_op, int cliente_fd) {
 							//t_nombre* plato_pcb_nombre_plato = malloc(sizeof(t_nombre));//correccion
 							pthread_mutex_t clock_plato;
 
+							//AGREGO  A PEDIDOS A TERMINAR
+							m_guardarPlato* pedido_a_terminar = malloc(sizeof(m_guardarPlato));
+							pedido_a_terminar->cantidad=0;
+							pedido_a_terminar->idPedido=id_CONFIRMAR_PEDIDO->id;
+
+							pthread_mutex_lock(&mutex_list_terminar);
+							list_add(list_pedidos_terminar,pedido_a_terminar);
+							pthread_mutex_unlock(&mutex_list_terminar);
+
+							bool mismo_id_pedido(m_guardarPlato* pedido){
+								return mismo_id(id_CONFIRMAR_PEDIDO->id,pedido->idPedido);
+							}
 
 							for (int inicio_plato = 0; inicio_plato <rta_sindicato_RTA_OBTENER_PEDIDO->cantPedidos; inicio_plato++){
 								plato_n =  list_get(rta_sindicato_RTA_OBTENER_PEDIDO->infoPedidos, inicio_plato);
 
+								//cargo la cantidad
+								pthread_mutex_lock(&mutex_list_terminar);
+								pedido_a_terminar = list_find(list_pedidos_terminar, (void*)mismo_id_pedido);
+								pedido_a_terminar->cantidad = pedido_a_terminar->cantidad + plato_n->cantTotal-plato_n->cantHecha;
+								pthread_mutex_unlock(&mutex_list_terminar);
 
+
+
+
+					//liberar_conexion(socket_OBTENER_RECETA);
 
 								int socket_OBTENER_RECETA = conectar_con_sindicato();
 								if(socket_OBTENER_RECETA == -1){
@@ -755,6 +769,7 @@ void process_request(int cod_op, int cliente_fd) {
 									sindicato_nombre_plato_receta = malloc(sizeof(t_nombre));
 									sindicato_nombre_plato_receta->nombre = string_duplicate(plato_n->comida.nombre);
 									mje_sindicato_OBTENER_RECETA->parametros = sindicato_nombre_plato_receta;
+
 
 
 									enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
@@ -792,8 +807,13 @@ void process_request(int cod_op, int cliente_fd) {
 											list_add(plato_pcb->pasos, nuevo_paso);
 										}
 
+
+
+									//}//for de cantidad total - cant hecha
+
 //										plato_pcb->pasos = list_duplicate(rta_sindicato_RTA_OBTENER_RECETA->pasos);
 										plato_pcb->estado = NEW;
+
 
 										pthread_mutex_init(&clock_plato, NULL);
 										plato_pcb->mutex_clock = clock_plato;
@@ -803,7 +823,7 @@ void process_request(int cod_op, int cliente_fd) {
 										id_plato_global++;
 										pthread_mutex_unlock(&id_plato_global_mtx);
 
-										//										free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); //TODO free que rompia?
+										//free_struct_mensaje(rta_sindicato_RTA_OBTENER_RECETA, RTA_OBTENER_RECETA); //TODO free que rompia?
 
 
 
@@ -1054,8 +1074,8 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				}else if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //si tiene que hornear
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
 
-					log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
-							cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+					//log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
+						//	cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
 
 					pthread_mutex_lock(&ready_hornos_mtx);
 					queue_push(ready_hornos, cocinero->plato_a_cocinar);
@@ -1123,6 +1143,10 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 void terminar_plato(t_plato_pcb* plato){
 	int socket_app_plato_listo = iniciar_cliente(cfg_ip_app, cfg_puerto_app);
 	int socket_sindicato_plato_listo = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
+
+	m_guardarPlato* pedido_plato;
+	//t_list* platos_del_pedido=list_create();
+
 	//ENVIO A APP PLATO_LISTO
 	if(socket_app_plato_listo == -1){
 		//TODO error
@@ -1171,7 +1195,7 @@ void terminar_plato(t_plato_pcb* plato){
 		free(mensaje);
 		uint32_t* rta_plato_listo = recibir_respuesta(socket_sindicato_plato_listo, &cod_op);
 		if(cod_op == RTA_PLATO_LISTO){
-			loggear_mensaje_recibido(rta_plato_listo, cod_op, log_oficial);
+			//loggear_mensaje_recibido(rta_plato_listo, cod_op, log_oficial);
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
 			//error TODO
@@ -1181,9 +1205,57 @@ void terminar_plato(t_plato_pcb* plato){
 	}
 
 	log_debug(log_oficial, "[PLATO_LISTO]: Finalizó el plato %s con ID: %d", plato->comida.nombre, plato->id_plato);
+
+
+	//TERMIANR_PEDIDO
+	uint32_t cod_op;
+	int socket_sindicato_termianr_pedido = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
+	if(socket_sindicato_termianr_pedido != -1){
+
+		bool _mismo_id(m_guardarPlato* pedido){
+			return mismo_id(plato->id_pedido,pedido->idPedido);
+		}
+
+		pthread_mutex_lock(&mutex_list_terminar);
+		pedido_plato = list_find(list_pedidos_terminar, (void*)_mismo_id);
+		pedido_plato->cantidad=pedido_plato->cantidad -1;
+
+
+
+
+		if(pedido_plato->cantidad==0){
+			t_mensaje* mensaje_terminado = malloc(sizeof(t_mensaje));
+			t_nombre_y_id* id_nombre=malloc(sizeof(t_nombre_y_id));
+
+			id_nombre->nombre.nombre=string_duplicate(cfg_nombre_restaurante);
+			mensaje_terminado->id = cfg_id;
+			mensaje_terminado->tipo_mensaje = TERMINAR_PEDIDO;
+			id_nombre->id=plato->id_pedido;
+			mensaje_terminado->parametros=id_nombre;
+
+			enviar_mensaje(mensaje_terminado, socket_sindicato_termianr_pedido);
+			loggear_mensaje_enviado(mensaje_terminado->parametros, mensaje_terminado->tipo_mensaje, log_oficial);
+			free_struct_mensaje(id_nombre,TERMINAR_PEDIDO);
+			free(mensaje_terminado);
+			//TODO ELIMINAR EL PEDIDO DE LA LISTA
+
+			uint32_t* rta_terminar_pedido = recibir_respuesta(socket_sindicato_termianr_pedido, &cod_op);
+				if(cod_op == RTA_TERMINAR_PEDIDO){
+					//loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
+					free_struct_mensaje(rta_terminar_pedido, cod_op);
+				}else{
+					//error TODO
+				}
+		}else{
+			log_debug(log_oficial, "el pedido todavia no termino");
+		}
+		pthread_mutex_unlock(&mutex_list_terminar);
+
+		//FIN TERMINAR PEDIDO
+	}
+
+
 	free_pcb_plato(plato);
-
-
 }
 
 void free_pcb_plato(t_plato_pcb* plato){
@@ -1212,8 +1284,8 @@ void reposar_plato(t_plato_pcb* plato){
 
 	if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
 
-		log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", plato->comida.nombre,
-				plato->id_plato, paso_siguiente->paso.nombre);
+		//log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", plato->comida.nombre,
+			//	plato->id_plato, paso_siguiente->paso.nombre);
 
 		pthread_mutex_lock(&ready_hornos_mtx);
 		queue_push(ready_hornos, plato);
@@ -1240,6 +1312,8 @@ void planificar_hornos(){
 	while(true){
 		sem_wait(&sem_ready_hornos);
 		sem_wait(&hornos_disp_sem);
+
+
 		pthread_mutex_lock(&ready_hornos_mtx);
 		plato_a_hornear = queue_pop(ready_hornos);
 		pthread_mutex_unlock(&ready_hornos_mtx);
@@ -1247,6 +1321,8 @@ void planificar_hornos(){
 		horno = queue_pop(hornos_disp);
 		pthread_mutex_unlock(&hornos_disp_mtx);
 		horno->plato_a_cocinar = plato_a_hornear;
+		log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a hornear", horno->plato_a_cocinar->comida.nombre,
+				horno->plato_a_cocinar->id_plato);
 		pthread_mutex_unlock(&(horno->mtx_IO));
 
 		pthread_mutex_lock(&mutex_HORNEANDO);
