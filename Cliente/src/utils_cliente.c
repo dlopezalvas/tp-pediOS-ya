@@ -115,7 +115,7 @@ void imprimir_mensajes_disponibles(){
 		printf("3-%s\n", FORMATO_CONSULTAR_PLATOS);
 		printf("4-%s\n", FORMATO_CREAR_PEDIDO);
 		printf("5-%s\n", FORMATO_AGREGAR_PLATO);
-		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO);
+		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO_SIN_NOMBRE);
 		printf("7-%s\n", FORMATO_CONSULTAR_PEDIDO);
 	}else if(strcmp(proceso, COMANDA) == 0){
 		printf("1-%s\n", FORMATO_GUARDAR_PLATO);
@@ -123,12 +123,12 @@ void imprimir_mensajes_disponibles(){
 		printf("3-%s\n", FORMATO_OBTENER_PEDIDO);
 		printf("4-%s\n", FORMATO_PLATO_LISTO);
 		printf("5-%s\n", FORMATO_FINALIZAR_PEDIDO);
-		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO);
+		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO_CON_NOMBRE);
 	}else if(strcmp(proceso, RESTAURANTE) == 0){
 		printf("1-%s\n", FORMATO_CONSULTAR_PLATOS);
 		printf("2-%s\n", FORMATO_CREAR_PEDIDO);
 		printf("3-%s\n", FORMATO_AGREGAR_PLATO);
-		printf("4-%s\n", FORMATO_CONFIRMAR_PEDIDO);
+		printf("4-%s\n", FORMATO_CONFIRMAR_PEDIDO_SIN_NOMBRE);
 		printf("5-%s\n", FORMATO_CONSULTAR_PEDIDO);
 	}else if(strcmp(proceso, SINDICATO) == 0){
 		printf("1-%s\n", FORMATO_CONSULTAR_PLATOS);
@@ -136,7 +136,7 @@ void imprimir_mensajes_disponibles(){
 		printf("3-%s\n", FORMATO_GUARDAR_PLATO);
 		printf("4-%s\n", FORMATO_OBTENER_PEDIDO);
 		printf("5-%s\n", FORMATO_OBTENER_RESTAURANTE);
-		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO);
+		printf("6-%s\n", FORMATO_CONFIRMAR_PEDIDO_CON_NOMBRE);
 		printf("7-%s\n", FORMATO_PLATO_LISTO);
 		printf("8-%s\n", FORMATO_OBTENER_RECETA);
 		printf("9-%s\n", FORMATO_TERMINAR_PEDIDO);
@@ -201,51 +201,56 @@ bool validar_argumentos(char* tipo_mensaje, char** mensaje_completo){
 
 	int cant_argumentos_mensaje = cantidad_argumentos(mensaje_completo);
 
-	struct_code tipo_estructura = op_code_to_struct_code(string_to_op_code(tipo_mensaje));
+	if(string_equals_ignore_case(tipo_mensaje, MENSAJE_CONFIRMAR_PEDIDO) &&
+			(string_equals_ignore_case(proceso, APP) || string_equals_ignore_case(proceso, RESTAURANTE))){
+		return cant_argumentos_mensaje == 1;
+	}else{
 
-	char** formato;
-	int cant_argumentos_formato = 0;
+		struct_code tipo_estructura = op_code_to_struct_code(string_to_op_code(tipo_mensaje));
 
-	switch(tipo_estructura){
-	case STRC_MENSAJE_VACIO: return cant_argumentos_mensaje == 0;
+		char** formato;
+		int cant_argumentos_formato = 0;
 
-	case STRC_SELECCIONAR_RESTAURANTE:
-		formato = string_split(FORMATO_SELECCIONAR_RESTAURANTE, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
+		switch(tipo_estructura){
+		case STRC_MENSAJE_VACIO: return cant_argumentos_mensaje == 0;
 
-	case STRC_ID_CONFIRMACION:
-		formato = string_split(FORMATO_CONSULTAR_PEDIDO, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
-	case STRC_NOMBRE:
-		formato = string_split(FORMATO_CONSULTAR_PLATOS, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
+		case STRC_SELECCIONAR_RESTAURANTE:
+			formato = string_split(FORMATO_SELECCIONAR_RESTAURANTE, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
 
-	case STRC_NOMBRE_ID:
-		formato = string_split(FORMATO_GUARDAR_PEDIDO, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
+		case STRC_ID_CONFIRMACION:
+			formato = string_split(FORMATO_CONSULTAR_PEDIDO, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
+		case STRC_NOMBRE:
+			formato = string_split(FORMATO_CONSULTAR_PLATOS, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
 
-	case STRC_PLATO_LISTO:
-		formato = string_split(FORMATO_PLATO_LISTO, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
+		case STRC_NOMBRE_ID:
+			formato = string_split(FORMATO_GUARDAR_PEDIDO, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
 
-	case STRC_GUARDAR_PLATO:
-		formato = string_split(FORMATO_GUARDAR_PLATO, " ");
-		cant_argumentos_formato = cantidad_argumentos(formato);
-		liberar_vector(formato);
-		return cant_argumentos_mensaje == cant_argumentos_formato;
-	default: return false;
+		case STRC_PLATO_LISTO:
+			formato = string_split(FORMATO_PLATO_LISTO, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
+
+		case STRC_GUARDAR_PLATO:
+			formato = string_split(FORMATO_GUARDAR_PLATO, " ");
+			cant_argumentos_formato = cantidad_argumentos(formato);
+			liberar_vector(formato);
+			return cant_argumentos_mensaje == cant_argumentos_formato;
+		default: return false;
+		}
 	}
-
 
 
 }
@@ -298,6 +303,8 @@ void conexionRecepcion(){
 			}
 			free(mensaje);
 			free_struct_mensaje(rta_conexion, cod_op);
+		}else{
+			pthread_exit(NULL);
 		}
 
 		while(usar_socket){
@@ -311,6 +318,8 @@ void conexionRecepcion(){
 				loggear_mensaje_recibido(mensaje, cod_op, log_cliente);
 				free_struct_mensaje(mensaje, cod_op);
 				free(buffer);
+			}else{
+				pthread_exit(NULL);
 			}
 		}
 
@@ -362,11 +371,21 @@ t_mensaje* llenar_id_o_confirmacion(char** parametros){
 }
 
 t_mensaje* llenar_nombre_y_id(char** parametros){
+
 	t_mensaje* mensaje = malloc(sizeof(t_mensaje));
 	mensaje->tipo_mensaje = string_to_op_code(parametros[0]);
+
 	t_nombre_y_id* nombre_id = malloc(sizeof(t_nombre_y_id));
-	nombre_id->nombre.nombre = string_duplicate(parametros[1]);
-	nombre_id->id = atoi(parametros[2]);
+
+	if(mensaje->tipo_mensaje == CONFIRMAR_PEDIDO && (string_equals_ignore_case(proceso, APP) || string_equals_ignore_case(proceso, RESTAURANTE))){
+		nombre_id->nombre.nombre = string_duplicate(".");
+		nombre_id->id = atoi(parametros[1]);
+	}else{
+		nombre_id->nombre.nombre = string_duplicate(parametros[1]);
+		nombre_id->id = atoi(parametros[2]);
+
+	}
+
 	mensaje->parametros = nombre_id;
 	liberar_vector(parametros);
 	return mensaje;

@@ -18,11 +18,11 @@ void sindicato_utils_create_folder(char* path, bool recordLog){
 	if(stat(path, &st) == -1){
 		if(mkdir(path,0777) == 0){
 			if(recordLog)
-				log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta creada: %s",path);
+				log_info(sindicatoDebugLog, "[FILESYSTEM] - Carpeta creada: %s",path);
 		}
 	}else{
 		if(recordLog)
-			log_info(sindicatoDebugLog, "[FILESYSTEM] Carpeta existente: %s", path);
+			log_info(sindicatoDebugLog, "[FILESYSTEM] - Carpeta existente: %s", path);
 	}
 }
 
@@ -76,6 +76,16 @@ char* sindicato_utils_build_block_path(int blockNumber){
 	return filePathComplete;
 }
 
+char* sindicato_utils_build_pedido_name(uint32_t idPedido){
+
+	char* pedidoName = string_duplicate("Pedido");
+	char* pedidoNumberString = string_itoa((int)idPedido);
+
+	string_append(&pedidoName, pedidoNumberString);
+
+	return pedidoName;
+}
+
 bool sindicato_utils_verify_if_file_exist(char* path){
 
 	if(access(path, F_OK) != -1){
@@ -101,6 +111,8 @@ bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, 
 		case(TYPE_RESTAURANTE):
 			filePath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, fileName, true, NULL);
 			break;
+		default:
+			break;
 	}
 
 	if(sindicato_utils_verify_if_file_exist(filePath)){
@@ -110,6 +122,69 @@ bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, 
 		free(filePath);
 		return false;
 	}
+}
+
+bool sindicato_utils_verify_if_file_integrity_is_ok(char* name, file_type fileType, uint32_t idPedido, char** pedidoName){
+
+	bool result = false;
+
+	if(fileType == TYPE_RECETA){
+
+		/* Receta must exist in FS to be OK */
+		if(sindicato_utils_verify_if_exist(name, NULL, TYPE_RECETA))
+			result = true;
+	}
+
+	if(fileType == TYPE_RECETA_INICIAL){
+
+		/* Receta must exist in FS to be OK */
+		if(!sindicato_utils_verify_if_exist(name, NULL, TYPE_RECETA))
+			result = true;
+	}
+
+	if(fileType == TYPE_RESTAURANTE_INICIAL){
+
+		/* Restaurante must not exist in FS to be OK */
+		if(!sindicato_utils_verify_if_exist(name, NULL, TYPE_RESTAURANTE))
+			result = true;
+	}
+
+	if(fileType == TYPE_RESTAURANTE || fileType == TYPE_PEDIDO || fileType == TYPE_PEDIDO_INICIAL){
+
+		/* Restaurante must exist in FS to be OK */
+		if(sindicato_utils_verify_if_exist(name, NULL, TYPE_RESTAURANTE)){
+			result = true;
+		}
+
+		if(!result)
+			return result;
+
+
+		if(fileType == TYPE_PEDIDO || fileType == TYPE_PEDIDO_INICIAL){
+			*pedidoName = sindicato_utils_build_pedido_name(idPedido);
+
+			/* Fist Pedido must no exist in FS to be OK */
+			if(fileType == TYPE_PEDIDO_INICIAL){
+				if(!sindicato_utils_verify_if_exist(*pedidoName, name, TYPE_PEDIDO)){
+					result = true;
+				} else{
+					result = false;
+				}
+			}
+
+			/* Pedido must exist in FS to be OK */
+			if(fileType == TYPE_PEDIDO){
+				if(sindicato_utils_verify_if_exist(*pedidoName, name, TYPE_PEDIDO)){
+					result = true;
+				} else {
+					result = false;
+				}
+			}
+
+		}
+	}
+
+	return result;
 }
 
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage){
