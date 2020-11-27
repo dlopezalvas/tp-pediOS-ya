@@ -658,6 +658,10 @@ void process_request(int cod_op, int cliente_fd) {
 
 		confirmado = id_CONFIRMAR_PEDIDO->id;
 
+		free(id_CONFIRMAR_PEDIDO->nombre.nombre);
+
+		id_CONFIRMAR_PEDIDO->nombre.nombre = string_duplicate(cfg_nombre_restaurante);
+
 
 		pthread_mutex_lock(&list_pedidos_confirm_mtx);
 		esta_confirmado = list_any_satisfy(list_pedidos_confirm, (void*) _mismo_id);
