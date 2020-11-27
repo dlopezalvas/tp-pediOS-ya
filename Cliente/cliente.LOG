@@ -340,3 +340,267 @@
 [INFO] 22:22:46:437 cliente/(5892:9831): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
 [INFO] 22:22:47:986 cliente/(5892:9834): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
 [INFO] 22:22:47:990 cliente/(5892:9834): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 22:26:58:51 cliente/(14722:14728): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:26:58:63 cliente/(14722:14728): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:27:11:719 cliente/(14722:14740): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:27:11:733 cliente/(14722:14740): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:27:16:245 cliente/(14722:14744): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:27:16:249 cliente/(14722:14744): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:27:29:179 cliente/(14722:14752): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 22:30:34:22 cliente/(14722:14845): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:30:34:37 cliente/(14722:14845): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:30:37:497 cliente/(14722:14849): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:30:37:510 cliente/(14722:14849): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:30:41:57 cliente/(14722:14855): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:30:41:62 cliente/(14722:14855): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:30:44:67 cliente/(14722:14859): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 22:30:44:82 cliente/(14722:14859): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:34:31:59 cliente/(14722:14979): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:34:31:95 cliente/(14722:14979): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:34:32:348 cliente/(14722:14983): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:34:32:360 cliente/(14722:14983): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:34:33:513 cliente/(14722:14987): Se envio el mensaje AGREGAR_PLATO ugis 1
+[INFO] 22:34:33:515 cliente/(14722:14987): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:34:36:660 cliente/(14722:14991): Se envio el mensaje CONFIRMAR_PEDIDO ugis 1
+[INFO] 22:34:36:668 cliente/(14722:14991): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:57:20:99 cliente/(15542:15555): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:57:20:110 cliente/(15542:15555): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:58:12:50 cliente/(15542:15564): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 22:58:12:63 cliente/(15542:15564): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:58:42:252 cliente/(15542:15575): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:58:42:257 cliente/(15542:15575): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:59:04:23 cliente/(15542:15584): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:59:04:26 cliente/(15542:15584): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:59:38:649 cliente/(15542:15598): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 1
+[INFO] 22:59:38:662 cliente/(15542:15598): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:00:34:39 cliente/(15542:15620): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 3
+[INFO] 23:00:34:54 cliente/(15542:15620): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:00:36:900 cliente/(15542:15628): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 4
+[INFO] 23:00:36:901 cliente/(15542:15628): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO FAIL
+[INFO] 23:00:40:240 cliente/(15542:15633): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 3
+[INFO] 23:00:40:244 cliente/(15542:15633): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:00:45:580 cliente/(15542:15640): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 2
+[INFO] 23:00:45:585 cliente/(15542:15640): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:00:48:698 cliente/(15542:15644): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 1
+[INFO] 23:00:48:702 cliente/(15542:15644): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:02:10:928 cliente/(15542:15677): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:02:10:942 cliente/(15542:15677): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 23:02:36:539 cliente/(15542:15688): Se envio el mensaje AGREGAR_PLATO Choripan 3
+[INFO] 23:02:36:552 cliente/(15542:15688): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 23:02:50:638 cliente/(15542:15696): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 23:02:50:645 cliente/(15542:15696): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:03:05:518 cliente/(15542:15704): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 3
+[INFO] 23:03:05:523 cliente/(15542:15704): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:07:03:777 cliente/(15542:15739): Se envio el mensaje CREAR_PEDIDO
+[INFO] 23:07:03:792 cliente/(15542:15739): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 23:07:51:457 cliente/(15542:15753): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 23:07:51:474 cliente/(15542:15753): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 23:08:22:312 cliente/(15542:15764): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 3
+[INFO] 23:08:22:321 cliente/(15542:15764): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 23:08:30:760 cliente/(15542:15774): Se envio el mensaje CONFIRMAR_PEDIDO ugis 3
+[INFO] 23:08:30:764 cliente/(15542:15774): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 00:53:03:676 cliente/(16923:16948): Se envio el mensaje CONSULTAR_PLATOS ElParrillon
+[INFO] 00:53:03:690 cliente/(16923:16948): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoJugoso AsadoSeco Choripan TortillaDePapa
+[INFO] 00:54:49:267 cliente/(16923:16955): Se envio el mensaje CREAR_PEDIDO
+[INFO] 00:54:49:709 cliente/(16923:16955): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 00:55:46:829 cliente/(16923:16968): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 00:55:47:65 cliente/(16923:16968): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:55:57:831 cliente/(16923:16973): Se envio el mensaje CREAR_PEDIDO
+[INFO] 00:55:58:342 cliente/(16923:16973): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 00:56:32:740 cliente/(16923:16981): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 00:56:32:962 cliente/(16923:16981): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:56:34:560 cliente/(16923:16987): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 00:56:34:726 cliente/(16923:16987): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:56:36:346 cliente/(16923:16991): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 00:56:36:530 cliente/(16923:16991): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:56:37:325 cliente/(16923:16995): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 00:56:37:489 cliente/(16923:16995): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:56:37:949 cliente/(16923:16999): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 00:56:38:30 cliente/(16923:16999): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:56:51:79 cliente/(16923:17003): Se envio el mensaje CREAR_PEDIDO
+[INFO] 00:56:51:438 cliente/(16923:17003): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 00:57:10:312 cliente/(16923:17009): Se envio el mensaje AGREGAR_PLATO AsadoSeco 3
+[INFO] 00:57:10:475 cliente/(16923:17009): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:57:13:253 cliente/(16923:17015): Se envio el mensaje AGREGAR_PLATO AsadoSeco 3
+[INFO] 00:57:13:488 cliente/(16923:17015): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:57:38:684 cliente/(16923:17026): Se envio el mensaje CREAR_PEDIDO
+[INFO] 00:57:39:47 cliente/(16923:17026): Se recibio el mensaje RTA_CREAR_PEDIDO 4
+[INFO] 00:58:07:829 cliente/(16923:17037): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 4
+[INFO] 00:58:08:6 cliente/(16923:17037): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 00:58:09:428 cliente/(16923:17043): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 4
+[INFO] 00:58:09:604 cliente/(16923:17043): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:00:07:203 cliente/(16923:17068): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 1
+[INFO] 01:00:07:926 cliente/(16923:17068): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:08:44:60 cliente/(16923:17258): Se envio el mensaje CONSULTAR_PLATOS ElParrillon
+[INFO] 01:08:44:78 cliente/(16923:17258): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoJugoso AsadoSeco Choripan TortillaDePapa
+[INFO] 01:09:10:39 cliente/(16923:17261): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:09:10:451 cliente/(16923:17261): Se recibio el mensaje RTA_CREAR_PEDIDO 5
+[INFO] 01:10:24:828 cliente/(16923:17275): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 01:10:24:844 cliente/(16923:17275): Se recibio el mensaje RTA_AGREGAR_PLATO FAIL
+[INFO] 01:12:02:260 cliente/(16923:17282): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 5
+[INFO] 01:12:02:363 cliente/(16923:17282): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:12:27:213 cliente/(16923:17287): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 5
+[INFO] 01:12:27:438 cliente/(16923:17287): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:15:19:996 cliente/(16923:17374): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:15:20:330 cliente/(16923:17374): Se recibio el mensaje RTA_CREAR_PEDIDO 6
+[INFO] 01:15:25:120 cliente/(16923:17380): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 6
+[INFO] 01:15:25:212 cliente/(16923:17380): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:15:30:389 cliente/(16923:17386): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 6
+[INFO] 01:15:30:641 cliente/(16923:17386): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:17:01:138 cliente/(16923:17448): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:17:01:557 cliente/(16923:17448): Se recibio el mensaje RTA_CREAR_PEDIDO 7
+[INFO] 01:17:09:562 cliente/(16923:17457): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 7
+[INFO] 01:17:09:760 cliente/(16923:17457): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:17:13:183 cliente/(16923:17461): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 7
+[INFO] 01:17:13:646 cliente/(16923:17461): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:19:09:875 cliente/(16923:17547): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:19:10:277 cliente/(16923:17547): Se recibio el mensaje RTA_CREAR_PEDIDO 8
+[INFO] 01:19:17:57 cliente/(16923:17553): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 8
+[INFO] 01:19:17:163 cliente/(16923:17553): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:19:20:557 cliente/(16923:17557): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 8
+[INFO] 01:19:20:657 cliente/(16923:17557): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:19:28:437 cliente/(16923:17563): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 8
+[INFO] 01:19:28:661 cliente/(16923:17563): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:23:27:305 cliente/(16923:17651): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:23:27:748 cliente/(16923:17651): Se recibio el mensaje RTA_CREAR_PEDIDO 9
+[INFO] 01:23:34:265 cliente/(16923:17659): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 9
+[INFO] 01:23:34:359 cliente/(16923:17659): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:23:36:606 cliente/(16923:17663): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 9
+[INFO] 01:23:36:823 cliente/(16923:17663): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:23:42:495 cliente/(16923:17667): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 9
+[INFO] 01:23:42:740 cliente/(16923:17667): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:26:34:556 cliente/(16923:17776): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:26:34:978 cliente/(16923:17776): Se recibio el mensaje RTA_CREAR_PEDIDO 10
+[INFO] 01:26:38:934 cliente/(16923:17782): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 10
+[INFO] 01:26:39:365 cliente/(16923:17782): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:26:42:271 cliente/(16923:17786): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 10
+[INFO] 01:26:42:361 cliente/(16923:17786): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:26:46:737 cliente/(16923:17790): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 10
+[INFO] 01:26:46:972 cliente/(16923:17790): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:29:03:536 cliente/(16923:17874): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:29:03:1 cliente/(16923:17874): Se recibio el mensaje RTA_CREAR_PEDIDO 11
+[INFO] 01:29:07:398 cliente/(16923:17880): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 11
+[INFO] 01:29:07:512 cliente/(16923:17880): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:29:09:946 cliente/(16923:17884): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 11
+[INFO] 01:29:10:31 cliente/(16923:17884): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:29:12:803 cliente/(16923:17888): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 11
+[INFO] 01:29:12:948 cliente/(16923:17888): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:45:47:636 cliente/(16923:18176): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:45:48:45 cliente/(16923:18176): Se recibio el mensaje RTA_CREAR_PEDIDO 12
+[INFO] 01:45:51:739 cliente/(16923:18182): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 12
+[INFO] 01:45:51:952 cliente/(16923:18182): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:45:53:538 cliente/(16923:18187): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 12
+[INFO] 01:45:53:641 cliente/(16923:18187): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:45:56:995 cliente/(16923:18191): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 12
+[INFO] 01:45:57:257 cliente/(16923:18191): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:48:27:367 cliente/(16923:18268): Se envio el mensaje CREAR_PEDIDO
+[INFO] 01:48:27:786 cliente/(16923:18268): Se recibio el mensaje RTA_CREAR_PEDIDO 13
+[INFO] 01:48:30:519 cliente/(16923:18276): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 13
+[INFO] 01:48:30:732 cliente/(16923:18276): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:48:33:280 cliente/(16923:18280): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 13
+[INFO] 01:48:33:360 cliente/(16923:18280): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 01:48:36:93 cliente/(16923:18284): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 13
+[INFO] 01:48:36:356 cliente/(16923:18284): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 01:59:56:636 cliente/(16923:18503): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:00:04:274 cliente/(16923:18516): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:00:04:761 cliente/(16923:18516): Se recibio el mensaje RTA_CREAR_PEDIDO 14
+[INFO] 02:00:07:724 cliente/(16923:18522): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 14
+[INFO] 02:00:07:941 cliente/(16923:18522): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:00:09:896 cliente/(16923:18526): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 14
+[INFO] 02:00:10:50 cliente/(16923:18526): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:00:15:174 cliente/(16923:18530): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 14
+[INFO] 02:00:15:338 cliente/(16923:18530): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 02:09:47:339 cliente/(16923:18591): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:09:47:778 cliente/(16923:18591): Se recibio el mensaje RTA_CREAR_PEDIDO 15
+[INFO] 02:10:09:304 cliente/(16923:18602): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 15
+[INFO] 02:10:09:377 cliente/(16923:18602): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:17:733 cliente/(16923:18608): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:10:18:170 cliente/(16923:18608): Se recibio el mensaje RTA_CREAR_PEDIDO 16
+[INFO] 02:10:31:965 cliente/(16923:18619): Se envio el mensaje AGREGAR_PLATO Choripan 16
+[INFO] 02:10:32:138 cliente/(16923:18619): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:33:685 cliente/(16923:18625): Se envio el mensaje AGREGAR_PLATO Choripan 16
+[INFO] 02:10:33:881 cliente/(16923:18625): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:34:881 cliente/(16923:18629): Se envio el mensaje AGREGAR_PLATO Choripan 16
+[INFO] 02:10:34:997 cliente/(16923:18629): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:36:30 cliente/(16923:18633): Se envio el mensaje AGREGAR_PLATO Choripan 16
+[INFO] 02:10:36:124 cliente/(16923:18633): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:36:922 cliente/(16923:18637): Se envio el mensaje AGREGAR_PLATO Choripan 16
+[INFO] 02:10:37:20 cliente/(16923:18637): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:43:341 cliente/(16923:18641): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:10:43:713 cliente/(16923:18641): Se recibio el mensaje RTA_CREAR_PEDIDO 17
+[INFO] 02:10:57:310 cliente/(16923:18646): Se envio el mensaje AGREGAR_PLATO AsadoSeco 17
+[INFO] 02:10:57:428 cliente/(16923:18646): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:10:58:674 cliente/(16923:18651): Se envio el mensaje AGREGAR_PLATO AsadoSeco 17
+[INFO] 02:10:58:883 cliente/(16923:18651): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:11:09:759 cliente/(16923:18655): Se envio el mensaje CREAR_PEDIDO
+[INFO] 02:11:10:188 cliente/(16923:18655): Se recibio el mensaje RTA_CREAR_PEDIDO 18
+[INFO] 02:11:34:216 cliente/(16923:18663): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 18
+[INFO] 02:11:34:419 cliente/(16923:18663): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:11:36:436 cliente/(16923:18669): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 18
+[INFO] 02:11:36:536 cliente/(16923:18669): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 02:12:03:839 cliente/(16923:18673): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 15
+[INFO] 02:12:04:53 cliente/(16923:18673): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 02:12:06:439 cliente/(16923:18680): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 16
+[INFO] 02:12:06:639 cliente/(16923:18680): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 02:12:08:752 cliente/(16923:18686): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 17
+[INFO] 02:12:09:156 cliente/(16923:18686): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 02:12:11:458 cliente/(16923:18692): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 18
+[INFO] 02:12:11:815 cliente/(16923:18692): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 19:49:46:728 cliente/(19221:19225): Se envio el mensaje CONSULTAR_PLATOS ElParrillon
+[INFO] 19:49:46:741 cliente/(19221:19225): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoJugoso AsadoSeco Choripan TortillaDePapa
+[INFO] 19:51:30:630 cliente/(19221:19343): Se envio el mensaje CREAR_PEDIDO
+[INFO] 19:51:31:83 cliente/(19221:19343): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 19:54:18:548 cliente/(19221:19352): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 19:54:18:659 cliente/(19221:19352): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 19:54:30:614 cliente/(19221:19355): Se envio el mensaje AGREGAR_PLATO Choripan 1
+[INFO] 19:54:30:812 cliente/(19221:19355): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 19:54:48:306 cliente/(19221:19358): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 1
+[INFO] 19:54:48:537 cliente/(19221:19358): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 20:10:27:836 cliente/(19221:19493): Se envio el mensaje CONSULTAR_PLATOS ElParrillon
+[INFO] 20:10:27:851 cliente/(19221:19493): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoJugoso AsadoSeco Choripan TortillaDePapa
+[INFO] 20:10:33:193 cliente/(19221:19496): Se envio el mensaje CREAR_PEDIDO
+[INFO] 20:10:33:596 cliente/(19221:19496): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 20:10:49:489 cliente/(19221:19499): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 2
+[INFO] 20:10:49:674 cliente/(19221:19499): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 20:11:01:796 cliente/(19221:19502): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 20:11:01:980 cliente/(19221:19502): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 20:11:10:221 cliente/(19221:19505): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 2
+[INFO] 20:11:10:461 cliente/(19221:19505): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:49:16:560 cliente/(19221:21532): Se envio el mensaje CONSULTAR_PLATOS ElParrillon
+[INFO] 22:49:16:580 cliente/(19221:21532): Se recibio el mensaje RTA_CONSULTAR_PLATOS AsadoJugoso AsadoSeco Choripan TortillaDePapa
+[INFO] 22:49:22:233 cliente/(19221:21535): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:49:23:33 cliente/(19221:21535): Se recibio el mensaje RTA_CREAR_PEDIDO 1
+[INFO] 22:49:41:170 cliente/(19221:21538): Se envio el mensaje AGREGAR_PLATO AsadoJugoso 1
+[INFO] 22:49:41:267 cliente/(19221:21538): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:49:53:67 cliente/(19221:21546): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:49:53:521 cliente/(19221:21546): Se recibio el mensaje RTA_CREAR_PEDIDO 2
+[INFO] 22:50:01:243 cliente/(19221:21549): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:50:01:452 cliente/(19221:21549): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:02:488 cliente/(19221:21552): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:50:02:585 cliente/(19221:21552): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:03:504 cliente/(19221:21555): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:50:03:598 cliente/(19221:21555): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:04:469 cliente/(19221:21558): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:50:04:556 cliente/(19221:21558): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:05:373 cliente/(19221:21566): Se envio el mensaje AGREGAR_PLATO Choripan 2
+[INFO] 22:50:05:447 cliente/(19221:21566): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:09:185 cliente/(19221:21569): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:50:09:622 cliente/(19221:21569): Se recibio el mensaje RTA_CREAR_PEDIDO 3
+[INFO] 22:50:27:808 cliente/(19221:21574): Se envio el mensaje AGREGAR_PLATO AsadoSeco 3
+[INFO] 22:50:27:892 cliente/(19221:21574): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:30:316 cliente/(19221:21577): Se envio el mensaje AGREGAR_PLATO AsadoSeco 3
+[INFO] 22:50:30:488 cliente/(19221:21577): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:34:983 cliente/(19221:21580): Se envio el mensaje CREAR_PEDIDO
+[INFO] 22:50:35:441 cliente/(19221:21580): Se recibio el mensaje RTA_CREAR_PEDIDO 4
+[INFO] 22:50:52:807 cliente/(19221:21583): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 4
+[INFO] 22:50:52:918 cliente/(19221:21583): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:50:54:786 cliente/(19221:21586): Se envio el mensaje AGREGAR_PLATO TortillaDePapa 4
+[INFO] 22:50:54:964 cliente/(19221:21586): Se recibio el mensaje RTA_AGREGAR_PLATO OK
+[INFO] 22:51:27:226 cliente/(19221:21591): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 1
+[INFO] 22:51:27:614 cliente/(19221:21591): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:51:28:969 cliente/(19221:21596): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 2
+[INFO] 22:51:29:847 cliente/(19221:21596): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:51:31:147 cliente/(19221:21601): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 3
+[INFO] 22:51:31:318 cliente/(19221:21601): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
+[INFO] 22:51:32:726 cliente/(19221:21606): Se envio el mensaje CONFIRMAR_PEDIDO ElParrillon 4
+[INFO] 22:51:32:976 cliente/(19221:21606): Se recibio el mensaje RTA_CONFIRMAR_PEDIDO OK
