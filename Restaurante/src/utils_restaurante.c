@@ -1074,8 +1074,8 @@ void planificador_exec(t_cola_afinidad* strc_cola){
 				}else if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //si tiene que hornear
 					cambiarEstado(cocinero->plato_a_cocinar, BLOCK);
 
-					log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
-							cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
+					//log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", cocinero->plato_a_cocinar->comida.nombre,
+						//	cocinero->plato_a_cocinar->id_plato, paso_siguiente->paso.nombre);
 
 					pthread_mutex_lock(&ready_hornos_mtx);
 					queue_push(ready_hornos, cocinero->plato_a_cocinar);
@@ -1284,8 +1284,8 @@ void reposar_plato(t_plato_pcb* plato){
 
 	if(string_equals_ignore_case(paso_siguiente->paso.nombre, HORNEAR)){ //no cambia de estado porque ya estaba bloqueado
 
-		log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", plato->comida.nombre,
-				plato->id_plato, paso_siguiente->paso.nombre);
+		//log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a %s", plato->comida.nombre,
+			//	plato->id_plato, paso_siguiente->paso.nombre);
 
 		pthread_mutex_lock(&ready_hornos_mtx);
 		queue_push(ready_hornos, plato);
@@ -1312,6 +1312,8 @@ void planificar_hornos(){
 	while(true){
 		sem_wait(&sem_ready_hornos);
 		sem_wait(&hornos_disp_sem);
+
+
 		pthread_mutex_lock(&ready_hornos_mtx);
 		plato_a_hornear = queue_pop(ready_hornos);
 		pthread_mutex_unlock(&ready_hornos_mtx);
@@ -1319,6 +1321,8 @@ void planificar_hornos(){
 		horno = queue_pop(hornos_disp);
 		pthread_mutex_unlock(&hornos_disp_mtx);
 		horno->plato_a_cocinar = plato_a_hornear;
+		log_debug(log_oficial, "[INICIO_OPERACION]: El plato %s con ID: %d comenzó a hornear", horno->plato_a_cocinar->comida.nombre,
+				horno->plato_a_cocinar->id_plato);
 		pthread_mutex_unlock(&(horno->mtx_IO));
 
 		pthread_mutex_lock(&mutex_HORNEANDO);
