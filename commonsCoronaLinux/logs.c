@@ -3,16 +3,16 @@
 void loggear_mensaje_enviado(void* mensaje, op_code tipo_mensaje, t_log* logger){
 	char* mensaje_string = t_mensaje_to_string(mensaje, tipo_mensaje);
 	if(mensaje_string != NULL){
-	log_info(logger, "Se envio el mensaje %s", mensaje_string);
-	free(mensaje_string);
+		log_info(logger, "Se envio el mensaje %s", mensaje_string);
+		free(mensaje_string);
 	}
 }
 
 void loggear_mensaje_recibido(void* mensaje, op_code tipo_mensaje, t_log* logger){
 	char* mensaje_string = t_mensaje_to_string(mensaje, tipo_mensaje);
 	if(mensaje_string != NULL){
-	log_info(logger, "Se recibio el mensaje %s", mensaje_string);
-	free(mensaje_string);
+		log_info(logger, "Se recibio el mensaje %s", mensaje_string);
+		free(mensaje_string);
 	}
 }
 
@@ -44,9 +44,9 @@ char* t_mensaje_to_string(void* mensaje, op_code tipo_mensaje){
 	case STRC_GUARDAR_PLATO:return guardar_plato_to_string(mensaje, tipo_mensaje);
 
 	case STRC_RTA_OBTENER_RECETA:return rta_obtener_receta_to_string(mensaje, tipo_mensaje);
-	}
-	return NULL;
 
+	default: return NULL;
+	}
 }
 
 char* vacio_to_string(op_code tipo_mensaje){
@@ -91,7 +91,7 @@ char* id_o_confirmacion_to_string(uint32_t* id_confirmacion, op_code tipo_mensaj
 
 
 bool es_id(op_code tipo_mensaje){
-	return (tipo_mensaje == RTA_CREAR_PEDIDO ||	tipo_mensaje == CONFIRMAR_PEDIDO ||	tipo_mensaje == CONSULTAR_PEDIDO);
+	return (tipo_mensaje == RTA_CREAR_PEDIDO ||	tipo_mensaje == CONFIRMAR_PEDIDO ||	tipo_mensaje == CONSULTAR_PEDIDO || tipo_mensaje == RTA_POSICION_CLIENTE);
 }
 
 char* confirmacion_to_string(t_confirmacion confirmacion){
@@ -99,6 +99,7 @@ char* confirmacion_to_string(t_confirmacion confirmacion){
 	case OK: return "OK";
 	case FAIL: return "FAIL";
 	}
+	return NULL;
 }
 
 char* nombre_to_string(t_nombre* nombre, op_code tipo_mensaje){
@@ -131,8 +132,13 @@ char* rta_obtener_restaurante_to_string(rta_obtenerRestaurante* obtener_restaura
 
 char* nombre_y_id_to_string(t_nombre_y_id * nombre_id, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
-	string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(tipo_mensaje),
-			nombre_id->nombre.nombre, nombre_id->id);
+
+	if(string_equals_ignore_case(nombre_id->nombre.nombre, ".")){
+		string_append_with_format(&string_mensaje, "%s %d", op_code_to_string(tipo_mensaje), nombre_id->id);
+	}else{
+		string_append_with_format(&string_mensaje, "%s %s %d", op_code_to_string(tipo_mensaje),
+				nombre_id->nombre.nombre, nombre_id->id);
+	}
 	return string_mensaje;
 }
 
@@ -146,7 +152,7 @@ char* plato_listo_to_string(m_platoListo * plato_listo, op_code tipo_mensaje){
 char* rta_consultar_pedido_to_string(rta_consultarPedido* consultar_pedido, op_code tipo_mensaje){
 	char* string_mensaje = string_new();
 	string_append_with_format(&string_mensaje, "%s %s %s", op_code_to_string(tipo_mensaje),
-	     consultar_pedido->restaurante.nombre, est_pedido_to_string(consultar_pedido->estadoPedido));
+			consultar_pedido->restaurante.nombre, est_pedido_to_string(consultar_pedido->estadoPedido));
 	t_elemPedido* plato;
 	consultar_pedido->cantPlatos = consultar_pedido->platos->elements_count;
 	for(int i = 0; i<consultar_pedido->cantPlatos; i++){
