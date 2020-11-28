@@ -57,7 +57,6 @@ void internal_api_bitmap_create(){
 	char* bitmapPathFS = sindicato_utils_build_path(sindicatoMountPoint, "/Metadata/Bitmap.bin");
 
 	int blocks = metadataFS->blocks/8;
-	// TODO: validar multiplo de 8
 
 	int bitarrayFile = open(bitmapPathFS, O_RDWR | O_CREAT, 0700);
 
@@ -71,7 +70,7 @@ void internal_api_bitmap_create(){
 
 	pthread_mutex_init(&bitarray_mtx, NULL);
 
-	log_info(sindicatoDebugLog,"[FILESYSTEM] - Bitmap creado");
+	log_info(sindicatoDebugLog,"[BITMAP] - Bitmap creado");
 
 	close(bitarrayFile);
 	free(bitmapPathFS);
@@ -94,7 +93,7 @@ void internal_api_initialize_blocks(){
 		free(filePath);
 	}
 
-	log_info(sindicatoDebugLog,"[FILESYSTEM] - Bloques inicializados");
+	log_info(sindicatoDebugLog,"[BLOCKS] - Bloques inicializados");
 }
 
 /* ********** INTERNAL UTILS ********** */
@@ -610,7 +609,7 @@ void internal_api_free_bit(int block){
 		pthread_mutex_unlock(&bitarray_mtx);
 		/* END   CRITICAL SECTION bitarray_mtx */
 
-		log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d liberado", block);
+		log_info(sindicatoLog,"[BITMAP] - Bloque %d liberado", block);
 	}
 }
 
@@ -634,11 +633,11 @@ void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 			pthread_mutex_unlock(&bitarray_mtx);
 			/* END   CRITICAL SECTION bitarray_mtx */
 
-			log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d liberado", block);
+			log_info(sindicatoLog,"[BITMAP] - Bloque %d liberado", block);
 		}
 	}
 
-	log_info(sindicatoDebugLog, "[FILESYSTEM] - %d bloques reservados fueron liberados en bitmap.",qtyBitsReserved);
+	log_info(sindicatoDebugLog, "[BITMAP] - %d bloques reservados fueron liberados en bitmap.",qtyBitsReserved);
 }
 
 int internal_api_get_free_block(){
@@ -654,7 +653,7 @@ int internal_api_get_free_block(){
 			pthread_mutex_unlock(&bitarray_mtx);
 			/* END   CRITICAL SECTION bitarray_mtx */
 
-			log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d reservado", blockNumber);
+			log_info(sindicatoLog,"[BITMAP] - Bloque %d reservado", blockNumber);
 
 			return blockNumber;
 		}
@@ -673,8 +672,8 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 	for(int i = 0; i < blocksNeeded; i++){
 		freeBlock = internal_api_get_free_block();
 		if(freeBlock == -1){
-			log_error(sindicatoDebugLog, "[FILESYSTEM] - ERROR: No hay bloques disponibles");
-			log_error(sindicatoLog, "[FILESYSTEM] - ERROR: No hay bloques disponibles");
+			log_error(sindicatoDebugLog, "[BITMAP] - ERROR: No hay bloques disponibles");
+			log_error(sindicatoLog, "[BITMAP] - ERROR: No hay bloques disponibles");
 			internal_api_free_bits_reserved(blocks, i);
 			internal_api_free_blocks_array(blocks, i);
 			return NULL;
@@ -686,8 +685,8 @@ char** internal_api_get_free_blocks(int blocksNeeded){
 		free(stringAux);
 	}
 
-	log_info(sindicatoLog, "[FILESYSTEM] - %d bloques fueron seteados en bitmap.",blocksNeeded);
-	log_info(sindicatoDebugLog, "[FILESYSTEM] - %d bloques fueron seteados en bitmap.",blocksNeeded);
+	log_info(sindicatoLog, "[BITMAP] - %d bloques fueron seteados en bitmap.",blocksNeeded);
+	log_info(sindicatoDebugLog, "[BITMAP] - %d bloques fueron seteados en bitmap.",blocksNeeded);
 
 	return blocks;
 }
@@ -1032,7 +1031,8 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
 
 		return opResult;
@@ -1048,7 +1048,8 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 		*opResult = ERROR_OPERATION;
 
 		free(pedidoString);
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
 
 		return opResult;
@@ -1153,7 +1154,8 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRequested, GUARDAR_PLATO);
 
 		return opResult;
@@ -1288,7 +1290,8 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRequested, CONFIRMAR_PEDIDO);
 
 		return opResult;
@@ -1375,7 +1378,8 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRequested, OBTENER_PEDIDO);
 
 		return NULL;
@@ -1488,7 +1492,8 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 		return NULL;
@@ -1645,7 +1650,8 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
-		free(pedidoName);
+		if(pedidoName != NULL)
+			free(pedidoName);
 		free_struct_mensaje(pedidoRequested, TERMINAR_PEDIDO);
 		return opResult;
 	}

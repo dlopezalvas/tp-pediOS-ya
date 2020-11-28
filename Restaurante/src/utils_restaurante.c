@@ -743,7 +743,7 @@ void process_request(int cod_op, int cliente_fd) {
 							list_add(list_pedidos_terminar,pedido_a_terminar);
 							pthread_mutex_unlock(&mutex_list_terminar);
 
-							bool mismo_id_pedido(m_guardarPlato* pedido){
+							bool mismo_id_pedido(t_pedidos_terminar* pedido){
 								return mismo_id(id_CONFIRMAR_PEDIDO->id,pedido->idPedido);
 							}
 
@@ -1154,7 +1154,6 @@ void terminar_plato(t_plato_pcb* plato){
 	//ENVIO A APP PLATO_LISTO
 	if(socket_app_plato_listo == -1){
 		log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
-		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1175,7 +1174,6 @@ void terminar_plato(t_plato_pcb* plato){
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
 			log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
-			pthread_exit(NULL);
 		}
 		liberar_conexion(socket_app_plato_listo);
 
@@ -1184,7 +1182,6 @@ void terminar_plato(t_plato_pcb* plato){
 	//ENVIO A SINDICATO PLATO_LISTO
 	if(socket_sindicato_plato_listo == -1){
 		log_debug(log_oficial, "[ERROR]:Fallo la conexion con Sindicato");
-		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1220,7 +1217,7 @@ void terminar_plato(t_plato_pcb* plato){
 	int socket_sindicato_termianr_pedido = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
 	if(socket_sindicato_termianr_pedido != -1){
 
-		bool _mismo_id(m_guardarPlato* pedido){
+		bool _mismo_id(t_pedidos_terminar* pedido){
 			return mismo_id(plato->id_pedido,pedido->idPedido);
 		}
 
@@ -1251,10 +1248,8 @@ void terminar_plato(t_plato_pcb* plato){
 
 			uint32_t* rta_terminar_pedido = recibir_respuesta(socket_sindicato_termianr_pedido, &cod_op);
 				if(cod_op == RTA_TERMINAR_PEDIDO){
-					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
 					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}else{
-					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
 					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}
 		}else{
