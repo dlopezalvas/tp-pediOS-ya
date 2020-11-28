@@ -52,6 +52,7 @@ int socket_app;
 //LOG
 t_log* log_oficial;
 t_log* log_config_ini;
+t_log* log_mensajes;
 
 
 //INICIAR RESTAURANTE
@@ -199,6 +200,9 @@ void hornear(t_horno* horno);
 void planificador_ready_a_exec(t_cola_afinidad* strc_cola);
 void planificador_exec(t_cola_afinidad* strc_cola);
 void fhilo_clock();
+
+t_log* iniciar_logger_oficial(t_config* config);
+t_log* iniciar_logger_mensajes(t_config* config);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */

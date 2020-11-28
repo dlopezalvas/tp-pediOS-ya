@@ -1475,7 +1475,7 @@ void gestionar_CREAR_PEDIDO(int cliente_id, int socket_cliente) {
 
 	params = malloc(sizeof(t_nombre_y_id));
 	params->id = pedido_id;
-	params->nombre.nombre = resto_en_cuestion->nombre;
+	params->nombre.nombre = string_duplicate(resto_en_cuestion->nombre);
 	rta_comanda = mensajear_comanda(GUARDAR_PEDIDO, params, true);
 
 	if (!rta_comanda) {
