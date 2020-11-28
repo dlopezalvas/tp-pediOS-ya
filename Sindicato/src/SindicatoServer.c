@@ -38,6 +38,7 @@ void internal_process_request(int cod_op, int socket_client){
 		void* buffer = recibir_mensaje(socket_client, &sizeMessage);
 		messageReceived = deserializar_mensaje(buffer, cod_op);
 		loggear_mensaje_recibido(messageReceived,cod_op, sindicatoLog);
+		free(buffer);
 	}
 
 	switch(cod_op){
@@ -125,7 +126,6 @@ void internal_process_request(int cod_op, int socket_client){
 		sindicato_api_send_response_of_operation(responseMessage);
 		sindicato_utils_free_memory_message(responseMessage);
 	}
-
 }
 
 void internal_serve_client(int socket){

@@ -365,6 +365,75 @@ void internal_api_free_array(char** array){
 	free(array);
 }
 
+void free_nombre(t_nombre* mensaje){
+	free(mensaje->nombre);
+	free(mensaje);
+}
+
+void free_number(uint32_t* mensaje){
+	free(mensaje);
+}
+
+void internal_api_free_restaurante_file(t_restaurante_file* restaurante, op_code type){
+
+	switch(type){
+		case(CONSULTAR_PLATOS):
+			list_destroy_and_destroy_elements(restaurante->afinidad_cocineros, (void*) free_nombre);
+			list_destroy(restaurante->platos);
+			list_destroy(restaurante->precios);
+			break;
+		case(OBTENER_RESTAURANTE):
+			list_destroy(restaurante->afinidad_cocineros);
+			list_destroy_and_destroy_elements(restaurante->platos, (void*) free_nombre);
+			list_destroy(restaurante->precios);
+			break;
+		case(GUARDAR_PLATO):
+			list_destroy_and_destroy_elements(restaurante->afinidad_cocineros, (void*) free_nombre);
+			list_destroy_and_destroy_elements(restaurante->platos, (void*) free_nombre);
+			list_destroy(restaurante->precios);
+			break;
+		default:
+			break;
+	}
+
+	free(restaurante);
+}
+
+void internal_api_free_pedido(t_pedido_file* pedido, op_code code){
+
+	switch(code){
+		case(GUARDAR_PLATO):
+			list_destroy(pedido->platos);
+			list_destroy(pedido->cantidad_platos);
+			list_destroy(pedido->cantidad_lista);
+			break;
+		case(CONFIRMAR_PEDIDO):
+			list_destroy_and_destroy_elements(pedido->platos, (void*) free_nombre);
+			list_destroy(pedido->cantidad_platos);
+			list_destroy(pedido->cantidad_lista);
+			break;
+		case(PLATO_LISTO):
+			list_destroy_and_destroy_elements(pedido->platos, (void*) free_nombre);
+			list_destroy(pedido->cantidad_platos);
+			list_destroy(pedido->cantidad_lista);
+			break;
+		case(TERMINAR_PEDIDO):
+			list_destroy_and_destroy_elements(pedido->platos, (void*) free_nombre);
+			list_destroy(pedido->cantidad_platos);
+			list_destroy(pedido->cantidad_lista);
+			break;
+		case(OBTENER_PEDIDO):
+			list_destroy_and_destroy_elements(pedido->platos, (void*) free_nombre);
+			list_destroy(pedido->cantidad_platos);
+			list_destroy(pedido->cantidad_lista);
+			break;
+		default:
+			break;
+	}
+
+	free(pedido);
+}
+
 char* internal_api_restaurante_to_string(char* cantCocineros, char* posXY, char* afinidadCocinero, char* platos, char* precioPlatos, char* cantHornos, char* cantPedidos){
 	char* stringBuilded = string_new();
 
@@ -471,7 +540,6 @@ t_initialBlockInfo* internal_api_read_initial_block_info(char* path){
  */
 
 t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restaurateOfPedido, file_type fileType){
-	t_initialBlockInfo* initialBlock = malloc(sizeof(t_initialBlockInfo));
 
 	char* filePath;
 
@@ -490,7 +558,7 @@ t_initialBlockInfo* internal_api_get_initial_block_info(char* name, char* restau
 		break;
 	}
 
-	initialBlock = internal_api_read_initial_block_info(filePath);
+	t_initialBlockInfo* initialBlock = internal_api_read_initial_block_info(filePath);
 
 	free(filePath);
 
@@ -685,8 +753,7 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 
 		char* originalStringStored = internal_api_get_string_from_filesystem(initialBLock->initialBlock,initialBLock->stringSize, &originalBlocks);
 		int qtyBlocksStored = internal_api_calculate_blocks_needed(originalStringStored);
-
-		//TODO: liberar originalStringStored?
+		free(originalStringStored);
 
 		int blocksMissed = 0;
 
@@ -703,17 +770,24 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 			blocksToWrite = string_split(originalBlocks, ",");
 
 			free(newBlocks);
-			free(originalBlocks);
 
 		} else if (qtyblocksNeeded < qtyBlocksStored){
-			blocksMissed = qtyBlocksStored - qtyblocksNeeded;
-			//TODO: liberar el ultimo bloque
+
+			blocksToWrite = string_split(originalBlocks, ",");
+
+			char* block = blocksToWrite[qtyBlocksStored-1];
+
+			int blockToDelete = atoi(block);
+
+			internal_api_free_bits_reserved(blocksToWrite, blockToDelete);
 
 		} else {
 			blocksToWrite = string_split(originalBlocks, ",");
 		}
+		free(originalBlocks);
 	}
 
+	int initBlock;
 	stringBlockSize = (int)metadataFS->block_size - sizeof(uint32_t);
 	char** stringToWriteSplitted = internal_api_split_string(stringToWrite, stringBlockSize, qtyblocksNeeded);
 
@@ -724,6 +798,9 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 		ftruncate(block, metadataFS->block_size);
 
 		char* blockMapped = mmap(0, metadataFS->block_size, PROT_WRITE | PROT_READ, MAP_SHARED, block, 0);
+
+		if(i == 0)
+			initBlock = atoi(blocksToWrite[0]);
 
 		if(i < (qtyblocksNeeded -1))
 			pointerNextBlock = (uint32_t)atoi(blocksToWrite[i+1]);
@@ -736,11 +813,18 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 
 		msync(blockMapped, metadataFS->block_size, MS_SYNC);
 
+		free(stringToWriteSplitted[i]);
+		free(blocksToWrite[i]);
+
 		munmap(blockMapped, metadataFS->block_size);
 		close(block);
+		free(blockFullPath);
 	}
 
-	return atoi(blocksToWrite[0]);
+	free(stringToWriteSplitted);
+	free(blocksToWrite);
+
+	return initBlock;
 }
 
 /* If fails return NULL */
@@ -811,7 +895,6 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 	sindicato_utils_create_folder(restPath, true);
 
 	int initialBlock = internal_api_write_block(restToSave, NULL, MODE_ADD);
-
 	if(initialBlock == ERROR_WRITE_BLOCK){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - No se pudo crear restaurante: %s %s %s %s %s %s %s",
@@ -824,10 +907,16 @@ void sindicato_api_crear_restaurante(char* nombre, char* cantCocineros, char* po
 		return;
 	}
 
+	free(restPath);
+
 	/* Create "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, nombre, true, NULL);
-	internal_api_write_info_file(restPath, initialBlock, restToSave);
 
+	pthread_mutex_t* restauranteMutex = internal_utils_get_mutex(nombre);
+
+	pthread_mutex_lock(restauranteMutex);
+	internal_api_write_info_file(restPath, initialBlock, restToSave);
+	pthread_mutex_unlock(restauranteMutex);
 	log_info(sindicatoLog, "[FILESYSTEM] - Se creo restaurante: %s %s %s %s %s %s %s",
 			nombre, cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos);
 
@@ -859,7 +948,12 @@ void sindicato_api_crear_receta(char* nombre, char* pasos, char* tiempoPasos){
 
 	/* Create "info" file */
 	char* restPath = sindicato_utils_build_file_full_path(sindicatoRecetaPath, nombre, false, NULL);
+
+	pthread_mutex_t* recetaMutex = internal_utils_get_mutex(nombre);
+
+	pthread_mutex_lock(recetaMutex);
 	internal_api_write_info_file(restPath, initialBlock, recetaToSave);
+	pthread_mutex_unlock(recetaMutex);
 
 	log_info(sindicatoLog, "[FILESYSTEM] - Se creo la receta: %s %s %s", nombre, pasos, tiempoPasos);
 
@@ -883,24 +977,29 @@ t_restaurante_y_plato* sindicato_api_consultar_platos(void* consultaPatos){
 	if(!sindicato_utils_verify_if_exist(restaurante->nombre, NULL, TYPE_RESTAURANTE)){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe");
+		free(restaurante->nombre);
 		free(restaurante);
 		return NULL;
 	}
 
 	/* Initialize of platos structure */
 	t_restaurante_y_plato* platos = malloc(sizeof(t_restaurante_y_plato));
-	platos->nombres = list_create();
 
+	pthread_mutex_t* restauranteMutex = internal_utils_get_mutex(restaurante->nombre);
+	pthread_mutex_lock(restauranteMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restaurante->nombre,NULL,TYPE_RESTAURANTE);
-
+	pthread_mutex_unlock(restauranteMutex);
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
-	platos->nombres = restauranteInfo->platos;
-	platos->cantElementos = restauranteInfo->platos->elements_count;
+	platos->nombres = list_duplicate(restauranteInfo->platos);
+	platos->cantElementos = platos->nombres->elements_count;
 
-	free(restauranteInfo);
+	internal_api_free_restaurante_file(restauranteInfo, CONSULTAR_PLATOS);
+
 	free(initialBLock);
+	free(restaurante->nombre);
+	free(restaurante);
 
 	return platos;
 }
@@ -911,14 +1010,16 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
+
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRestaurante->nombre.nombre, TYPE_PEDIDO_INICIAL, pedidoRestaurante->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido existe");
 
 		*opResult = ERROR_OPERATION;
 
-		free(pedidoRestaurante);
+		free(pedidoName);
+		free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
 
 		return opResult;
 	}
@@ -932,8 +1033,9 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
+		free(pedidoString);
 		free(pedidoName);
-		free(pedidoRestaurante);
+		free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
 
 		return opResult;
 	}
@@ -941,13 +1043,25 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 	/* Create "info" file */
 	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRestaurante->nombre.nombre);
 
-	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRestaurante->nombre.nombre, pedidoName);
 
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+
+	pthread_mutex_lock(pedidoMutex);
+	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	pthread_mutex_unlock(pedidoMutex);
 	log_info(sindicatoLog, "[FILESYSTEM] - Se creo el %s Pendiente [] [] [] 0", pedidoName);
 
+	free(pedidoPath);
+	free(pedidoString);
+	free(pedidoName);
 	/* *** UPDATE Restaurante *** */
 
 	/* get the info from FS */
+	pthread_mutex_t* restauranteMutex = internal_utils_get_mutex(pedidoRestaurante->nombre.nombre);
+	pthread_mutex_lock(restauranteMutex);
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoRestaurante->nombre.nombre,NULL,TYPE_RESTAURANTE);
 
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
@@ -962,11 +1076,25 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 	int qtyPedidos = (int)restauranteInfo->cantidad_pedidos + 1;
 	char* cantPedidos = string_itoa(qtyPedidos);
 
+	list_destroy_and_destroy_elements(restauranteInfo->afinidad_cocineros, (void*) free_nombre);
+	list_destroy_and_destroy_elements(restauranteInfo->platos, (void*) free_nombre);
+	list_destroy(restauranteInfo->precios);
+	free(restauranteInfo);
+
 	char* restToSave = internal_api_restaurante_to_string(cantCocineros, posXY, afinidadCocinero, platos, precioPlatos, cantHornos, cantPedidos);
+
+	free(cantCocineros);
+	free(posXY);
+	free(afinidadCocinero);
+	free(platos);
+	free(precioPlatos);
+	free(cantHornos);
+	free(cantPedidos);
 
 	/* Create restaurante folder */
 	char* restPath = sindicato_utils_build_path(sindicatoRestaurantePath, pedidoRestaurante->nombre.nombre);
 	sindicato_utils_create_folder(restPath, true);
+	free(restPath);
 
 	int initialBlockRestaurante = internal_api_write_block(restToSave, initialBLock, MODE_UPDATE);
 	if(initialBlockRestaurante == ERROR_WRITE_BLOCK){
@@ -975,10 +1103,11 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
-		free(restPath);
+		pthread_mutex_unlock(restauranteMutex);
+
 		free(restToSave);
-		free(pedidoName);
-		free(pedidoRestaurante);
+		free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
+		free(initialBLock);
 
 		return opResult;
 	}
@@ -986,9 +1115,12 @@ uint32_t* sindicato_api_guardar_pedido(void* pedido){
 	/* update "info" file */
 	restPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoRestaurante->nombre.nombre, true, NULL);
 	internal_api_write_info_file(restPath, initialBlockRestaurante, restToSave);
+	pthread_mutex_unlock(restauranteMutex);
 
 	free(restPath);
 	free(restToSave);
+	free(initialBLock);
+	free_struct_mensaje(pedidoRestaurante, GUARDAR_PEDIDO);
 
 	return opResult;
 }
@@ -1000,7 +1132,7 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->restaurante.nombre, TYPE_PEDIDO, pedidoRequested->idPedido, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1008,25 +1140,33 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 		*opResult = ERROR_OPERATION;
 
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, GUARDAR_PLATO);
 
 		return opResult;
 	}
 
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRequested->restaurante.nombre, pedidoName);
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+
+	pthread_mutex_lock(pedidoMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO);
 
 	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
-
 	if(pedidoInfo->estado_pedido != PENDIENTE){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El estado no es Pendiente");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoInfo);
 		free(initialBLock);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, GUARDAR_PLATO);
+		free(pedidoName);
 
 		return opResult;
 	}
@@ -1055,9 +1195,11 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 	char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
 	char* cantLista = internal_api_list_to_string(pedidoInfo->cantidad_lista, 1);
 
+	pthread_mutex_t* restauranteMutex = internal_utils_get_mutex(pedidoRequested->restaurante.nombre);
+	pthread_mutex_lock(restauranteMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLockRestaurante = internal_api_get_initial_block_info(pedidoRequested->restaurante.nombre,NULL,TYPE_RESTAURANTE);
-
+	pthread_mutex_unlock(restauranteMutex);
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLockRestaurante->initialBlock, initialBLockRestaurante->stringSize);
 
 	uint32_t newPrecio = pedidoInfo->precio_total;
@@ -1071,21 +1213,35 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 		}
 	}
 
+	internal_api_free_restaurante_file(restauranteInfo, GUARDAR_PLATO);
+
+	free(initialBLockRestaurante);
+
 	char* precioTotal = string_itoa((int)newPrecio);
 
 	char* pedidoString = internal_api_pedido_to_string("Pendiente",platos, cantPlatos, cantLista, precioTotal);
 
-	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
-	if(initialBlock == ERROR_WRITE_BLOCK){
+	free(platos);
+	free(cantPlatos);
+	free(cantLista);
+	free(precioTotal);
+
+	internal_api_free_pedido(pedidoInfo, GUARDAR_PLATO);
+
+	int initialBlockNumber = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+	if(initialBlockNumber == ERROR_WRITE_BLOCK){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - Fallo la escritura del bloque");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoString);
 		free(initialBLock);
 		free(pedidoInfo);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, GUARDAR_PLATO);
+		free(pedidoName);
 
 		return opResult;
 	}
@@ -1093,7 +1249,14 @@ uint32_t* sindicato_api_guardar_plato(void* pedido){
 	/* Create "info" file */
 	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->restaurante.nombre);
 
-	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	internal_api_write_info_file(pedidoPath, initialBlockNumber, pedidoString);
+	pthread_mutex_unlock(pedidoMutex);
+
+	free(pedidoPath);
+	free(pedidoString);
+	free(initialBLock);
+	free(pedidoName);
+	free_struct_mensaje(pedidoRequested, GUARDAR_PLATO);
 
 	return opResult;
 }
@@ -1104,7 +1267,7 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1112,11 +1275,18 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 		*opResult = ERROR_OPERATION;
 
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, CONFIRMAR_PEDIDO);
 
 		return opResult;
 	}
 
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRequested->nombre.nombre, pedidoName);
+
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+
+	pthread_mutex_lock(pedidoMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
 
@@ -1128,10 +1298,12 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoInfo);
 		free(initialBLock);
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, CONFIRMAR_PEDIDO);
 
 		return opResult;
 	}
@@ -1143,18 +1315,25 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 
 	char* pedidoString = internal_api_pedido_to_string("Confirmado",platos, cantPlatos, cantLista, precioTotal);
 
-	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+	internal_api_free_pedido(pedidoInfo, CONFIRMAR_PEDIDO);
 
-	if(initialBlock == ERROR_WRITE_BLOCK){
+	free(platos);
+	free(cantPlatos);
+	free(cantLista);
+	free(precioTotal);
+
+	int initialBlockNumber = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+	if(initialBlockNumber == ERROR_WRITE_BLOCK){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - Fallo la escritura del bloque");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoString);
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, CONFIRMAR_PEDIDO);
 
 		return opResult;
 	}
@@ -1162,7 +1341,14 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 	/* Create "info" file */
 	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->nombre.nombre);
 
-	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	internal_api_write_info_file(pedidoPath, initialBlockNumber, pedidoString);
+	pthread_mutex_unlock(pedidoMutex);
+
+	free(pedidoPath);
+	free(pedidoString);
+	free(initialBLock);
+	free(pedidoName);
+	free_struct_mensaje(pedidoRequested, CONFIRMAR_PEDIDO);
 
 	return opResult;
 }
@@ -1170,19 +1356,26 @@ uint32_t* sindicato_api_confirmar_pedido(void* pedido){
 rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
 	t_nombre_y_id* pedidoRequested = consultapedido;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
 
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, OBTENER_PEDIDO);
 
 		return NULL;
 	}
 
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRequested->nombre.nombre, pedidoName);
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+
+	pthread_mutex_lock(pedidoMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
+	pthread_mutex_unlock(pedidoMutex);
 
 	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
@@ -1205,6 +1398,12 @@ rta_obtenerPedido* sindicato_api_obtener_pedido(void* consultapedido){
 
 	pedido->cantPedidos = pedidoInfo->platos->elements_count;
 
+
+	internal_api_free_pedido(pedidoInfo, OBTENER_PEDIDO);
+	free(pedidoName);
+	free(initialBLock);
+	free_struct_mensaje(pedidoRequested, OBTENER_PEDIDO);
+
 	return pedido;
 }
 
@@ -1215,6 +1414,7 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe");
 
+		free(restauranteName->nombre);
 		free(restauranteName);
 
 		return NULL;
@@ -1222,11 +1422,13 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 
 	/* Initialize of restaurante structure */
 	rta_obtenerRestaurante* rtaRestaurante = malloc(sizeof(rta_obtenerRestaurante));
-	rtaRestaurante->afinidades = list_create();
 	rtaRestaurante->recetas = list_create();
 
+	pthread_mutex_t* restauranteMutex = internal_utils_get_mutex(restauranteName->nombre);
+	pthread_mutex_lock(restauranteMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(restauranteName->nombre,NULL,TYPE_RESTAURANTE);
+	pthread_mutex_unlock(restauranteMutex);
 
 	t_restaurante_file* restauranteInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
@@ -1252,6 +1454,12 @@ rta_obtenerRestaurante* sindicato_api_obtener_restaurante(void* restaurante){
 	rtaRestaurante->cantCocineros = restauranteInfo->cantidad_cocineros;
 	rtaRestaurante->cantPedidos = restauranteInfo->cantidad_pedidos;
 
+	internal_api_free_restaurante_file(restauranteInfo, OBTENER_RESTAURANTE);
+
+	free(restauranteName->nombre);
+	free(restauranteName);
+	free(initialBLock);
+
 	return rtaRestaurante;
 }
 
@@ -1261,31 +1469,39 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 	*opResult = SUCCESS_OPERATION;
 	bool platoFound = false;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->restaurante.nombre, TYPE_PEDIDO, pedidoRequested->idPedido, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
 
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 		return NULL;
 	}
 
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRequested->restaurante.nombre, pedidoName);
+
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+	pthread_mutex_lock(pedidoMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->restaurante.nombre, TYPE_PEDIDO);
 
 	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
-
 	if(pedidoInfo->estado_pedido != CONFIRMADO){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El estado no es Confirmado");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		internal_api_free_pedido(pedidoInfo, PLATO_LISTO);
+		free(pedidoName);
+		free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 		return opResult;
 	}
@@ -1310,9 +1526,12 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		internal_api_free_pedido(pedidoInfo, PLATO_LISTO);
+		free(pedidoName);
+		free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 		return opResult;
 	}
@@ -1324,6 +1543,11 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 
 	char* pedidoString = internal_api_pedido_to_string("Confirmado",platos, cantPlatos, cantLista, precioTotal);
 
+	free(platos);
+	free(cantPlatos);
+	free(cantLista);
+	free(precioTotal);
+
 	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
 	if(initialBlock == ERROR_WRITE_BLOCK){
 
@@ -1331,10 +1555,13 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoString);
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		internal_api_free_pedido(pedidoInfo, PLATO_LISTO);
+		free(pedidoName);
+		free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 		return opResult;
 	}
@@ -1343,6 +1570,14 @@ uint32_t* sindicato_api_plato_listo(void* plato){
 	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->restaurante.nombre);
 
 	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	pthread_mutex_unlock(pedidoMutex);
+
+	free(pedidoPath);
+	free(pedidoString);
+	free(initialBLock);
+	internal_api_free_pedido(pedidoInfo, PLATO_LISTO);
+	free(pedidoName);
+	free_struct_mensaje(pedidoRequested, PLATO_LISTO);
 
 	return opResult;
 }
@@ -1354,25 +1589,31 @@ rta_obtenerReceta* sindicato_api_obtener_receta(void* plato){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - La receta no existe en el FS");
 
+		free(recetaRequested->nombre);
 		free(recetaRequested);
 		return NULL;
 	}
 
 	/* Initialize of receta structure */
 	rta_obtenerReceta* receta = malloc(sizeof(rta_obtenerReceta));
-	receta->pasos = list_create();
 
+	pthread_mutex_t* recetaMutex = internal_utils_get_mutex(recetaRequested->nombre);
+	pthread_mutex_lock(recetaMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(recetaRequested->nombre,NULL,TYPE_RECETA);
+	pthread_mutex_unlock(recetaMutex);
 
 	t_receta_file* recetaInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
 
-	//TODO: list_duplicate;
 	/* map values retrieved from FS */
-	receta->pasos = recetaInfo->pasos;
+	receta->pasos = list_duplicate(recetaInfo->pasos);
+	receta->cantPasos = receta->pasos->elements_count;
 
-	free(initialBLock);
+	list_destroy(recetaInfo->pasos);
 	free(recetaInfo);
+	free(initialBLock);
+	free(recetaRequested->nombre);
+	free(recetaRequested);
 
 	return receta;
 }
@@ -1383,7 +1624,7 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 	uint32_t* opResult = malloc(sizeof(uint32_t));
 	*opResult = SUCCESS_OPERATION;
 
-	char* pedidoName = string_new();
+	char* pedidoName;
 	if(!sindicato_utils_verify_if_file_integrity_is_ok(pedidoRequested->nombre.nombre, TYPE_PEDIDO, pedidoRequested->id, &pedidoName )){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El restaurante no existe o el pedido no existe");
@@ -1391,28 +1632,34 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 		*opResult = ERROR_OPERATION;
 
 		free(pedidoName);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, TERMINAR_PEDIDO);
 		return opResult;
 	}
 
+	/* Build the key of the mutex RestauranteName + PedidoName */
+	char* keyPedido = sindicato_utils_build_path(pedidoRequested->nombre.nombre, pedidoName);
+
+	pthread_mutex_t* pedidoMutex = internal_utils_get_mutex(keyPedido);
+	free(keyPedido);
+	pthread_mutex_lock(pedidoMutex);
 	/* get the info from FS */
 	t_initialBlockInfo* initialBLock = internal_api_get_initial_block_info(pedidoName, pedidoRequested->nombre.nombre, TYPE_PEDIDO);
 
 	t_pedido_file* pedidoInfo = internal_api_read_blocks(initialBLock->initialBlock, initialBLock->stringSize);
-
 	if(pedidoInfo->estado_pedido != CONFIRMADO){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - El estado no es Confirmado");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		internal_api_free_pedido(pedidoInfo, TERMINAR_PEDIDO);
+		free_struct_mensaje(pedidoRequested, TERMINAR_PEDIDO);
 
 		return opResult;
 	}
-
 
 	char* platos = internal_api_list_to_string(pedidoInfo->platos, 0);
 	char* cantPlatos = internal_api_list_to_string(pedidoInfo->cantidad_platos, 1);
@@ -1421,17 +1668,24 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 
 	char* pedidoString = internal_api_pedido_to_string("Terminado",platos, cantPlatos, cantLista, precioTotal);
 
-	int initialBlock = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
-	if(initialBlock == ERROR_WRITE_BLOCK){
+	free(platos);
+	free(cantPlatos);
+	free(cantLista);
+	free(precioTotal);
+	internal_api_free_pedido(pedidoInfo, TERMINAR_PEDIDO);
+
+	int initialBlockNumber = internal_api_write_block(pedidoString, initialBLock, MODE_UPDATE);
+	if(initialBlockNumber == ERROR_WRITE_BLOCK){
 
 		log_error(sindicatoLog, "[FILESYSTEM] - Fallo la escritura del bloque");
 
 		*opResult = ERROR_OPERATION;
 
+		pthread_mutex_unlock(pedidoMutex);
+
 		free(pedidoString);
 		free(initialBLock);
-		free(pedidoInfo);
-		free(pedidoRequested);
+		free_struct_mensaje(pedidoRequested, TERMINAR_PEDIDO);
 
 		return opResult;
 	}
@@ -1439,7 +1693,14 @@ uint32_t* sindicato_api_terminar_pedido(void* pedido){
 	/* Create "info" file */
 	char* pedidoPath = sindicato_utils_build_file_full_path(sindicatoRestaurantePath, pedidoName, false, pedidoRequested->nombre.nombre);
 
-	internal_api_write_info_file(pedidoPath, initialBlock, pedidoString);
+	internal_api_write_info_file(pedidoPath, initialBlockNumber, pedidoString);
+	pthread_mutex_unlock(pedidoMutex);
+
+	free(pedidoPath);
+	free(pedidoString);
+	free(initialBLock);
+	free(pedidoName);
+	free_struct_mensaje(pedidoRequested, TERMINAR_PEDIDO);
 
 	return opResult;
 }
@@ -1454,4 +1715,7 @@ void sindicato_api_afip_initialize(){
 	internal_api_bitmap_create();
 
 	internal_api_initialize_blocks();
+
+	mutexDictionary = dictionary_create();
+	pthread_mutex_init(&dictionary_mtx, NULL);
 }

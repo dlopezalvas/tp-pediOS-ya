@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include <commons/bitarray.h>
+#include <commons/collections/dictionary.h>
 
 #include "../commonsCoronaLinux/logs.h"
 #include "../commonsCoronaLinux/socket.h"
@@ -55,7 +56,10 @@ uint32_t sindicatoProcessId;
 t_metadata* metadataFS;
 t_bitarray* bitarray;
 
+t_dictionary* mutexDictionary;
+
 pthread_mutex_t bitarray_mtx;
+pthread_mutex_t dictionary_mtx;
 
 /* ********************************** PUBLIC  FUNCTIONS ********************************** */
 
@@ -67,6 +71,7 @@ char* sindicato_utils_build_block_path(int blockNumber);
 char* sindicato_utils_build_pedido_name(uint32_t idPedido);
 bool sindicato_utils_verify_if_file_exist(char* path);
 bool sindicato_utils_verify_if_exist(char* fileName, char* restauranteOfPedido, file_type fileType);
+pthread_mutex_t* internal_utils_get_mutex(char* key);
 void sindicato_utils_free_memory_message(t_responseMessage* responseMessage);
 
 
