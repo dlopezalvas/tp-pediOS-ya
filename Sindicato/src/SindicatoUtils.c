@@ -153,6 +153,8 @@ bool sindicato_utils_verify_if_file_integrity_is_ok(char* name, file_type fileTy
 
 	if(fileType == TYPE_RESTAURANTE || fileType == TYPE_PEDIDO || fileType == TYPE_PEDIDO_INICIAL){
 
+		*pedidoName = sindicato_utils_build_pedido_name(idPedido);
+
 		/* Restaurante must exist in FS to be OK */
 		if(sindicato_utils_verify_if_exist(name, NULL, TYPE_RESTAURANTE)){
 			result = true;
@@ -163,7 +165,6 @@ bool sindicato_utils_verify_if_file_integrity_is_ok(char* name, file_type fileTy
 
 
 		if(fileType == TYPE_PEDIDO || fileType == TYPE_PEDIDO_INICIAL){
-			*pedidoName = sindicato_utils_build_pedido_name(idPedido);
 
 			/* Fist Pedido must no exist in FS to be OK */
 			if(fileType == TYPE_PEDIDO_INICIAL){

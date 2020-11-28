@@ -21,7 +21,7 @@ void sindicato_initialize(){
 
 	/* Set global variables */
 	sindicatoProcessId = (uint32_t)config_get_int_value(sindicatoConfig, "SINDICATO_ID");
-	sindicatoPort = config_get_int_value(sindicatoConfig,"PUERTO_ESCUCHA"); //TODO: Se puede optimizar
+	sindicatoPort = config_get_int_value(sindicatoConfig,"PUERTO_ESCUCHA");
 	sindicatoMountPoint = config_get_string_value(sindicatoConfig,"PUNTO_MONTAJE");
 
 	sindicato_api_afip_initialize();
