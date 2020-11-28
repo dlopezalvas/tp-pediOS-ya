@@ -947,7 +947,7 @@ void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commo
 	if (exists_rest(mensaje_rest->nombre.nombre)) {
 		pthread_mutex_unlock(&mutex_lista_restaurantes);
 		log_debug(logger_mensajes, "[MENSJS] El restaurant %s ya existe -> ERROR", mensaje_rest->nombre.nombre);
-		responder_ERROR(socket);
+		// responder_ERROR(socket);
 		free_struct_mensaje(mensaje_rest, POSICION_RESTAUNTE);
 		return;
 	}
