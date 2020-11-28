@@ -257,10 +257,12 @@ void* fhilo_planificador_largoPlazo(void* __sin_uso__) { // (de NEW a READY)
 
 		pedido_seleccionado = planif_asignarRepartidor();
 
-		log_info(logger_obligatorio, "(Ped. %i - Rest. %s - Rep. %i) Se asigno el pedido al repartidor (rest. en (%i, %i), cliente en (%i, %i))",
+		log_info(logger_obligatorio, "(Ped. %i - Rest. %s - Rep. %i) Se asigno el pedido al repartidor (rep. en (%i, %i), rest. en (%i, %i), cliente en (%i, %i))",
 			pedido_seleccionado->pedido_id,
 			pedido_seleccionado->restaurante->nombre,
 			pedido_seleccionado->repartidor->id,
+			pedido_seleccionado->repartidor->pos_x,
+			pedido_seleccionado->repartidor->pos_y,
 			pedido_seleccionado->restaurante->pos_x,
 			pedido_seleccionado->restaurante->pos_y,
 			pedido_seleccionado->cliente->pos_x,
@@ -606,9 +608,9 @@ t_pedido* planif_asignarRepartidor(void) { // TODO: logging
 	);
 	list_destroy(repartidores_disponibles);
 	log_info(logger_obligatorio, "(Ped. %i - Rest. %s - Rep. %i) Cambio de cola: [NEW] => [READY] (Elegido por el PLP por dist. minima (%i))",
-		pedido->pedido_id,
-		pedido->restaurante->nombre,
-		pedido->repartidor->id,
+		pedido_a_planif->pedido_id,
+		pedido_a_planif->restaurante->nombre,
+		pedido_a_planif->repartidor->id,
 		distancia_minima
 	);
 	return pedido_a_planif;
@@ -2399,7 +2401,9 @@ void qr_free_form(qr_form_t* form) {
 	}
 	free_struct_mensaje(form->m_enviar->parametros, form->m_enviar->tipo_mensaje);
 	free(form->m_enviar);
+	pthread_mutex_unlock(form->mutex);
 	pthread_mutex_destroy(form->mutex);
+	free(form->mutex);
 	free(form->error_flag);
 	free(form);
 }
@@ -2413,12 +2417,12 @@ qr_form_t* qr_request(t_mensaje* m_enviar, t_restaurante* rest) { // TODO: y si 
 	form->error_flag = malloc(sizeof(error_flag_t));
 	*(form->error_flag) = FLAG_OK;
 	pthread_mutex_init(form->mutex, NULL);
+	pthread_mutex_lock(form->mutex);
 
 	pthread_mutex_lock(rest->q_mtx);
 	list_add(rest->q, form);
 	sem_post(rest->q_sem);
 	pthread_mutex_unlock(rest->q_mtx);
-	pthread_mutex_lock(form->mutex);
 	pthread_mutex_lock(form->mutex);
 	return form;
 }
@@ -2471,6 +2475,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
 			log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
 			pthread_mutex_unlock(form->mutex);
 			log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
+			qr_admin_destroy(rest);
 			q_anulada = true;
 			continue;
 		}
@@ -2485,6 +2490,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
 			log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
 			pthread_mutex_unlock(form->mutex);
 			log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
+			qr_admin_destroy(rest);
 			q_anulada = true;
 			continue;
 		}
@@ -2511,6 +2517,7 @@ void* qr_admin(t_restaurante* rest) { // pthread_create(rest->q_admin, NULL, qr_
 			log_debug(logger_mensajes, "[Q (\"%s\")] Unlockeando mutex del hilo interesado...", rest->nombre);
 			pthread_mutex_unlock(form->mutex);
 			log_debug(logger_mensajes, "[Q (\"%s\")] Mutex del hilo interesado unlockeado; recomenzando ciclo", rest->nombre);
+			qr_admin_destroy(rest);
 			q_anulada = true;
 			continue;
 		} else {
@@ -2551,7 +2558,9 @@ void* recibir_mensaje(int socket_cliente, int* error){
     return buffer;
 }
 
-// void qr_admin_destroy(t_restaurante* rest) {
+
+
+void qr_admin_destroy(t_restaurante* rest) {
 // 	t_cliente* cliente;
 // 	pthread_mutex_lock(&mutex_lista_clientes);
 // 	for (
@@ -2567,8 +2576,7 @@ void* recibir_mensaje(int socket_cliente, int* error){
 // 		pthread_mutex_unlock(cliente->mutex);
 // 	}
 // 	pthread_mutex_unlock(&mutex_lista_clientes);
-
-// 	pthread_mutex_lock(&mutex_lista_restaurantes);
-// 	search_remove_return(restaurantes, rest);
-// 	pthread_mutex_unlock(&mutex_lista_restaurantes);
-// }
+	pthread_mutex_lock(&mutex_lista_restaurantes);
+	search_remove_return(restaurantes, rest);
+	pthread_mutex_unlock(&mutex_lista_restaurantes);
+}

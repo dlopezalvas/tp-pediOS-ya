@@ -242,6 +242,7 @@ bool todosLosPlatosEstanPreparados(rta_obtenerPedido* pedido);
 bool tiene_platos_agregados(rta_obtenerPedido* pedido);
 bool exists_cliente(int cliente_id);
 bool exists_rest(char* nombre_rest);
+void qr_admin_destroy(t_restaurante* rest);
 
 void* recibir_mensaje(int socket_cliente, int* error);
 
