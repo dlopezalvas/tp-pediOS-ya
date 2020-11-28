@@ -8,15 +8,15 @@ int main(int argc, char* argv[]) {
 		modo_mock = false;
 
 	// configuracion situacional de loggers
-		logger_obligatorio_consolaActiva = false;
+		logger_obligatorio_consolaActiva = true;
 		
-		logger_configuracion_consolaActiva = true;
+		logger_configuracion_consolaActiva = false;
 		logger_configuracion_path = "./configuracion.log";
 
-		logger_planificacion_consolaActiva = true;
+		logger_planificacion_consolaActiva = false;
 		logger_planificacion_path = "./planificacion.log";
 
-		logger_mensajes_consolaActiva = true;
+		logger_mensajes_consolaActiva = false;
 		logger_mensajes_path = "./mensajes.log";
 	
 	// lectura de config y configuracion inicial y de conexiones

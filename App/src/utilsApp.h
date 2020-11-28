@@ -243,4 +243,6 @@ bool tiene_platos_agregados(rta_obtenerPedido* pedido);
 bool exists_cliente(int cliente_id);
 bool exists_rest(char* nombre_rest);
 
+void* recibir_mensaje(int socket_cliente, int* error);
+
 #endif // UTILSAPP_H_
