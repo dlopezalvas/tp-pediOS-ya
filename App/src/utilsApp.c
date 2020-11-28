@@ -94,8 +94,6 @@ void configuracionInicial(void) {
             log_debug(logger_configuracion, "[CONFIG] |\t<%i>", index_repartidores);
             repartidor = malloc(sizeof(t_repartidor));
             repartidor->id = index_repartidores;
-            
-            config_get_arr
 
             log_debug(logger_configuracion, "[CONFIG] |\t|\tPos. X: %i", atoi(string_split(posicionesRepartidores[index_repartidores], ",")[0])); //TODO: ojo separators para cuando corrijan el enunciado
             repartidor->pos_x = atoi(string_split(posicionesRepartidores[index_repartidores], ",")[0]); //TODO: ojo separators para cuando corrijan el enunciado
@@ -1627,13 +1625,12 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
     t_cliente* cliente_confirmante;
     qr_form_t* form;
     t_nombre_y_id* nombre_id_revisado;
-    t_nombre_y_id* pedido_comanda;
 
     cliente_confirmante = get_cliente_porSuID(cliente_id);
     if (!cliente_confirmante) {
         log_debug(logger_mensajes, "[MENSJS] El cliente %i no esta registrado -> FAIL", cliente_id);
         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-        return; 
+        return; // MEM OK
     }
     pthread_mutex_lock(cliente_confirmante->mutex);
 
@@ -1642,20 +1639,21 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
         log_debug(logger_mensajes, "[MENSJS] El cliente no selecciono rest. -> FAIL", cliente_id);
         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
         pthread_mutex_unlock(cliente_confirmante->mutex);
-        return;
+        return; // MEM OK
     }
 
     nombre_id_revisado = malloc(sizeof(t_nombre_y_id));
     nombre_id_revisado->id = pedido->id;
     nombre_id_revisado->nombre.nombre = string_duplicate(rest_a_conf->nombre);
+    free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
     rta_obtener_pedido = mensajear_comanda(OBTENER_PEDIDO, nombre_id_revisado, false);
 
     if (!rta_obtener_pedido) {
         log_debug(logger_mensajes, "[MENSJS] Hubo un error al recibir respuesta de comanda -> FAIL a cli");
         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
+        free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
         free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
         free(rta_obtener_pedido);
-        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
         pthread_mutex_unlock(cliente_confirmante->mutex);
         return;
     }
@@ -1663,9 +1661,9 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
         case ERROR:
             log_debug(logger_mensajes, "[MENSJS] Comanda respondio ERROR -> FAIL a cli");
             responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
+            free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
-            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
             pthread_mutex_unlock(cliente_confirmante->mutex);
             return;
 
@@ -1681,9 +1679,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                 if (!rta_cp_comanda) {
                     log_debug(logger_mensajes, "[MENSJS] Hubo error al recibir rta. comanda -> FAIL a cli");
                     responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                    free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
-                    free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
-                    free(rta_cp_comanda);
+                    free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
                     pthread_mutex_unlock(cliente_confirmante->mutex);
                     return;
                 }
@@ -1691,7 +1687,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                     case ERROR:
                         log_debug(logger_mensajes, "[MENSJS] Comanda respondio ERROR -> FAIL a cli");
                         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
                         free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                         free(rta_cp_comanda);
                         pthread_mutex_unlock(cliente_confirmante->mutex);
@@ -1700,16 +1696,16 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                         if (!*(int*)(rta_cp_comanda->parametros)) {
                             log_debug(logger_mensajes, "[MENSJS] Comanda respondio FAIL -> FAIL a cli");
                             responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                            free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
                             free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                             free(rta_cp_comanda);
                             pthread_mutex_unlock(cliente_confirmante->mutex);
                             return;
                         }
                         log_debug(logger_mensajes, "[MENSJS] Comanda respondio OK");
-                        planif_nuevoPedido(cliente_id, pedido->id);
+                        planif_nuevoPedido(cliente_id, nombre_id_revisado->id);
                         responder_confirm(socket_cliente, true, RTA_CONFIRMAR_PEDIDO);
-                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
                         free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                         free(rta_cp_comanda);
                         pthread_mutex_unlock(cliente_confirmante->mutex);
@@ -1717,7 +1713,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                     default:
                         log_debug(logger_mensajes, "[MENSJS] Comanda no respondio lo esperado -> FAIL a cli");
                         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                        free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+                        free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
                         free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                         free(rta_cp_comanda);
                         pthread_mutex_unlock(cliente_confirmante->mutex);
@@ -1730,17 +1726,12 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
             mje_cprest = malloc(sizeof(t_mensaje));
             mje_cprest->tipo_mensaje = CONFIRMAR_PEDIDO;
             mje_cprest->id = cfval_id;
-            pedido_comanda = malloc(sizeof(t_nombre_y_id));
-            pedido_comanda->id = pedido->id;
-            pedido_comanda->nombre.nombre = string_duplicate(rest_a_conf->nombre);
-            mje_cprest->parametros = pedido_comanda;
-            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
+            mje_cprest->parametros = nombre_id_revisado;
             form = qr_request(mje_cprest, rest_a_conf);
             if (*(form->error_flag)) {
                 log_debug(logger_mensajes, "[MENSJS] Form con error flag -> FAIL a cli");
                 responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
                 qr_free_form(form);
-                free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
                 pthread_mutex_unlock(cliente_confirmante->mutex);
                 return;
             }
@@ -1749,7 +1740,6 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                     log_debug(logger_mensajes, "[MENSJS] Rest. respondio ERROR -> FAIL a cli");
                     responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
                     qr_free_form(form);
-                    free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
                     pthread_mutex_unlock(cliente_confirmante->mutex);
                     return;
                 case RTA_CONFIRMAR_PEDIDO:
@@ -1757,19 +1747,15 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                         log_debug(logger_mensajes, "[MENSJS] Rest. respondio FAIL -> FAIL a cli");
                         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
                         qr_free_form(form);
-                        free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
                         pthread_mutex_unlock(cliente_confirmante->mutex);
                         return;
                     }
                     log_debug(logger_mensajes, "[MENSJS] Rest. respondio OK");
-                    qr_free_form(form);
-                    rta_cp_comanda = mensajear_comanda(CONFIRMAR_PEDIDO, pedido_comanda, false);
+                    rta_cp_comanda = mensajear_comanda(CONFIRMAR_PEDIDO, nombre_id_revisado, false);
                     if (!rta_cp_comanda) {
                         log_debug(logger_mensajes, "[MENSJS] Hubo error al recibir rta. comanda -> FAIL a cli");
                         responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                        free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
-                        free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
-                        free(rta_cp_comanda);
+                        qr_free_form(form);
                         pthread_mutex_unlock(cliente_confirmante->mutex);
                         return;
                     }
@@ -1777,35 +1763,35 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                         case ERROR:
                             log_debug(logger_mensajes, "[MENSJS] Comanda respondio ERROR -> FAIL a cli");
                             responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                            free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
                             free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                             free(rta_cp_comanda);
+                            qr_free_form(form);
                             pthread_mutex_unlock(cliente_confirmante->mutex);
                             return;
                         case RTA_CONFIRMAR_PEDIDO:
                             if (!*(int*)(rta_cp_comanda->parametros)) {
                                 log_debug(logger_mensajes, "[MENSJS] Comanda respondio FAIL -> FAIL a cli");
                                 responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                                free_struct_mensaje(pedido_comanda, CONFIRMAR_PEDIDO);
                                 free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                                 free(rta_cp_comanda);
+                                qr_free_form(form);
                                 pthread_mutex_unlock(cliente_confirmante->mutex);
                                 return;
                             }
                             log_debug(logger_mensajes, "[MENSJS] Comanda respondio OK");
-                            planif_nuevoPedido(cliente_id, pedido_comanda->id);
+                            planif_nuevoPedido(cliente_id, nombre_id_revisado->id);
                             responder_confirm(socket_cliente, true, RTA_CONFIRMAR_PEDIDO);
-                            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                             free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                             free(rta_cp_comanda);
+                            qr_free_form(form);
                             pthread_mutex_unlock(cliente_confirmante->mutex);
                             return;
                         default:
                             log_debug(logger_mensajes, "[MENSJS] Comanda no respondio lo esperado -> FAIL a cli");
                             responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-                            free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                             free_struct_mensaje(rta_cp_comanda->parametros, rta_cp_comanda->tipo_mensaje);
                             free(rta_cp_comanda);
+                            qr_free_form(form);
                             pthread_mutex_unlock(cliente_confirmante->mutex);
                             return;
                     }
@@ -1814,7 +1800,6 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
                     log_debug(logger_mensajes, "[MENSJS] Rest. no respondio lo esperado -> FAIL a cli");
                     responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
                     qr_free_form(form);
-                    free_struct_mensaje(pedido, CONFIRMAR_PEDIDO);
                     pthread_mutex_unlock(cliente_confirmante->mutex);
                     return;
             }
@@ -1822,6 +1807,7 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
         default:
             log_debug(logger_mensajes, "[MENSJS] Comanda no respondio lo esperado -> FAIL a cli");
             responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
+            free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
             pthread_mutex_unlock(cliente_confirmante->mutex);
