@@ -598,6 +598,22 @@ void internal_api_write_info_file(char* filePath, int initialBlock, char* string
 
 /* ********** FS BLOCKS ********** */
 
+void internal_api_free_bit(int block){
+	if(bitarray_test_bit(bitarray, block)){
+
+		/* BEGIN CRITICAL SECTION bitarray_mtx */
+		pthread_mutex_lock(&bitarray_mtx);
+
+		bitarray_clean_bit(bitarray, block);
+		msync(bitarray, sizeof(bitarray), MS_SYNC);
+
+		pthread_mutex_unlock(&bitarray_mtx);
+		/* END   CRITICAL SECTION bitarray_mtx */
+
+		log_info(sindicatoLog,"[FILESYSTEM] - Bloque %d liberado", block);
+	}
+}
+
 void internal_api_free_bits_reserved(char** bitsList, int positionThatFailed){
 
 	int block = 0;
@@ -776,11 +792,9 @@ int internal_api_write_block(char* stringToWrite, t_initialBlockInfo* initialBLo
 			blocksToWrite = string_split(originalBlocks, ",");
 
 			char* block = blocksToWrite[qtyBlocksStored-1];
-
 			int blockToDelete = atoi(block);
 
-			internal_api_free_bits_reserved(blocksToWrite, blockToDelete);
-
+			internal_api_free_bit(blockToDelete);
 		} else {
 			blocksToWrite = string_split(originalBlocks, ",");
 		}

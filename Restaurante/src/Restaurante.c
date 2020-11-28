@@ -30,12 +30,11 @@ int main(int argc, char* argv[]) {
 	         config = config_create(argv[1]);
 	     }
 
-	     log_oficial = iniciar_logger(config);
+	     log_oficial = iniciar_logger_oficial(config);
+	     log_mensajes = iniciar_logger_mensajes(config);
 //PRUEBA DE LOGS
 log_info(log_config_ini, "\tSE INICIO EL LOG INICIAL \n");
 log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
-
-
 //CARGO CONFIGURACION
 	cargar_configuracion();
 	//Abrir puerto de escucha para clientes
@@ -59,3 +58,6 @@ log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
 
 	return EXIT_SUCCESS;
 }
+
+
+

@@ -52,6 +52,7 @@ int socket_app;
 //LOG
 t_log* log_oficial;
 t_log* log_config_ini;
+t_log* log_mensajes;
 
 
 //INICIAR RESTAURANTE
@@ -116,6 +117,11 @@ typedef struct{
 			pthread_mutex_t mutex_clock;
 			uint32_t id_plato;
 }t_plato_pcb;
+
+typedef struct{
+			uint32_t idPedido;
+			uint32_t cant_platos_restantes;
+}t_pedidos_terminar;
 
 
 typedef struct{
@@ -199,6 +205,9 @@ void hornear(t_horno* horno);
 void planificador_ready_a_exec(t_cola_afinidad* strc_cola);
 void planificador_exec(t_cola_afinidad* strc_cola);
 void fhilo_clock();
+
+t_log* iniciar_logger_oficial(t_config* config);
+t_log* iniciar_logger_mensajes(t_config* config);
 
 
 #endif /* RESTAURANTE_SRC_UTILS_RESTAURANTE_H_ */

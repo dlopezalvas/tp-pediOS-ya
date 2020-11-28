@@ -81,7 +81,7 @@ void iniciar_restaurante(){
 		obt_restaurante->parametros = nombre_restaurante;
 		log_info(log_config_ini, "estoy por enviar el mj\n");
 		enviar_mensaje(obt_restaurante, conexion_sindicato);
-		loggear_mensaje_enviado(obt_restaurante->parametros, obt_restaurante->tipo_mensaje, log_oficial);
+		loggear_mensaje_enviado(obt_restaurante->parametros, obt_restaurante->tipo_mensaje, log_mensajes);
 
 		free_struct_mensaje(nombre_restaurante, OBTENER_RESTAURANTE);
 		free(obt_restaurante);
@@ -415,14 +415,14 @@ void process_request(int cod_op, int cliente_fd) {
 
 	case POSICION_CLIENTE:
 		//		log_info(log_config_ini ,"pos cliente: %d",cod_op);
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 		enviar_confirmacion(FAIL, cliente_fd, RTA_POSICION_CLIENTE);
 
 		break;
 
 	case CONSULTAR_PLATOS:
 
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 
 		//CONECTARME CON SINDICATO y MANDARLE EL MJ, RECIBIR RTA Y RESPONDER AL CLIENTE
 
@@ -437,7 +437,7 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje = ERROR;
 			enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
 
-			loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_mensajes);
 
 
 		}else{
@@ -453,7 +453,7 @@ void process_request(int cod_op, int cliente_fd) {
 			//ENVIO A SINDICATO
 			enviar_mensaje(sindicato_CONSULTAR_PLATOS,socket_CONSULTAR_PLATOS);
 
-			loggear_mensaje_enviado(sindicato_CONSULTAR_PLATOS->parametros, sindicato_CONSULTAR_PLATOS->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(sindicato_CONSULTAR_PLATOS->parametros, sindicato_CONSULTAR_PLATOS->tipo_mensaje, log_mensajes);
 			free_struct_mensaje(sindicato_CONSULTAR_PLATOS->parametros, CONSULTAR_PLATOS); //TODO estaba comentado
 			free(sindicato_CONSULTAR_PLATOS);
 
@@ -472,7 +472,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 				enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
 
-				loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_mensajes);
 
 			}else{
 
@@ -480,7 +480,7 @@ void process_request(int cod_op, int cliente_fd) {
 				cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje = ERROR;
 				enviar_mensaje(cliente_RTA_CONSULTAR_PLATOS,cliente_fd);
 
-				loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(cliente_RTA_CONSULTAR_PLATOS->parametros, cliente_RTA_CONSULTAR_PLATOS->tipo_mensaje, log_mensajes);
 
 			}
 
@@ -493,7 +493,7 @@ void process_request(int cod_op, int cliente_fd) {
 	case CREAR_PEDIDO:
 
 
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 
 		//CREAR ID PEDIDO
 		uint32_t id_pedido;
@@ -518,7 +518,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 			enviar_mensaje(cliente_rta_CREAR_PEDIDO,cliente_fd);
 
-			loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_mensajes);
 
 		}else{
 			//ENVIAR EL ID A SINDICADO PARA GUARDAR PEDIDO
@@ -536,7 +536,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 			enviar_mensaje(_GUARDAR_PEDIDO,socket_GUARDAR_PEDIDO);
 
-			loggear_mensaje_enviado(_GUARDAR_PEDIDO->parametros, _GUARDAR_PEDIDO->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(_GUARDAR_PEDIDO->parametros, _GUARDAR_PEDIDO->tipo_mensaje, log_mensajes);
 
 			free_struct_mensaje(_GUARDAR_PEDIDO->parametros, GUARDAR_PEDIDO);
 			free(_GUARDAR_PEDIDO);
@@ -555,14 +555,14 @@ void process_request(int cod_op, int cliente_fd) {
 				cliente_rta_CREAR_PEDIDO->parametros = ok_CREAR_PEDIDO;
 				cliente_rta_CREAR_PEDIDO->id = cfg_id;
 				enviar_mensaje(cliente_rta_CREAR_PEDIDO, cliente_fd);
-				loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(cliente_rta_CREAR_PEDIDO->parametros, cliente_rta_CREAR_PEDIDO->tipo_mensaje, log_mensajes);
 				free_struct_mensaje(cliente_rta_CREAR_PEDIDO->parametros,RTA_CREAR_PEDIDO);
 			}else{
 				t_mensaje* msj_error = malloc(sizeof(t_mensaje));
 				msj_error->id = cfg_id;
 				msj_error->tipo_mensaje = ERROR;
 				enviar_mensaje(msj_error, cliente_fd);
-				loggear_mensaje_enviado(msj_error->parametros, msj_error->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(msj_error->parametros, msj_error->tipo_mensaje, log_mensajes);
 
 				free(msj_error);
 
@@ -576,7 +576,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		break;
 	case AGREGAR_PLATO:
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 
 		confirmacion = FAIL;
 
@@ -614,7 +614,7 @@ void process_request(int cod_op, int cliente_fd) {
 				mje_sindicato_GUARDAR_PLATO->id = cfg_id;
 
 				enviar_mensaje(mje_sindicato_GUARDAR_PLATO,socket_GUARDAR_PLATO);
-				loggear_mensaje_enviado(mje_sindicato_GUARDAR_PLATO->parametros, mje_sindicato_GUARDAR_PLATO->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(mje_sindicato_GUARDAR_PLATO->parametros, mje_sindicato_GUARDAR_PLATO->tipo_mensaje, log_mensajes);
 
 				free_struct_mensaje(mje_sindicato_GUARDAR_PLATO->parametros, GUARDAR_PLATO);
 				free(mje_sindicato_GUARDAR_PLATO);
@@ -639,7 +639,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 	case CONFIRMAR_PEDIDO:
 
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 		t_nombre_y_id* id_CONFIRMAR_PEDIDO = mensaje;
 		log_info(log_config_ini ,"Se quiere CONFIRMAR_PEDIDO de resto: %s  con id: %d",id_CONFIRMAR_PEDIDO->nombre.nombre,id_CONFIRMAR_PEDIDO->id);
 
@@ -680,7 +680,7 @@ void process_request(int cod_op, int cliente_fd) {
 				mje_sindicato_CONFIRMAR_PEDIDO->tipo_mensaje = CONFIRMAR_PEDIDO;
 
 				enviar_mensaje(mje_sindicato_CONFIRMAR_PEDIDO,socket_CONFIRMAR_PEDIDO);
-				loggear_mensaje_enviado(mje_sindicato_CONFIRMAR_PEDIDO->parametros, mje_sindicato_CONFIRMAR_PEDIDO->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(mje_sindicato_CONFIRMAR_PEDIDO->parametros, mje_sindicato_CONFIRMAR_PEDIDO->tipo_mensaje, log_mensajes);
 
 				free(mje_sindicato_CONFIRMAR_PEDIDO);
 
@@ -709,7 +709,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 						enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_OBTENER_PEDIDO);
-						loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_oficial);
+						loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_mensajes);
 
 						free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 						free(mje_sindicato_OBTENER_PEDIDO);
@@ -735,8 +735,8 @@ void process_request(int cod_op, int cliente_fd) {
 							pthread_mutex_t clock_plato;
 
 							//AGREGO  A PEDIDOS A TERMINAR
-							m_guardarPlato* pedido_a_terminar = malloc(sizeof(m_guardarPlato));
-							pedido_a_terminar->cantidad=0;
+							t_pedidos_terminar* pedido_a_terminar = malloc(sizeof(t_pedidos_terminar));
+							pedido_a_terminar->cant_platos_restantes=0;
 							pedido_a_terminar->idPedido=id_CONFIRMAR_PEDIDO->id;
 
 							pthread_mutex_lock(&mutex_list_terminar);
@@ -753,7 +753,7 @@ void process_request(int cod_op, int cliente_fd) {
 								//cargo la cantidad
 								pthread_mutex_lock(&mutex_list_terminar);
 								pedido_a_terminar = list_find(list_pedidos_terminar, (void*)mismo_id_pedido);
-								pedido_a_terminar->cantidad = pedido_a_terminar->cantidad + plato_n->cantTotal-plato_n->cantHecha;
+								pedido_a_terminar->cant_platos_restantes = pedido_a_terminar->cant_platos_restantes + plato_n->cantTotal-plato_n->cantHecha;
 								pthread_mutex_unlock(&mutex_list_terminar);
 
 
@@ -777,7 +777,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 
 									enviar_mensaje(mje_sindicato_OBTENER_RECETA,socket_OBTENER_RECETA);
-									loggear_mensaje_enviado(mje_sindicato_OBTENER_RECETA->parametros, mje_sindicato_OBTENER_RECETA->tipo_mensaje, log_oficial);
+									loggear_mensaje_enviado(mje_sindicato_OBTENER_RECETA->parametros, mje_sindicato_OBTENER_RECETA->tipo_mensaje, log_mensajes);
 
 									free_struct_mensaje(mje_sindicato_OBTENER_RECETA->parametros, OBTENER_RECETA);
 									free(mje_sindicato_OBTENER_RECETA);
@@ -867,7 +867,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		break;
 	case CONSULTAR_PEDIDO:
-		loggear_mensaje_recibido(mensaje, cod_op, log_oficial);
+		loggear_mensaje_recibido(mensaje, cod_op, log_mensajes);
 
 		//DESERIALIZO EL MJ
 		uint32_t* id_CONSULTAR_PEDIDO = mensaje;
@@ -887,7 +887,7 @@ void process_request(int cod_op, int cliente_fd) {
 			cliente_rta_CONSULTAR_PEDIDO->id=cfg_id;
 			cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje = ERROR;
 			enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
-			loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_mensajes);
 
 		}else{
 
@@ -903,7 +903,7 @@ void process_request(int cod_op, int cliente_fd) {
 			mje_sindicato_OBTENER_PEDIDO->id=cfg_id;
 			mje_sindicato_OBTENER_PEDIDO->parametros = sindicato_OBTENER_PEDIDO;
 			enviar_mensaje(mje_sindicato_OBTENER_PEDIDO,socket_CONSULTAR_PEDIDO_OBTENER_PEDIDO);
-			loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(mje_sindicato_OBTENER_PEDIDO->parametros, mje_sindicato_OBTENER_PEDIDO->tipo_mensaje, log_mensajes);
 
 			free_struct_mensaje(mje_sindicato_OBTENER_PEDIDO->parametros, OBTENER_PEDIDO);
 			free(mje_sindicato_OBTENER_PEDIDO);
@@ -927,7 +927,7 @@ void process_request(int cod_op, int cliente_fd) {
 				cliente_rta_CONSULTAR_PEDIDO->parametros = rta_CONSULTAR_PEDIDO;
 				cliente_rta_CONSULTAR_PEDIDO->id = cfg_id;
 				enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
-				loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_mensajes);
 
 				//				free_struct_mensaje(rta_CONSULTAR_PEDIDO, RTA_CONSULTAR_PEDIDO); TODO revisar
 				list_destroy(rta_CONSULTAR_PEDIDO->platos);
@@ -936,7 +936,7 @@ void process_request(int cod_op, int cliente_fd) {
 				cliente_rta_CONSULTAR_PEDIDO->id=cfg_id;
 				cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje = ERROR;
 				enviar_mensaje(cliente_rta_CONSULTAR_PEDIDO,cliente_fd);
-				loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_oficial);
+				loggear_mensaje_enviado(cliente_rta_CONSULTAR_PEDIDO->parametros, cliente_rta_CONSULTAR_PEDIDO->tipo_mensaje, log_mensajes);
 			}
 
 			free(cliente_rta_CONSULTAR_PEDIDO);
@@ -1148,12 +1148,13 @@ void terminar_plato(t_plato_pcb* plato){
 	int socket_app_plato_listo = iniciar_cliente(cfg_ip_app, cfg_puerto_app);
 	int socket_sindicato_plato_listo = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
 
-	m_guardarPlato* pedido_plato;
+	t_pedidos_terminar* pedido_plato;
 	//t_list* platos_del_pedido=list_create();
 
 	//ENVIO A APP PLATO_LISTO
 	if(socket_app_plato_listo == -1){
-		//TODO error
+		log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
+		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1165,7 +1166,7 @@ void terminar_plato(t_plato_pcb* plato){
 		plato_listo->idPedido = plato->id_pedido;
 		mensaje->parametros = plato_listo;
 		enviar_mensaje(mensaje, socket_app_plato_listo);
-		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_oficial);
+		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_mensajes);
 
 		free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
 		free(mensaje);
@@ -1173,7 +1174,8 @@ void terminar_plato(t_plato_pcb* plato){
 		if(cod_op == RTA_PLATO_LISTO){
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
-			//error TODO
+			log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
+			pthread_exit(NULL);
 		}
 		liberar_conexion(socket_app_plato_listo);
 
@@ -1181,7 +1183,8 @@ void terminar_plato(t_plato_pcb* plato){
 
 	//ENVIO A SINDICATO PLATO_LISTO
 	if(socket_sindicato_plato_listo == -1){
-		//TODO error
+		log_debug(log_oficial, "[ERROR]:Fallo la conexion con Sindicato");
+		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1193,7 +1196,7 @@ void terminar_plato(t_plato_pcb* plato){
 		plato_listo->idPedido = plato->id_pedido;
 		mensaje->parametros = plato_listo;
 		enviar_mensaje(mensaje, socket_sindicato_plato_listo);
-		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_oficial);
+		loggear_mensaje_enviado(mensaje->parametros, mensaje->tipo_mensaje, log_mensajes);
 
 		free_struct_mensaje(mensaje->parametros, PLATO_LISTO);
 		free(mensaje);
@@ -1202,7 +1205,8 @@ void terminar_plato(t_plato_pcb* plato){
 			//loggear_mensaje_recibido(rta_plato_listo, cod_op, log_oficial);
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
-			//error TODO
+			log_debug(log_oficial, "[ERROR]:Fallo la conexion con Sindicato");
+			pthread_exit(NULL);
 		}
 		liberar_conexion(socket_sindicato_plato_listo);
 
@@ -1222,12 +1226,12 @@ void terminar_plato(t_plato_pcb* plato){
 
 		pthread_mutex_lock(&mutex_list_terminar);
 		pedido_plato = list_find(list_pedidos_terminar, (void*)_mismo_id);
-		pedido_plato->cantidad=pedido_plato->cantidad -1;
+		pedido_plato->cant_platos_restantes=pedido_plato->cant_platos_restantes -1;
 
 
 
 
-		if(pedido_plato->cantidad==0){
+		if(pedido_plato->cant_platos_restantes==0){
 			t_mensaje* mensaje_terminado = malloc(sizeof(t_mensaje));
 			t_nombre_y_id* id_nombre=malloc(sizeof(t_nombre_y_id));
 
@@ -1238,28 +1242,31 @@ void terminar_plato(t_plato_pcb* plato){
 			mensaje_terminado->parametros=id_nombre;
 
 			enviar_mensaje(mensaje_terminado, socket_sindicato_termianr_pedido);
-			loggear_mensaje_enviado(mensaje_terminado->parametros, mensaje_terminado->tipo_mensaje, log_oficial);
+			loggear_mensaje_enviado(mensaje_terminado->parametros, mensaje_terminado->tipo_mensaje, log_mensajes);
 			free_struct_mensaje(id_nombre,TERMINAR_PEDIDO);
 			free(mensaje_terminado);
-			//TODO ELIMINAR EL PEDIDO DE LA LISTA
+			pedido_plato = list_remove_by_condition(list_pedidos_terminar, (void*)_mismo_id);
+			free(pedido_plato);
+
 
 			uint32_t* rta_terminar_pedido = recibir_respuesta(socket_sindicato_termianr_pedido, &cod_op);
 				if(cod_op == RTA_TERMINAR_PEDIDO){
-					//loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
+					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
 					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}else{
-					//error TODO
+					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
+					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}
 		}else{
-			log_debug(log_oficial, "el pedido todavia no termino");
+//			log_debug(log_oficial, "el pedido todavia no termino");
 		}
 		pthread_mutex_unlock(&mutex_list_terminar);
 
 		//FIN TERMINAR PEDIDO
 	}
 
-
 	free_pcb_plato(plato);
+	pthread_exit(NULL);
 }
 
 void free_pcb_plato(t_plato_pcb* plato){
@@ -1488,7 +1495,7 @@ void enviar_confirmacion(t_confirmacion _confirmacion, int cliente, op_code cod_
 	*confirmacion = _confirmacion;
 	mensaje_a_enviar->parametros = confirmacion;
 	enviar_mensaje(mensaje_a_enviar, cliente);
-	loggear_mensaje_enviado(confirmacion, cod_op, log_oficial);
+	loggear_mensaje_enviado(confirmacion, cod_op, log_mensajes);
 	free_struct_mensaje(confirmacion,cod_op);
 	free(mensaje_a_enviar);
 }
@@ -1527,7 +1534,7 @@ void* recibir_respuesta(int socket, uint32_t* cod_op){ //TODO cambiar en las dem
 	}
 
 	mensaje = deserializar_mensaje(buffer, *cod_op);
-	loggear_mensaje_recibido(mensaje, *cod_op, log_oficial);
+	loggear_mensaje_recibido(mensaje, *cod_op, log_mensajes);
 	free(buffer);
 	return mensaje;
 }
@@ -1591,5 +1598,25 @@ void fhilo_clock() {
 		pthread_mutex_unlock(&mutex_EXEC);
 		sleep(cfg_retardo_ciclo_CPU);
 	}
+}
+
+t_log* iniciar_logger_mensajes(t_config* config)
+{
+	char* nombre_archivo = config_get_string_value(config,"LOG_FILE_MENSAJES");
+	char* nombre_aplicacion = config_get_string_value(config,"NOMBRE_APLICACION");
+	int log_consola = config_get_int_value(config,"LOG_CONSOLA_MENSAJES");
+
+	t_log* logger = log_create(nombre_archivo,nombre_aplicacion,log_consola,LOG_LEVEL_INFO);
+	return logger;
+}
+
+t_log* iniciar_logger_oficial(t_config* config)
+{
+	char* nombre_archivo = config_get_string_value(config,"LOG_FILE");
+	char* nombre_aplicacion = config_get_string_value(config,"NOMBRE_APLICACION");
+	int log_consola = config_get_int_value(config,"LOG_CONSOLA");
+
+	t_log* logger = log_create(nombre_archivo,nombre_aplicacion,log_consola,LOG_LEVEL_DEBUG);
+	return logger;
 }
 
