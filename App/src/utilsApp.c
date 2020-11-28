@@ -1404,7 +1404,7 @@ void gestionar_CONSULTAR_PLATOS(int cliente_id, int socket_cliente) {
 	}
 
 	nombre_rest_consultado = malloc(sizeof(t_nombre));
-	nombre_rest_consultado->nombre="";
+	nombre_rest_consultado->nombre = string_duplicate("");
 	mensaje = malloc(sizeof(t_mensaje));
 	mensaje->tipo_mensaje = CONSULTAR_PLATOS;
 	mensaje->parametros = nombre_rest_consultado;
