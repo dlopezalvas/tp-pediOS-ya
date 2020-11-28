@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
 	     }
 
 	     log_oficial = iniciar_logger(config);
+	     log_mensajes = iniciar_logger_mensajes(config);
 //PRUEBA DE LOGS
 log_info(log_config_ini, "\tSE INICIO EL LOG INICIAL \n");
 log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
@@ -59,3 +60,6 @@ log_info(log_oficial, "\tSE INICIO EL LOG OFICIAL \n");
 
 	return EXIT_SUCCESS;
 }
+
+
+
