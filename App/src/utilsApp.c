@@ -819,7 +819,32 @@ void consumir_ciclo(t_pedido* pedido) {
 	);
 }
 
+bool exists_rest(char* nombre_rest) {
+	for (
+		unsigned index = 0;
+		index < list_size(restaurantes);
+		index++
+	) {
+		if (string_equals_ignore_case(
+				nombre_rest,
+				((t_restaurante*)list_get(restaurantes, index))->nombre
+		)){
+			return true;
+		}
+	}
+	return false;
+}
+
 void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commons
+	pthread_mutex_lock(&mutex_lista_restaurantes);
+	if (exists_rest(mensaje_rest->nombre.nombre)) {
+		pthread_mutex_unlock(&mutex_lista_restaurantes);
+		log_debug(logger_mensajes, "[MENSJS] El restaurant %s ya existe -> ERROR", mensaje_rest->nombre.nombre);
+		responder_ERROR(socket);
+		free_struct_mensaje(mensaje_rest, POSICION_RESTAUNTE);
+		return;
+	}
+
 	t_restaurante* restaurante = malloc(sizeof(t_restaurante));
 	restaurante->nombre = string_duplicate(mensaje_rest->nombre.nombre); // TODO: string duplicate / check free
 	restaurante->pos_x = mensaje_rest->posicion.x;
@@ -849,12 +874,15 @@ void guardar_nuevoRest(m_restaurante* mensaje_rest, int socket) { // TODO: commo
 	restaurante->q_admin = malloc(sizeof(pthread_t));
 	pthread_create(restaurante->q_admin, NULL, qr_admin, restaurante);
 
-	pthread_mutex_lock(&mutex_lista_restaurantes);
 	list_add(restaurantes, restaurante);
 	// TODO: logging
 	pthread_mutex_unlock(&mutex_lista_restaurantes);
 
 	free_struct_mensaje(mensaje_rest, POSICION_RESTAUNTE);
+
+	log_debug(logger_mensajes, "Restaurante %s registrado con exito",
+		restaurante->nombre
+	);
 }
 
 void guardar_seleccion(char* nombre_rest, int id_cliente) {
@@ -1156,6 +1184,19 @@ void process_request(int cod_op, int cliente_fd) {
 	}
 }
 
+bool exists_cliente(int cliente_id) {
+	for (
+		unsigned index = 0;
+		index < list_size(clientes);
+		index++
+	) {
+		if (cliente_id == ((t_cliente*)list_get(clientes, index))->id) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int socket_cliente) {
 	t_cliente* cliente;
 
@@ -1169,14 +1210,14 @@ void gestionar_POSICION_CLIENTE(int cliente_id, t_coordenadas* posicion, int soc
 
 	pthread_mutex_lock(&mutex_lista_clientes);
 
-//	if (exists_cliente(cliente_id)) {
-//		log_debug(
-//				logger_mensajes,
-//				"[MENSJS]: Ya existe un cliente por el mismo id; se rechaza el registro (ERROR)"
-//		);
-//		responder_ERROR(socket_cliente);
-//		return;
-//	}
+	if (exists_cliente(cliente_id)) {
+		log_debug(
+				logger_mensajes,
+				"[MENSJS]: Ya existe un cliente por el mismo id; se rechaza el registro (ERROR)"
+		);
+		responder_ERROR(socket_cliente);
+		return;
+	}
 
 	cliente = malloc(sizeof(t_cliente));
 	cliente->id = cliente_id;
@@ -1683,15 +1724,15 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
         case RTA_OBTENER_PEDIDO:
             log_debug(logger_mensajes, "[MENSJS] Comanda respondio RTA_OBTENER_PEDIDO");
 
-            // if (!tiene_platos_agregados(rta_obtener_pedido->parametros)) {
-            //     log_debug(logger_mensajes, "[MENSJS] El pedido no tiene platos -> FAIL a cli");
-            //     responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
-            //     free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
-            //     free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
-            //     free(rta_obtener_pedido);
-            //     pthread_mutex_unlock(cliente_confirmante->mutex);
-            //     return;
-            // }
+            if (!tiene_platos_agregados(rta_obtener_pedido->parametros)) {
+                log_debug(logger_mensajes, "[MENSJS] El pedido no tiene platos -> FAIL a cli");
+                responder_confirm(socket_cliente, false, RTA_CONFIRMAR_PEDIDO);
+                free_struct_mensaje(nombre_id_revisado, OBTENER_PEDIDO);
+                free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
+                free(rta_obtener_pedido);
+                pthread_mutex_unlock(cliente_confirmante->mutex);
+                return;
+            }
 
             free_struct_mensaje(rta_obtener_pedido->parametros, rta_obtener_pedido->tipo_mensaje);
             free(rta_obtener_pedido);
@@ -1836,6 +1877,10 @@ void gestionar_CONFIRMAR_PEDIDO(t_nombre_y_id* pedido, int socket_cliente, int c
             pthread_mutex_unlock(cliente_confirmante->mutex);
             return;
     }
+}
+
+bool tiene_platos_agregados(rta_obtenerPedido* pedido) {
+	return !list_is_empty(pedido->infoPedidos);
 }
 
 void gestionar_CONSULTAR_PEDIDO(uint32_t* id_pedido, int socket_cliente, int cliente_id) {

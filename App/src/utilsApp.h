@@ -238,5 +238,8 @@ void gestionar_PLATO_LISTO(m_platoListo* plato_params, int socket_rest);
 void responder_confirm(int socket_cliente, bool ok_fail, int cod_op);
 void responder_ERROR(int socket);
 bool todosLosPlatosEstanPreparados(rta_obtenerPedido* pedido);
+bool tiene_platos_agregados(rta_obtenerPedido* pedido);
+bool exists_cliente(int cliente_id);
+bool exists_rest(char* nombre_rest);
 
 #endif // UTILSAPP_H_
