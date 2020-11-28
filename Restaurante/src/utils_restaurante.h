@@ -118,6 +118,11 @@ typedef struct{
 			uint32_t id_plato;
 }t_plato_pcb;
 
+typedef struct{
+			uint32_t idPedido;
+			uint32_t cant_platos_restantes;
+}t_pedidos_terminar;
+
 
 typedef struct{
 			t_nombre afinidad;

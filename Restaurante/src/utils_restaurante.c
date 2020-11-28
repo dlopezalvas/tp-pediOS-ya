@@ -735,8 +735,8 @@ void process_request(int cod_op, int cliente_fd) {
 							pthread_mutex_t clock_plato;
 
 							//AGREGO  A PEDIDOS A TERMINAR
-							m_guardarPlato* pedido_a_terminar = malloc(sizeof(m_guardarPlato));
-							pedido_a_terminar->cantidad=0;
+							t_pedidos_terminar* pedido_a_terminar = malloc(sizeof(t_pedidos_terminar));
+							pedido_a_terminar->cant_platos_restantes=0;
 							pedido_a_terminar->idPedido=id_CONFIRMAR_PEDIDO->id;
 
 							pthread_mutex_lock(&mutex_list_terminar);
@@ -753,7 +753,7 @@ void process_request(int cod_op, int cliente_fd) {
 								//cargo la cantidad
 								pthread_mutex_lock(&mutex_list_terminar);
 								pedido_a_terminar = list_find(list_pedidos_terminar, (void*)mismo_id_pedido);
-								pedido_a_terminar->cantidad = pedido_a_terminar->cantidad + plato_n->cantTotal-plato_n->cantHecha;
+								pedido_a_terminar->cant_platos_restantes = pedido_a_terminar->cant_platos_restantes + plato_n->cantTotal-plato_n->cantHecha;
 								pthread_mutex_unlock(&mutex_list_terminar);
 
 
@@ -1148,12 +1148,13 @@ void terminar_plato(t_plato_pcb* plato){
 	int socket_app_plato_listo = iniciar_cliente(cfg_ip_app, cfg_puerto_app);
 	int socket_sindicato_plato_listo = iniciar_cliente(cfg_ip_sindicato, cfg_puerto_sindicato);
 
-	m_guardarPlato* pedido_plato;
+	t_pedidos_terminar* pedido_plato;
 	//t_list* platos_del_pedido=list_create();
 
 	//ENVIO A APP PLATO_LISTO
 	if(socket_app_plato_listo == -1){
-		//TODO error
+		log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
+		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1173,7 +1174,8 @@ void terminar_plato(t_plato_pcb* plato){
 		if(cod_op == RTA_PLATO_LISTO){
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
-			//error TODO
+			log_debug(log_oficial, "[ERROR]:Fallo la conexion con APP");
+			pthread_exit(NULL);
 		}
 		liberar_conexion(socket_app_plato_listo);
 
@@ -1181,7 +1183,8 @@ void terminar_plato(t_plato_pcb* plato){
 
 	//ENVIO A SINDICATO PLATO_LISTO
 	if(socket_sindicato_plato_listo == -1){
-		//TODO error
+		log_debug(log_oficial, "[ERROR]:Fallo la conexion con Sindicato");
+		pthread_exit(NULL);
 	}else{
 		uint32_t cod_op;
 		t_mensaje* mensaje = malloc(sizeof(t_mensaje));
@@ -1202,7 +1205,8 @@ void terminar_plato(t_plato_pcb* plato){
 			//loggear_mensaje_recibido(rta_plato_listo, cod_op, log_oficial);
 			free_struct_mensaje(rta_plato_listo, cod_op);
 		}else{
-			//error TODO
+			log_debug(log_oficial, "[ERROR]:Fallo la conexion con Sindicato");
+			pthread_exit(NULL);
 		}
 		liberar_conexion(socket_sindicato_plato_listo);
 
@@ -1222,12 +1226,12 @@ void terminar_plato(t_plato_pcb* plato){
 
 		pthread_mutex_lock(&mutex_list_terminar);
 		pedido_plato = list_find(list_pedidos_terminar, (void*)_mismo_id);
-		pedido_plato->cantidad=pedido_plato->cantidad -1;
+		pedido_plato->cant_platos_restantes=pedido_plato->cant_platos_restantes -1;
 
 
 
 
-		if(pedido_plato->cantidad==0){
+		if(pedido_plato->cant_platos_restantes==0){
 			t_mensaje* mensaje_terminado = malloc(sizeof(t_mensaje));
 			t_nombre_y_id* id_nombre=malloc(sizeof(t_nombre_y_id));
 
@@ -1241,14 +1245,17 @@ void terminar_plato(t_plato_pcb* plato){
 			loggear_mensaje_enviado(mensaje_terminado->parametros, mensaje_terminado->tipo_mensaje, log_mensajes);
 			free_struct_mensaje(id_nombre,TERMINAR_PEDIDO);
 			free(mensaje_terminado);
-			//TODO ELIMINAR EL PEDIDO DE LA LISTA
+			pedido_plato = list_remove_by_condition(list_pedidos_terminar, (void*)_mismo_id);
+			free(pedido_plato);
+
 
 			uint32_t* rta_terminar_pedido = recibir_respuesta(socket_sindicato_termianr_pedido, &cod_op);
 				if(cod_op == RTA_TERMINAR_PEDIDO){
-					//loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
+					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
 					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}else{
-					//error TODO
+					loggear_mensaje_recibido(rta_terminar_pedido, cod_op, log_oficial);
+					free_struct_mensaje(rta_terminar_pedido, cod_op);
 				}
 		}else{
 //			log_debug(log_oficial, "el pedido todavia no termino");
@@ -1258,8 +1265,8 @@ void terminar_plato(t_plato_pcb* plato){
 		//FIN TERMINAR PEDIDO
 	}
 
-
 	free_pcb_plato(plato);
+	pthread_exit(NULL);
 }
 
 void free_pcb_plato(t_plato_pcb* plato){
