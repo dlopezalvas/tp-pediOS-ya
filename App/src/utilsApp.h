@@ -50,6 +50,7 @@ extern int errno;
         SJF_SD
     } t_algoritmoPlanificacion;
 
+    t_config* config;
     void configuracionInicial(void);
     char* cfval_ipComanda;
     int cfval_puertoComanda;
